@@ -222,7 +222,7 @@ const EventModal: React.FC<EventModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-100 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-slate-100 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] min-h-[570px] scrollbar-hide overflow-y-auto">
         <div className="flex relative m-2.5 text-white h-24 rounded-md bg-slate-800 justify-between items-center border-b px-6 py-4">
           <h3 className="text-xl font-semibold text-white">Create New Lecture/Event</h3>
        <button
@@ -324,7 +324,7 @@ const EventModal: React.FC<EventModalProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t">
+          <div className="flex justify-end gap-3 pt-10 mt-auto border-t">
             {/* <button
               type="button"
               onClick={onClose}
