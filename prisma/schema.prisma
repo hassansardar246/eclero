@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profiles {
+  id             String   @id @db.Uuid // match Supabase auth.users.id
+  email          String   @unique
+  name           String
+  role           String // student, tutor, admin
+  bio            String?
+  avatar         String?
+  phone          String?
+  hourlyRate     Float?
+  availability   Json?
+  isAvailableNow Boolean?
+   profile_setup Boolean? @default(false) 
+  rating         Float?
+  education      Json? // Array of education objects
+  experience     Json? // Array of experience objects
+  created_at      DateTime @default(now()) @map("created_at")
+  updated_at      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  subjects ProfilesOnSubjects[]
+  tutorSessions   Sessions[] @relation("TutorSessions")
+  studentSessions Sessions[] @relation("StudentSessions")
+  availabilitySlots TutorAvailability[] @relation("TutorAvailabilitySlots")
+  availabilityExceptions TutorAvailabilityException[] @relation("TutorAvailabilityExceptions")
+}
+
+model Subjects {
+  id          String   @id @default(uuid())
+  name        String
+  code        String?
+  grade       Int?
+  category    String?
+  created_at  DateTime @default(now()) @map("created_at")
+  updated_at  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  profiles    ProfilesOnSubjects[]
+}
+
+
+
+model ProfilesOnSubjects {
+  profileId String @map("profile_id")
+  subjectId String @map("subject_id")
+  created_at DateTime @default(now()) @map("created_at")
+
+  // Relations
+  profile Profiles @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  subject Subjects @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, subjectId])
+}
+
+model Sessions {
+  id         String   @id @default(uuid())
+  tutor_id   String   @map("tutor_id")
+  student_id String   @map("student_id")
+  status     String   @default("pending") // pending, accepted, declined, in_progress, completed, cancelled
+  topic      String?
+  notes      String?
+  created_at DateTime @default(now()) @map("created_at")
+  started_at DateTime? @map("started_at")
+  ended_at   DateTime? @map("ended_at")
+
+  // Relations to Supabase auth.users via Profiles
+  tutor   Profiles @relation("TutorSessions", fields: [tutor_id], references: [id], onDelete: Cascade)
+  student Profiles @relation("StudentSessions", fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@map("Sessions")
+}
+
+model TutorAvailability {
+  id          String   @id @default(uuid()) @db.Uuid
+  tutorId     String   @map("tutor_id") @db.Uuid
+  dayOfWeek   Int      @map("day_of_week") // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime   DateTime @map("start_time") @db.Time(6)  // Using DateTime with @db.Time for TIME fields
+  endTime     DateTime @map("end_time") @db.Time(6)    // Using DateTime with @db.Time for TIME fields
+  timezone    String   @default("UTC")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  tutor Profiles @relation("TutorAvailabilitySlots", fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorId])
+  @@index([dayOfWeek, startTime, endTime])
+  @@map("TutorAvailability")
+}
+
+
+model TutorAvailabilityException {
+  id        String   @id @default(uuid()) @db.Uuid
+  tutorId   String   @map("tutor_id") @db.Uuid
+  date      DateTime @db.Date
+  startTime DateTime @map("start_time") @db.Time(6)
+  endTime   DateTime @map("end_time") @db.Time(6)
+  isActive  Boolean  @default(false) @map("is_active") // false = turn off this window for the date, true = add extra window
+  timezone  String   @default("UTC")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tutor Profiles @relation("TutorAvailabilityExceptions", fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorId, date])
+  @@map("TutorAvailabilityException")
+}

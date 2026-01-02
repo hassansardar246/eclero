@@ -1,0 +1,885 @@
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { WizardSubjectSelector } from "../WizardSubjectSelector";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CheckCircle,
+  ChevronRight,
+  Upload,
+  Users,
+  Zap,
+  Globe,
+  ChevronLeft,
+  Phone,
+  PrinterCheck,
+  ArrowRight,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import SelectSubject from "./components/SelectSubject";
+const ArrowLeftIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M10 19l-7-7m0 0l7-7m-7 7h18"
+    />
+  </svg>
+);
+
+const ArrowRightIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M14 5l7 7m0 0l-7 7m7-7H3"
+    />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 13l4 4L19 7"
+    />
+  </svg>
+);
+export type Subjects = {
+  id: string;
+  name: string;
+  code: string;
+  grade: number;
+  category?: string;
+};
+type CategoryGroup = {
+  name: string;
+  subjects: Subjects[];
+};
+
+const getDefaultIcon = (stepNumber: number) => {
+  const icons: any = {
+    1: (
+      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
+        <svg
+          className="w-8 h-8 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+          />
+        </svg>
+      </div>
+    ),
+    2: (
+      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-200">
+        <svg
+          className="w-8 h-8 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      </div>
+    ),
+    3: (
+      <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200">
+        <svg
+          className="w-8 h-8 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+          />
+        </svg>
+      </div>
+    ),
+    4: (
+      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-200">
+        <svg
+          className="w-8 h-8 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+    ),
+    5: (
+      <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-200">
+        <svg
+          className="w-8 h-8 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          />
+        </svg>
+      </div>
+    ),
+  };
+
+  return icons[stepNumber] || icons[1];
+};
+const SetupWizard = () => {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    bio: "",
+    name: "",
+    email: "",
+    phone: "",
+    hour_rate: "",
+    grade: "",
+    subjects: [],
+  });
+  const [profile, setProfile] = useState<any>(null);
+  const [categories, setCategories] = useState<CategoryGroup[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<Subjects[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const {
+          data: { user },
+          error: sessionError,
+        } = await supabase.auth.getUser();
+        if (sessionError || !user) {
+          router.push("/auth/login");
+          return;
+        }
+        const profileRes = await fetch(
+          `/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`
+        );
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          console.log("Fetched profile:", profileData);
+          setProfile(profileData);
+          setFormData({
+            bio: profileData.bio || "",
+            name: profileData.name || "",
+            email: profileData.email || "",
+            phone: profileData.phone || "",
+            hour_rate: profileData.hourlyRate || "",
+            grade: profileData.grade || "",
+            subjects: profileData.subjects || [],
+          });
+          let normalizedSubjects: any[] = [];
+          if (profileData.subjects && Array.isArray(profileData.subjects)) {
+            normalizedSubjects = profileData.subjects
+              .map((s: any) => {
+                // Check if s.subject exists and is an object
+                if (s && s.subject && typeof s.subject === "object") {
+                  return s.subject;
+                }
+                return undefined;
+              })
+              .filter((subject: any): subject is any => subject !== undefined);
+          }
+          setSelectedSubjects(normalizedSubjects);
+        }
+      } catch (error) {}
+    };
+
+    fetchProfile();
+
+    fetch("/api/subjects")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          // setSelectedSubjects(data);
+          // Group by category
+          const catMap = new Map<string, Subjects[]>();
+          data.forEach((subject: Subjects) => {
+            const cat = subject.category || "Uncategorized";
+            if (!catMap.has(cat)) catMap.set(cat, []);
+            catMap.get(cat)!.push(subject);
+          });
+          const grouped: CategoryGroup[] = Array.from(catMap.entries()).map(
+            ([name, subjects]) => ({ name, subjects })
+          );
+          setCategories(grouped);
+        } else {
+          setSelectedSubjects([]);
+          setCategories([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Subjects fetch error:", err);
+        setSelectedSubjects([]);
+        setCategories([]);
+      });
+  }, [router]);
+
+  const handleEdit = () => {};
+  // const validSelectedSubjectIds = (selectedSubjectIds ?? []).filter((id): id is string => typeof id === 'string' && id.length > 0);
+  // const selectedSubjects: Subjects[] = [];
+  // subjects.forEach((subj) => {
+  //   if (typeof subj.id === 'string' && subj.id.length > 0 && validSelectedSubjectIds.includes(subj.id)) {
+  //     selectedSubjects.push(subj);
+  //   }
+  // });
+
+  // const handleCancel = () => {
+  //   setEditName(profile.name || "");
+  //   setEditPhone(profile.phone || "");
+  //   setEditBio(profile.bio || "");
+  //   setEditHourlyRate(profile.hourlyRate?.toString() || "");
+  //   setEditMode(false);
+  // };
+  const handleSave = async () => {
+    if (!profile?.email) return;
+    if (!formData.phone) return;
+    if (!formData.bio) return;
+    if (!formData.hour_rate) return;
+    const hourlyRate = formData.hour_rate
+      ? parseFloat(formData.hour_rate)
+      : null;
+    const ids = selectedSubjects.map((s: any) => s.id);
+    await fetch("/api/profiles/update", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: profile.email,
+        name: profile.name,
+        phone: formData.phone,
+        bio: formData.bio,
+        hourlyRate: hourlyRate,
+        subjects: ids,
+      }),
+    });
+    setProfile({
+      ...profile,
+      name: profile.name,
+      phone: formData.phone,
+      bio: formData.bio,
+      hourlyRate: hourlyRate,
+    });
+    setFormData({
+      ...formData,
+      phone: formData.phone,
+      bio: formData.bio,
+      hour_rate: formData.hour_rate,
+    });
+    setStep((prev) => prev + 1);
+  };
+
+  const handleSubjectsChange = async (subjectIds: string[]) => {
+    if (!profile?.email) return;
+    if (!formData.phone) return;
+    if (!formData.bio) return;
+    if (!formData.hour_rate) return;
+    const hourlyRate = formData.hour_rate
+      ? parseFloat(formData.hour_rate)
+      : null;
+    try {
+      await fetch("/api/profiles/update", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: profile.email,
+          name: profile.name,
+          phone: formData.phone,
+          bio: formData.bio,
+          hourlyRate: hourlyRate,
+          subjects: subjectIds,
+        }),
+      });
+    } catch (e) {}
+  };
+
+  const handleSubjectClick = (subject: any) => {
+    const isSelected = selectedSubjects.some((s: any) => s.id === subject.id);
+
+    if (isSelected) {
+      setSelectedSubjects((prev) =>
+        prev.filter((s: any) => s.id !== subject.id)
+      );
+    } else {
+      setSelectedSubjects((prev) => [...prev, subject]);
+    }
+    const ids = selectedSubjects.map((s: any) => s.id);
+    handleSubjectsChange(ids);
+    console.log("Selected subjects:", ids);
+  };
+  const handleInputChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = () => {
+    alert("Connecting to Stripe...");
+    // Here you would integrate with Stripe API
+  };
+
+  // const steps = [
+  //   { id: 1, title: "Personal Details" },
+  //   { id: 2, title: "Subjects" },
+  //   { id: 3, title: "Stripe Connection" },
+  // ];
+
+  const [activeStep, setActiveStep] = useState(1);
+  const [selectedIntegrations, setSelectedIntegrations] = useState<any>({
+    "Acme Co": [],
+    "Tesla Inc": [],
+    Goop: [],
+  });
+
+  const socialChannels = [
+    {
+      id: "youtube",
+      name: "YouTube",
+      icon: "▶️",
+      description: "Some descriptive text about this social channel",
+    },
+  ];
+
+  const clients = [
+    { id: "acme", name: "Acme Co" },
+    { id: "tesla", name: "Tesla Inc" },
+    { id: "goop", name: "Goop" },
+  ];
+
+  const steps = [
+    {
+      number: 1,
+      title: "Personal Information",
+      des: "We need some information about you to set up your workspace",
+      bigdes:
+        " Tell us a bit about yourself—what makes your teaching style unique? We'll share this with students looking for the perfect match.",
+      icon: <Users className="w-4 h-4" />,
+    },
+    {
+      number: 2,
+      title: "Select Subjects",
+      des: "Select the subjects you are proficient in! it will help our students to find you",
+      bigdes:
+        " Select the subjects you are proficient in! it will help our students to find you",
+      icon: <Users className="w-4 h-4" />,
+    },
+    {
+      number: 3,
+      title: "Stripe Integrations",
+      des: "Connect your Stripe account to start accepting payments! you will be able to accept payments for your services",
+      bigdes:
+        " Connect your Stripe account to start accepting payments! you will be able to accept payments for your services",
+      icon: <Zap className="w-4 h-4" />,
+    },
+  ];
+
+  const toggleIntegration = (clientId: string, channelId: string) => {
+    setSelectedIntegrations((prev: any) => {
+      const current = [...prev[clientId]];
+      if (current.includes(channelId)) {
+        return {
+          ...prev,
+          [clientId]: current.filter((id) => id !== channelId),
+        };
+      } else {
+        return {
+          ...prev,
+          [clientId]: [...current, channelId],
+        };
+      }
+    });
+  };
+  const calculateProgress = () => {
+    if (activeStep === 3) {
+      return 100;
+    } else if (activeStep === 2) {
+      return 50;
+    } else {
+      return 0;
+    }
+  };
+
+  const HandleChangeSetUpStatus = async () => {
+    try {
+      const response = await fetch("/api/profiles/complete-setup", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: profile.email,
+        }),
+      });
+console.log("Response status:", response);
+      if (response.ok) {
+        router.push("/home/tutor/availability");
+      } else {
+        console.error("Failed to update setup status");
+      }
+    } catch (e) {}
+  };
+  return (
+    <div className=" bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-5 rounded-3xl lg:min-h-[736px]">
+      <div className="max-w-6xl p-5 bg-[#F3F5F7] border border-gray-200 rounded-3xl mx-auto">
+        <div className="max-w-6xl bg-[#ffffff] rounded-3xl mx-auto">
+          <div className="flex flex-col items-stretch lg:flex-row rounded-3xl overflow-hidden">
+            {/* Left Column - Steps */}
+            <div className="lg:w-1/3 lg:flex lg:flex-col relative overflow-hidden">
+              <div className="bg-[#F9F9F9] h-full p-6 relative">
+                {/* Animated Gradient Overlay */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <div
+                    className={`absolute w-full h-full bg-gradient-to-tr from-blue-50/30 via-transparent to-transparent transition-all duration-700 ease-out ${
+                      activeStep != 1
+                        ? "opacity-100 translate-x-0 translate-y-0"
+                        : "opacity-0 translate-x-full -translate-y-full"
+                    }`}
+                    // style={{
+                    //   background: activeStep === 1
+                    //     ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%)'
+                    //     : activeStep === 2
+                    //     ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 50%, transparent 100%)'
+                    //     : activeStep === 3
+                    //     ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 50%, transparent 100%)'
+                    //     : activeStep === 4
+                    //     ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%)'
+                    //     : 'linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 100%)'
+                    // }}
+                  />
+                </div>
+
+                <div className="space-y-2 mb-8 relative z-20">
+                  {steps.map((step) => (
+                    <div
+                      key={step.number}
+                      // onClick={() => setActiveStep(step.number)}
+                      className={`flex items-start gap-4 p-4 cursor-pointer rounded-xl transition-all`}
+                    >
+                      <div
+                        className={`relative flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                          activeStep === step.number
+                            ? " text-white"
+                            : step.number < activeStep
+                            ? " text-green-600"
+                            : "bg-gray-200 text-gray-600"
+                        }`}
+                      >
+                        {/* <div className="absolute w-1 h-5 top-100 left-0 bg-gray-200"></div> */}
+                        {step.number < activeStep ? (
+                          <CheckCircle className="w-5 h-5" />
+                        ) : step.number == activeStep ? (
+                          <div className="w-5 h-5 flex items-center justify-center bg-[#cf3fad] rounded-full">
+                            <div className="w-3 h-3 bg-white rounded-full"></div>
+                          </div>
+                        ) : (
+                          <span className="font-semibold">{step.icon}</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className={`font-medium text-gray-700`}>
+                            {step.title}
+                            <span className="block text-[10px]">
+                              {step.des}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Progress */}
+                <div className="mt-8 pt-8 border-t border-gray-200 relative z-20">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">
+                        Your Progress
+                      </span>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Complete all steps to launch workspace
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="text-2xl font-bold bg-[#cf3fad] bg-clip-text text-transparent">
+                        {calculateProgress()}%
+                      </div>
+                      <span className="text-sm text-gray-500 ml-1">
+                        complete
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    {/* Background track with glass effect */}
+                    <div className="h-4 bg-gray-100/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/30 shadow-inner">
+                      {/* Progress fill with gradient and animation */}
+                      <div
+                        className="h-full relative bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 rounded-2xl transition-all duration-1000 ease-out"
+                        style={{ width: `${calculateProgress()}%` }}
+                      >
+                        {/* Moving highlight */}
+                        <div
+                          className="absolute top-0 left-0 w-20 h-full bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"
+                          style={{ animationDuration: "2s" }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Floating progress indicator */}
+                    <div
+                      className="absolute -top-1 flex flex-col items-center transition-all duration-700 ease-out"
+                      style={{
+                        left: `calc(${calculateProgress()}% - 12px)`,
+                      }}
+                    >
+                      <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-200">
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                      {/* <div className="text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mt-1">
+        Step {activeStep}
+      </div> */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Content */}
+            <div className="lg:w-2/3 lg:flex lg:flex-col min-h-[500px] md:min-h-[700px]">
+              <div className="bg-white h-full p-6 md:p-8 flex flex-col">
+                {/* Step Header */}
+                <div className="mb-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="inline-flex items-center text-[#CF3FAD] text-sm font-medium mb-3">
+                        Step {activeStep} of 3
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                        {steps[activeStep - 1].title}
+                      </h2>
+                      <p className="text-gray-600">
+                        {steps[activeStep - 1].des}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+               <div className="flex-1 overflow-auto scrollbar-hide relative">
+  <AnimatePresence mode="wait">
+    {steps[activeStep - 1].number == 1 && (
+      <motion.div
+        key="step-1"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="max-w-2xl mx-auto space-y-6"
+      >
+        {/* Bio Input */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="relative group"
+        >
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Bio
+          </label>
+
+          <div className="relative">
+            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+            
+            <motion.div 
+              whileHover={{ scale: 1.005 }}
+              transition={{ duration: 0.2 }}
+              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
+            >
+              <div className="flex items-center">
+                <div className="flex-1 px-4">
+                  <input
+                    type="text"
+                    placeholder="Enter your bio"
+                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
+                  />
+                </div>
+              </div>
+            </motion.div>
+            
+            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
+          </div>
+        </motion.div>
+
+        {/* Phone Input */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+          className="relative group"
+        >
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Phone
+          </label>
+
+          <div className="relative">
+            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+            
+            <motion.div 
+              whileHover={{ scale: 1.005 }}
+              transition={{ duration: 0.2 }}
+              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
+            >
+              <div className="flex items-center">
+                <div className="flex-1 px-4">
+                  <input
+                    type="text"
+                    placeholder="Enter your phone number"
+                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
+                  />
+                </div>
+              </div>
+            </motion.div>
+            
+            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
+          </div>
+        </motion.div>
+
+        {/* Hourly Rate Input */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="relative group"
+        >
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Hourly Rate
+          </label>
+
+          <div className="relative">
+            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+            
+            <motion.div 
+              whileHover={{ scale: 1.005 }}
+              transition={{ duration: 0.2 }}
+              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
+            >
+              <div className="flex items-center">
+                <div className="flex-1 px-4">
+                  <input
+                    type="text"
+                    placeholder="Enter your hourly rate"
+                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
+                  />
+                </div>
+              </div>
+            </motion.div>
+            
+            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
+          </div>
+        </motion.div>
+
+        {/* Helper text */}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+          className="mt-3 text-sm text-gray-500"
+        >
+          This will be used to personalize your workspace and communications
+        </motion.p>
+      </motion.div>
+    )}
+
+    {steps[activeStep - 1].number == 2 && (
+      <motion.div
+        key="step-2"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        <SelectSubject />
+      </motion.div>
+    )}
+
+    {steps[activeStep - 1].number == 3 && (
+      <motion.div
+        key="step-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ 
+          duration: 0.4, 
+          ease: [0.4, 0, 0.2, 1],
+          delay: 0.1 
+        }}
+        className="w-full h-full flex items-center justify-center"
+      >
+        <motion.button
+          whileHover={{ 
+            scale: 1.05,
+            boxShadow: "0 20px 40px rgba(139, 92, 246, 0.3)"
+          }}
+          whileTap={{ scale: 0.98 }}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ 
+            duration: 0.5, 
+            ease: "backOut",
+            delay: 0.2 
+          }}
+          onClick={() => {
+            // trigger stripe onboarding here
+            console.log("Connect Stripe");
+          }}
+          className="mx-auto group relative flex items-center gap-4 px-6 py-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-lg shadow-lg hover:shadow-2xl transition-all duration-300 focus:outline-none"
+        >
+          {/* Stripe logo container */}
+          <motion.div
+            whileHover={{ rotate: [-5, 5, -5] }}
+            transition={{ duration: 0.5 }}
+            className="bg-white rounded-2xl px-4 py-2 flex items-center justify-center text-purple-600 font-bold text-lg"
+          >
+            stripe
+          </motion.div>
+
+          {/* Button text */}
+          <span className="whitespace-nowrap">
+            Connect with Stripe
+          </span>
+
+          {/* Arrow */}
+          <motion.div
+            animate={{ x: [0, 5, 0] }}
+            transition={{ 
+              duration: 1.5, 
+              repeat: Infinity,
+              repeatType: "loop",
+              ease: "easeInOut" 
+            }}
+          >
+            <ArrowRight size={22} />
+          </motion.div>
+          
+          {/* Pulsing glow effect */}
+          <motion.div
+            className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 blur-xl opacity-0 -z-10"
+            animate={{ opacity: [0, 0.3, 0] }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              repeatType: "loop" 
+            }}
+          />
+        </motion.button>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
+
+                <div className="flex items-center justify-between mt-5">
+                  <button
+                    onClick={() =>
+                      setActiveStep(activeStep > 1 ? activeStep - 1 : 1)
+                    }
+                    className="hidden md:flex items-center gap-2"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                    back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (activeStep < steps.length) {
+                        setActiveStep(activeStep + 1);
+                      } else {
+                        await HandleChangeSetUpStatus();
+                      }
+                    }}
+                    className="hidden md:flex items-center gap-2 px-6 py-3 bg-[#CF3FAD] text-white rounded-full hover:bg-[#CF3FAD]/80 transition-colors font-medium"
+                  >
+                    Continue
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Mobile Continue Button */}
+                <div className="mt-10 pt-8 border-t border-gray-200 md:hidden">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveStep(
+                        activeStep < steps.length
+                          ? activeStep + 1
+                          : steps.length
+                      )
+                    }
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Continue
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SetupWizard;
