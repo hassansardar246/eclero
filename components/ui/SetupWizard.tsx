@@ -176,9 +176,11 @@ const SetupWizard = () => {
     phone: "",
     hour_rate: "",
     grade: "",
+    is_tutor: false,
     subjects: [],
   });
   const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CategoryGroup[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<Subjects[]>([]);
   const router = useRouter();
@@ -200,8 +202,8 @@ const SetupWizard = () => {
 
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          console.log("Fetched profile:", profileData);
           setProfile(profileData);
+          console.log("Profile data2222:", profileData);
           setFormData({
             bio: profileData.bio || "",
             name: profileData.name || "",
@@ -209,6 +211,7 @@ const SetupWizard = () => {
             phone: profileData.phone || "",
             hour_rate: profileData.hourlyRate || "",
             grade: profileData.grade || "",
+            is_tutor: profileData.is_tutor || false,
             subjects: profileData.subjects || [],
           });
           let normalizedSubjects: any[] = [];
@@ -216,12 +219,12 @@ const SetupWizard = () => {
             normalizedSubjects = profileData.subjects
               .map((s: any) => {
                 // Check if s.subject exists and is an object
-                if (s && s.subject && typeof s.subject === "object") {
-                  return s.subject;
+                if (s && s.Subjects && typeof s.Subjects === "object") {
+                  return s.Subjects;
                 }
                 return undefined;
               })
-              .filter((subject: any): subject is any => subject !== undefined);
+              .filter((Subjects: any): Subjects is any => Subjects !== undefined);
           }
           setSelectedSubjects(normalizedSubjects);
         }
@@ -258,82 +261,7 @@ const SetupWizard = () => {
       });
   }, [router]);
 
-  const handleEdit = () => {};
-  // const validSelectedSubjectIds = (selectedSubjectIds ?? []).filter((id): id is string => typeof id === 'string' && id.length > 0);
-  // const selectedSubjects: Subjects[] = [];
-  // subjects.forEach((subj) => {
-  //   if (typeof subj.id === 'string' && subj.id.length > 0 && validSelectedSubjectIds.includes(subj.id)) {
-  //     selectedSubjects.push(subj);
-  //   }
-  // });
-
-  // const handleCancel = () => {
-  //   setEditName(profile.name || "");
-  //   setEditPhone(profile.phone || "");
-  //   setEditBio(profile.bio || "");
-  //   setEditHourlyRate(profile.hourlyRate?.toString() || "");
-  //   setEditMode(false);
-  // };
-  const handleSave = async () => {
-    if (!profile?.email) return;
-    if (!formData.phone) return;
-    if (!formData.bio) return;
-    if (!formData.hour_rate) return;
-    const hourlyRate = formData.hour_rate
-      ? parseFloat(formData.hour_rate)
-      : null;
-    const ids = selectedSubjects.map((s: any) => s.id);
-    await fetch("/api/profiles/update", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: profile.email,
-        name: profile.name,
-        phone: formData.phone,
-        bio: formData.bio,
-        hourlyRate: hourlyRate,
-        subjects: ids,
-      }),
-    });
-    setProfile({
-      ...profile,
-      name: profile.name,
-      phone: formData.phone,
-      bio: formData.bio,
-      hourlyRate: hourlyRate,
-    });
-    setFormData({
-      ...formData,
-      phone: formData.phone,
-      bio: formData.bio,
-      hour_rate: formData.hour_rate,
-    });
-    setStep((prev) => prev + 1);
-  };
-
-  const handleSubjectsChange = async (subjectIds: string[]) => {
-    if (!profile?.email) return;
-    if (!formData.phone) return;
-    if (!formData.bio) return;
-    if (!formData.hour_rate) return;
-    const hourlyRate = formData.hour_rate
-      ? parseFloat(formData.hour_rate)
-      : null;
-    try {
-      await fetch("/api/profiles/update", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: profile.email,
-          name: profile.name,
-          phone: formData.phone,
-          bio: formData.bio,
-          hourlyRate: hourlyRate,
-          subjects: subjectIds,
-        }),
-      });
-    } catch (e) {}
-  };
+console.log("Selected subjectsssssssss:", selectedSubjects);
 
   const handleSubjectClick = (subject: any) => {
     const isSelected = selectedSubjects.some((s: any) => s.id === subject.id);
@@ -346,49 +274,21 @@ const SetupWizard = () => {
       setSelectedSubjects((prev) => [...prev, subject]);
     }
     const ids = selectedSubjects.map((s: any) => s.id);
-    handleSubjectsChange(ids);
-    console.log("Selected subjects:", ids);
+    // console.log("Selected subjects:", ids);
   };
   const handleInputChange = (e: any) => {
+    console.log("Input changed:", e.target.name, e.target.value);
     const { name, value } = e.target;
+    let processedValue = value;
+    if (name === "is_tutor") {
+      processedValue = (value == 1) === true || value === 1;
+    }
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: processedValue,
     }));
   };
-
-  const handleSubmit = () => {
-    alert("Connecting to Stripe...");
-    // Here you would integrate with Stripe API
-  };
-
-  // const steps = [
-  //   { id: 1, title: "Personal Details" },
-  //   { id: 2, title: "Subjects" },
-  //   { id: 3, title: "Stripe Connection" },
-  // ];
-
   const [activeStep, setActiveStep] = useState(1);
-  const [selectedIntegrations, setSelectedIntegrations] = useState<any>({
-    "Acme Co": [],
-    "Tesla Inc": [],
-    Goop: [],
-  });
-
-  const socialChannels = [
-    {
-      id: "youtube",
-      name: "YouTube",
-      icon: "▶️",
-      description: "Some descriptive text about this social channel",
-    },
-  ];
-
-  const clients = [
-    { id: "acme", name: "Acme Co" },
-    { id: "tesla", name: "Tesla Inc" },
-    { id: "goop", name: "Goop" },
-  ];
 
   const steps = [
     {
@@ -416,23 +316,6 @@ const SetupWizard = () => {
       icon: <Zap className="w-4 h-4" />,
     },
   ];
-
-  const toggleIntegration = (clientId: string, channelId: string) => {
-    setSelectedIntegrations((prev: any) => {
-      const current = [...prev[clientId]];
-      if (current.includes(channelId)) {
-        return {
-          ...prev,
-          [clientId]: current.filter((id) => id !== channelId),
-        };
-      } else {
-        return {
-          ...prev,
-          [clientId]: [...current, channelId],
-        };
-      }
-    });
-  };
   const calculateProgress = () => {
     if (activeStep === 3) {
       return 100;
@@ -452,7 +335,7 @@ const SetupWizard = () => {
           email: profile.email,
         }),
       });
-console.log("Response status:", response);
+      console.log("Response status:", response);
       if (response.ok) {
         router.push("/home/tutor/availability");
       } else {
@@ -460,6 +343,66 @@ console.log("Response status:", response);
       }
     } catch (e) {}
   };
+
+  const HandleNextButton = async () => {
+    if (activeStep === 1) {
+      if (!profile?.email) return;
+      if (!formData.phone) return;
+      if (!formData.bio) return;
+      if (!formData.hour_rate) return;
+      setLoading(true);
+      const hourlyRate = formData.hour_rate
+        ? parseFloat(formData.hour_rate)
+        : null;
+      try {
+        await fetch("/api/profiles/update-bio", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: profile.email,
+            name: profile.name,
+            phone: formData.phone,
+            bio: formData.bio,
+            hourlyRate: hourlyRate,
+            is_tutor: formData.is_tutor,
+          }),
+        });
+        setLoading(false);
+            setActiveStep(activeStep + 1);
+      } catch (e) {
+        setLoading(false);
+        console.log(e);
+      }
+    }
+    if(activeStep === 2){
+         if (!profile?.email) return;
+      if(selectedSubjects.length === 0) return;
+      setLoading(true);
+      try {
+        await fetch("/api/profiles/update-subjects", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: profile.email,
+            subjects: selectedSubjects,
+          }),
+        });
+        setLoading(false);
+            setActiveStep(activeStep + 1);
+      } catch (e) {
+        setLoading(false);
+        console.log(e);
+      }
+    }
+    if(activeStep === 3){
+      HandleChangeSetUpStatus();
+    }
+
+  };
+  const onSubjectsChange = (subjects: any) => {
+    console.log("Selected subjects parent:", subjects);
+    setSelectedSubjects(subjects);
+  }
   return (
     <div className=" bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-5 rounded-3xl lg:min-h-[736px]">
       <div className="max-w-6xl p-5 bg-[#F3F5F7] border border-gray-200 rounded-3xl mx-auto">
@@ -476,17 +419,6 @@ console.log("Response status:", response);
                         ? "opacity-100 translate-x-0 translate-y-0"
                         : "opacity-0 translate-x-full -translate-y-full"
                     }`}
-                    // style={{
-                    //   background: activeStep === 1
-                    //     ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%)'
-                    //     : activeStep === 2
-                    //     ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 50%, transparent 100%)'
-                    //     : activeStep === 3
-                    //     ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 50%, transparent 100%)'
-                    //     : activeStep === 4
-                    //     ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%)'
-                    //     : 'linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 100%)'
-                    // }}
                   />
                 </div>
 
@@ -618,217 +550,277 @@ console.log("Response status:", response);
                     </div>
                   </div>
                 </div>
-               <div className="flex-1 overflow-auto scrollbar-hide relative">
-  <AnimatePresence mode="wait">
-    {steps[activeStep - 1].number == 1 && (
-      <motion.div
-        key="step-1"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="max-w-2xl mx-auto space-y-6"
-      >
-        {/* Bio Input */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className="relative group"
-        >
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Bio
-          </label>
+                <div className="flex-1 overflow-auto scrollbar-hide relative">
+                  <AnimatePresence mode="wait">
+                    {steps[activeStep - 1].number == 1 && (
+                      <motion.div
+                        key="step-1"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="max-w-2xl mx-auto space-y-6"
+                      >
+                        {/* Bio Input */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.1 }}
+                          className="relative group"
+                        >
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Are you a student or a teacher?
+                          </label>
 
-          <div className="relative">
-            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-            
-            <motion.div 
-              whileHover={{ scale: 1.005 }}
-              transition={{ duration: 0.2 }}
-              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
-            >
-              <div className="flex items-center">
-                <div className="flex-1 px-4">
-                  <input
-                    type="text"
-                    placeholder="Enter your bio"
-                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
-                  />
+                          <div className="relative">
+                            <motion.div className="flex items-center justify-start gap-3">
+                              <div className="flex cursor-pointer items-center flex-1 ps-4 rounded-2xl border-2 border-gray-200 bg-neutral-primary-soft rounded-base">
+                                <input
+                                  checked={formData.is_tutor === false}
+                                  id="bordered-radio-1"
+                                  type="radio"
+                                  value={0}
+                                  onChange={(e) => handleInputChange(e)}
+                                  name="is_tutor"
+                                  className="w-4 h-4 cursor-pointer"
+                                />
+                                <label
+                                  htmlFor="bordered-radio-1"
+                                  className="w-full cursor-pointer py-4 select-none ms-2 text-sm font-medium text-heading"
+                                >
+                                  Student
+                                </label>
+                              </div>
+                              <div className="flex cursor-pointer items-center rounded-2xl border-2 border-gray-200 flex-1 ps-4 border-default bg-neutral-primary-soft rounded-base">
+                                <input
+                                  checked={formData.is_tutor === true}
+                                  id="bordered-radio-2"
+                                  type="radio"
+                                  value={1}
+                                  onChange={(e) => handleInputChange(e)}
+                                  name="is_tutor"
+                                  className="w-4 h-4 cursor-pointer"
+                                />
+                                <label
+                                  htmlFor="bordered-radio-2"
+                                  className="w-full  cursor-pointer py-4 select-none ms-2 text-sm font-medium text-heading"
+                                >
+                                  Tutor
+                                </label>
+                              </div>
+                            </motion.div>
+                          </div>
+                        </motion.div>
+                        {/* Bio Input */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.1 }}
+                          className="relative group"
+                        >
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Bio
+                          </label>
+
+                          <div className="relative">
+                            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+
+                            <motion.div
+                              whileHover={{ scale: 1.005 }}
+                              transition={{ duration: 0.2 }}
+                              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
+                            >
+                              <div className="flex items-center">
+                                <div className="flex-1 px-4">
+                                  <input
+                                    type="text"
+                                    name="bio"
+                                    value={formData.bio}
+                                    onChange={(e) => handleInputChange(e)}
+                                    placeholder="Enter your bio"
+                                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
+                                  />
+                                </div>
+                              </div>
+                            </motion.div>
+
+                            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
+                          </div>
+                        </motion.div>
+
+                        {/* Phone Input */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.15 }}
+                          className="relative group"
+                        >
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Phone
+                          </label>
+
+                          <div className="relative">
+                            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+
+                            <motion.div
+                              whileHover={{ scale: 1.005 }}
+                              transition={{ duration: 0.2 }}
+                              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
+                            >
+                              <div className="flex items-center">
+                                <div className="flex-1 px-4">
+                                  <input
+                                    type="text"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={(e) => handleInputChange(e)}
+                                    placeholder="Enter your phone number"
+                                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
+                                  />
+                                </div>
+                              </div>
+                            </motion.div>
+
+                            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
+                          </div>
+                        </motion.div>
+
+                        {/* Hourly Rate Input */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.2 }}
+                          className="relative group"
+                        >
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Hourly Rate
+                          </label>
+
+                          <div className="relative">
+                            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+
+                            <motion.div
+                              whileHover={{ scale: 1.005 }}
+                              transition={{ duration: 0.2 }}
+                              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
+                            >
+                              <div className="flex items-center">
+                                <div className="flex-1 px-4">
+                                  <input
+                                    type="text"
+                                    name="hour_rate"
+                                    value={formData.hour_rate}
+                                    onChange={(e) => handleInputChange(e)}
+                                    placeholder="Enter your hourly rate"
+                                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
+                                  />
+                                </div>
+                              </div>
+                            </motion.div>
+
+                            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
+                          </div>
+                        </motion.div>
+
+                        {/* Helper text */}
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3, delay: 0.3 }}
+                          className="mt-3 text-sm text-gray-500"
+                        >
+                          This will be used to personalize your workspace and
+                          communications
+                        </motion.p>
+                      </motion.div>
+                    )}
+
+                    {steps[activeStep - 1].number == 2 && (
+                      <motion.div
+                        key="step-2"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                      >
+                        <SelectSubject categories={categories} selectedSubjects= {selectedSubjects} onSubjectsChange={onSubjectsChange} />
+                      </motion.div>
+                    )}
+
+                    {steps[activeStep - 1].number == 3 && (
+                      <motion.div
+                        key="step-3"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{
+                          duration: 0.4,
+                          ease: [0.4, 0, 0.2, 1],
+                          delay: 0.1,
+                        }}
+                        className="w-full h-full flex items-center justify-center"
+                      >
+                        <motion.button
+                          whileHover={{
+                            scale: 1.05,
+                            boxShadow: "0 20px 40px rgba(139, 92, 246, 0.3)",
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{
+                            duration: 0.5,
+                            ease: "backOut",
+                            delay: 0.2,
+                          }}
+                          onClick={() => {
+                            // trigger stripe onboarding here
+                            console.log("Connect Stripe");
+                          }}
+                          className="mx-auto group relative flex items-center gap-4 px-6 py-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-lg shadow-lg hover:shadow-2xl transition-all duration-300 focus:outline-none"
+                        >
+                          {/* Stripe logo container */}
+                          <motion.div
+                            whileHover={{ rotate: [-5, 5, -5] }}
+                            transition={{ duration: 0.5 }}
+                            className="bg-white rounded-2xl px-4 py-2 flex items-center justify-center text-purple-600 font-bold text-lg"
+                          >
+                            stripe
+                          </motion.div>
+
+                          {/* Button text */}
+                          <span className="whitespace-nowrap">
+                            Connect with Stripe
+                          </span>
+
+                          {/* Arrow */}
+                          <motion.div
+                            animate={{ x: [0, 5, 0] }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              repeatType: "loop",
+                              ease: "easeInOut",
+                            }}
+                          >
+                            <ArrowRight size={22} />
+                          </motion.div>
+
+                          {/* Pulsing glow effect */}
+                          <motion.div
+                            className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 blur-xl opacity-0 -z-10"
+                            animate={{ opacity: [0, 0.3, 0] }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              repeatType: "loop",
+                            }}
+                          />
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              </div>
-            </motion.div>
-            
-            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
-          </div>
-        </motion.div>
-
-        {/* Phone Input */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.15 }}
-          className="relative group"
-        >
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phone
-          </label>
-
-          <div className="relative">
-            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-            
-            <motion.div 
-              whileHover={{ scale: 1.005 }}
-              transition={{ duration: 0.2 }}
-              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
-            >
-              <div className="flex items-center">
-                <div className="flex-1 px-4">
-                  <input
-                    type="text"
-                    placeholder="Enter your phone number"
-                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
-                  />
-                </div>
-              </div>
-            </motion.div>
-            
-            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
-          </div>
-        </motion.div>
-
-        {/* Hourly Rate Input */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-          className="relative group"
-        >
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Hourly Rate
-          </label>
-
-          <div className="relative">
-            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-            
-            <motion.div 
-              whileHover={{ scale: 1.005 }}
-              transition={{ duration: 0.2 }}
-              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
-            >
-              <div className="flex items-center">
-                <div className="flex-1 px-4">
-                  <input
-                    type="text"
-                    placeholder="Enter your hourly rate"
-                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
-                  />
-                </div>
-              </div>
-            </motion.div>
-            
-            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
-          </div>
-        </motion.div>
-
-        {/* Helper text */}
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
-          className="mt-3 text-sm text-gray-500"
-        >
-          This will be used to personalize your workspace and communications
-        </motion.p>
-      </motion.div>
-    )}
-
-    {steps[activeStep - 1].number == 2 && (
-      <motion.div
-        key="step-2"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        <SelectSubject />
-      </motion.div>
-    )}
-
-    {steps[activeStep - 1].number == 3 && (
-      <motion.div
-        key="step-3"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ 
-          duration: 0.4, 
-          ease: [0.4, 0, 0.2, 1],
-          delay: 0.1 
-        }}
-        className="w-full h-full flex items-center justify-center"
-      >
-        <motion.button
-          whileHover={{ 
-            scale: 1.05,
-            boxShadow: "0 20px 40px rgba(139, 92, 246, 0.3)"
-          }}
-          whileTap={{ scale: 0.98 }}
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ 
-            duration: 0.5, 
-            ease: "backOut",
-            delay: 0.2 
-          }}
-          onClick={() => {
-            // trigger stripe onboarding here
-            console.log("Connect Stripe");
-          }}
-          className="mx-auto group relative flex items-center gap-4 px-6 py-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-lg shadow-lg hover:shadow-2xl transition-all duration-300 focus:outline-none"
-        >
-          {/* Stripe logo container */}
-          <motion.div
-            whileHover={{ rotate: [-5, 5, -5] }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl px-4 py-2 flex items-center justify-center text-purple-600 font-bold text-lg"
-          >
-            stripe
-          </motion.div>
-
-          {/* Button text */}
-          <span className="whitespace-nowrap">
-            Connect with Stripe
-          </span>
-
-          {/* Arrow */}
-          <motion.div
-            animate={{ x: [0, 5, 0] }}
-            transition={{ 
-              duration: 1.5, 
-              repeat: Infinity,
-              repeatType: "loop",
-              ease: "easeInOut" 
-            }}
-          >
-            <ArrowRight size={22} />
-          </motion.div>
-          
-          {/* Pulsing glow effect */}
-          <motion.div
-            className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 blur-xl opacity-0 -z-10"
-            animate={{ opacity: [0, 0.3, 0] }}
-            transition={{ 
-              duration: 2, 
-              repeat: Infinity,
-              repeatType: "loop" 
-            }}
-          />
-        </motion.button>
-      </motion.div>
-    )}
-  </AnimatePresence>
-</div>
 
                 <div className="flex items-center justify-between mt-5">
                   <button
@@ -842,17 +834,29 @@ console.log("Response status:", response);
                   </button>
                   <button
                     type="button"
-                    onClick={async () => {
-                      if (activeStep < steps.length) {
-                        setActiveStep(activeStep + 1);
-                      } else {
-                        await HandleChangeSetUpStatus();
-                      }
-                    }}
-                    className="hidden md:flex items-center gap-2 px-6 py-3 bg-[#CF3FAD] text-white rounded-full hover:bg-[#CF3FAD]/80 transition-colors font-medium"
+                    disabled={loading}
+                    onClick={() => HandleNextButton()}
+                    className={`
+    hidden md:flex items-center gap-2 px-6 py-3 
+    text-white rounded-full font-medium
+    transition-all duration-300 ease-in-out
+    ${
+      loading
+        ? "bg-[#CF3FAD]/60 cursor-not-allowed"
+        : "bg-[#CF3FAD] hover:bg-[#CF3FAD]/80 cursor-pointer"
+    }
+  `}
                   >
                     Continue
-                    <ChevronRight className="w-5 h-5" />
+                    {loading ? (
+                      // Loading spinner
+                      <div className="w-5 h-5 relative">
+                        <div className="w-5 h-5 border-2 border-white/30 rounded-full"></div>
+                        <div className="w-5 h-5 border-2 border-t-white border-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+                      </div>
+                    ) : (
+                      <ChevronRight className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
 
@@ -860,13 +864,7 @@ console.log("Response status:", response);
                 <div className="mt-10 pt-8 border-t border-gray-200 md:hidden">
                   <button
                     type="button"
-                    onClick={() =>
-                      setActiveStep(
-                        activeStep < steps.length
-                          ? activeStep + 1
-                          : steps.length
-                      )
-                    }
+                    onClick={() => HandleNextButton()}
                     className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
                   >
                     Continue

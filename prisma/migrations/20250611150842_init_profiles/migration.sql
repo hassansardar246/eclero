@@ -45,7 +45,7 @@ CREATE TABLE "Profiles" (
     "hourlyRate" DOUBLE PRECISION,
     "availability" JSONB,
     "isAvailableNow" BOOLEAN,
-    'profile_setupped' BOOLEAN NOT NULL DEFAULT false,
+    "profile_setup" BOOLEAN NOT NULL DEFAULT false,
     "rating" DOUBLE PRECISION,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

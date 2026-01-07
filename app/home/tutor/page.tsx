@@ -25,7 +25,7 @@ export default function TutorHome() {
     rating: 0,
   });
   const [isAvailableNow, setIsAvailableNow] = useState(false);
-  const [freshAvailability, setFreshAvailability] = useState(false);
+  const [freshAvailability, setFreshAvailability] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
 
@@ -40,7 +40,7 @@ export default function TutorHome() {
           data: { user },
         } = await supabase.auth.getUser();
         if (!user) return;
-
+console.log("Fetched user:", user);
         const profileRes = await fetch(
           `/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`
         );
@@ -49,6 +49,7 @@ export default function TutorHome() {
           console.log("Fetched profile availability:", profile);
           setIsAvailableNow(profile.isAvailableNow || false);
           setFreshAvailability(profile.profile_setup || false);
+          setIsLoading(false);
         } else {
           console.error("Failed to fetch profile:", await profileRes.text());
         }
@@ -117,6 +118,15 @@ export default function TutorHome() {
     }
   };
 
+    if (isLoading || freshAvailability == null) {
+    return (
+      <div className="flex h-screen items-center justify-center" style={{
+        background: 'linear-gradient(to bottom, #2b3340, #23272f, #181a1b)'
+      }}>
+        <div className="text-lg text-white">Loading...</div>
+      </div>
+    );
+  }
   if (!freshAvailability) {
     return (
       <>

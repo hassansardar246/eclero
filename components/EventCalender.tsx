@@ -20,22 +20,27 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { DateRange } from "react-date-range";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import { EventDetailModal } from "./EventDetailModal";
 import { X } from "lucide-react";
 
 // Define TypeScript interfaces
 interface CalendarEvent {
-  id: number;
+  id: string;
   title: string;
   price: string;
   start: Date;
   end: Date;
+  start_time:any,
+  end_time:any
   allDay?: boolean;
 }
 
 interface SelectableProps {
   localizer?: DateLocalizer;
+  email:string,
+  id:string,
+  data?: CalendarEvent[];
 }
 
 interface SlotInfo {
@@ -51,6 +56,7 @@ interface EventFormData {
   startTime: string;
   endTime: string;
   date: string;
+  endDate: string;
 }
 
 // Set up moment localizer
@@ -66,7 +72,7 @@ const CustomEvent: React.FC<CustomEventProps> = ({ event, view }) => {
   const startTime = moment(event.start).format("h:mm A");
   const endTime = moment(event.end).format("h:mm A");
   const dateStr = moment(event.start).format("MMM D, YYYY");
-  
+
   const eventTypeColors: any = {
     lecture: "bg-blue-600",
     lab: "bg-green-600",
@@ -143,6 +149,7 @@ const EventModal: React.FC<EventModalProps> = ({
     startTime: moment(defaultStart).format("HH:mm"),
     endTime: moment(defaultEnd).format("HH:mm"),
     date: moment(defaultStart).format("YYYY-MM-DD"),
+    endDate: moment(defaultEnd).format("YYYY-MM-DD"),
   });
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -158,7 +165,10 @@ const EventModal: React.FC<EventModalProps> = ({
   // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node)
+      ) {
         setIsCalendarOpen(false);
       }
     };
@@ -168,17 +178,19 @@ const EventModal: React.FC<EventModalProps> = ({
   }, []);
 
   useEffect(() => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       startTime: moment(defaultStart).format("HH:mm"),
       endTime: moment(defaultEnd).format("HH:mm"),
       date: moment(defaultStart).format("YYYY-MM-DD"),
     }));
-    setDateRange([{
-      startDate: defaultStart,
-      endDate: defaultEnd,
-      key: "selection",
-    }]);
+    setDateRange([
+      {
+        startDate: defaultStart,
+        endDate: defaultEnd,
+        key: "selection",
+      },
+    ]);
   }, [defaultStart, defaultEnd]);
 
   if (!isOpen) return null;
@@ -186,8 +198,10 @@ const EventModal: React.FC<EventModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const startDateTime = moment(`${formData.date} ${formData.startTime}`).toDate();
-    const endDateTime = moment(`${formData.date} ${formData.endTime}`).toDate();
+    const startDateTime = moment(
+      `${formData.date} ${formData.startTime}`
+    ).toDate();
+    const endDateTime = moment(`${formData.endDate} ${formData.endTime}`).toDate();
 
     if (endDateTime <= startDateTime) {
       alert("End time must be after start time");
@@ -214,9 +228,11 @@ const EventModal: React.FC<EventModalProps> = ({
     console.log("Selected date range:", item.selection);
     setDateRange([item.selection]);
     const newDate = moment(item.selection.startDate).format("YYYY-MM-DD");
-    setFormData(prev => ({
+    const endDate = moment(item.selection.endDate).format("YYYY-MM-DD");
+    setFormData((prev) => ({
       ...prev,
       date: newDate,
+      endDate
     }));
   };
 
@@ -224,8 +240,10 @@ const EventModal: React.FC<EventModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-slate-100 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] min-h-[570px] scrollbar-hide overflow-y-auto">
         <div className="flex relative m-2.5 text-white h-24 rounded-md bg-slate-800 justify-between items-center border-b px-6 py-4">
-          <h3 className="text-xl font-semibold text-white">Create New Lecture/Event</h3>
-       <button
+          <h3 className="text-xl font-semibold text-white">
+            Create New Lecture/Event
+          </h3>
+          <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
@@ -235,20 +253,26 @@ const EventModal: React.FC<EventModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="mb-6" ref={calendarRef}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date:</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Date:
+            </label>
             <div className="relative">
               <div
                 onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer bg-white flex justify-between items-center hover:border-gray-400 transition-colors"
               >
                 <span>
-                  {dateRange[0]?.startDate ? format(dateRange[0].startDate, 'MM/dd/yyyy') : 'Start Date'} 
-                  {' - '}
-                  {dateRange[0]?.endDate ? format(dateRange[0].endDate, 'MM/dd/yyyy') : 'End Date'}
+                  {dateRange[0]?.startDate
+                    ? format(dateRange[0].startDate, "MM/dd/yyyy")
+                    : "Start Date"}
+                  {" - "}
+                  {dateRange[0]?.endDate
+                    ? format(dateRange[0].endDate, "MM/dd/yyyy")
+                    : "End Date"}
                 </span>
                 <span className="text-gray-500">📅</span>
               </div>
-              
+
               {isCalendarOpen && (
                 <div className="absolute top-full left-0 mt-1 z-10 bg-white border border-gray-300 rounded-lg shadow-lg">
                   <DateRange
@@ -308,7 +332,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 required
               />
             </div>
-               <div className="flex-1">
+            <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Session Price *
               </label>
@@ -332,10 +356,14 @@ const EventModal: React.FC<EventModalProps> = ({
             >
               Cancel
             </button> */}
-            <button type="button"
-              onClick={onClose} data-dialog-close="true" className="rounded-full border border-transparent px-5 py-2.5 text-center text-sm transition-all text-slate-600 hover:bg-slate-200 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" >
-        Cancel
-      </button>
+            <button
+              type="button"
+              onClick={onClose}
+              data-dialog-close="true"
+              className="rounded-full border border-transparent px-5 py-2.5 text-center text-sm transition-all text-slate-600 hover:bg-slate-200 focus:bg-slate-100 active:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
               className="px-5 py-2.5 bg-[#cf3fad] text-white rounded-full hover:bg-[#cf3fad]/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
@@ -350,70 +378,159 @@ const EventModal: React.FC<EventModalProps> = ({
 };
 
 // Main component
-export default function Selectable({ localizer: propLocalizer }: SelectableProps) {
-  const [myEvents, setEvents] = useState<CalendarEvent[]>([
-  ]);
+export default function Selectable({
+  localizer: propLocalizer,
+  email,
+  id,
+  data
+}: SelectableProps) {
+const transformEvents = (eventsData: any[]): CalendarEvent[] => {
+  return eventsData.map(event => {
+    // Use start_date and end_date if available
+    if (event.start_date && event.end_date) {
+      const startDate = new Date(event.start_date);
+      const endDate = new Date(event.end_date);
+      
+      // Combine date from start_date/end_date with time from start_time/end_time
+      const startTime = new Date(event.start_date);
+      const endTime = new Date(event.end_date);
+      
+      startDate.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+      endDate.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
+      
+      return {
+        id: event.id,
+        title: event.subject || 'Available Slot',
+        price: event.price?.toString() || '0',
+        start: startDate,
+        end: endDate,
+        start_time: event.start_time,
+        end_time: event.end_time,
+        allDay: false,
+        originalData: event
+      };
+    }
+    
+    // Fallback: If no start_date/end_date, use day_of_week logic (for recurring events)
+    const today = new Date();
+    const eventDay = new Date(today);
+    
+    const dayOfWeek = event.day_of_week || 0;
+    const currentDay = today.getDay();
+    const daysToAdd = (dayOfWeek - currentDay + 7) % 7;
+    eventDay.setDate(today.getDate() + daysToAdd);
+    
+    const startTime = new Date(event.start_time);
+    const endTime = new Date(event.end_time);
+    
+    const startDate = new Date(eventDay);
+    startDate.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+    
+    const endDate = new Date(eventDay);
+    endDate.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
+    
+    // If end is before start (crosses midnight), add one day to end
+    if (endDate < startDate) {
+      endDate.setDate(endDate.getDate() + 1);
+    }
+    
+    return {
+      id: event.id,
+      title: event.subject || 'Available Slot',
+      price: event.price?.toString() || '0',
+      start: startDate,
+      end: endDate,
+      start_time: event.start_time,
+      end_time: event.end_time,
+      allDay: false,
+      originalData: event
+    };
+  });
+};
+
+  const [myEvents, setEvents] = useState<CalendarEvent[]>(transformEvents(data || []));
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{
     start: Date;
     end: Date;
   } | null>(null);
-  
+
   const [currentView, setCurrentView] = useState<View>(Views.WEEK);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null
+  );
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const handleSelectSlot = useCallback(({ start, end }: SlotInfo) => {
     setSelectedSlot({ start, end });
     setModalOpen(true);
   }, []);
 
-    const handleSelectEvent = useCallback((event: CalendarEvent) => {
-    setSelectedEvent(event);
-    setDetailModalOpen(true);
-  }, []);
+  // const handleDeleteEvent = useCallback((eventId: string) => {
+  //   setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
+  // }, []);
 
-  const handleDeleteEvent = useCallback((eventId: number) => {
-    setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
-  }, []);
-
-  const handleCreateEvent = useCallback((formData: EventFormData) => {
-    const startDateTime = moment(`${formData.date} ${formData.startTime}`).toDate();
-    const endDateTime = moment(`${formData.date} ${formData.endTime}`).toDate();
+  const handleCreateEvent = useCallback(async(formData: EventFormData) => {
+    const startDateTime = moment(
+      `${formData.date} ${formData.startTime}`
+    ).toDate();
+    const endDateTime = moment(`${formData.endDate} ${formData.endTime}`).toDate();
 
     const newEvent: CalendarEvent = {
-      id: Date.now(),
+      id: Date.now() + "",
       title: formData.title,
       price: formData.price,
       start: startDateTime,
+      start_time: formData.startTime,
+      end_time: formData.endTime,
       end: endDateTime,
     };
 
     setEvents((prev) => [...prev, newEvent]);
+
+      try {
+      // setSaving(true);
+      // const slots = buildIntervals();
+      const res = await fetch('/api/tutor-availability/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, newEvent, id }),
+      });
+      if (!res.ok) {
+        console.error('Error saving availability', res);
+      }
+      // setMessage('Availability saved');
+      // setTimeout(() => setMessage(''), 2500);
+    } catch (e: any) {
+      // setMessage('Error saving availability');
+      // setTimeout(() => setMessage(''), 3500);
+    } finally {
+      // setSaving(false);
+    }
     setSelectedSlot(null);
     setModalOpen(false);
   }, []);
 
-//   const handleSelectEvent = useCallback((event: CalendarEvent) => {
-//     const eventDetails = `
-// 📚 ${event.title}
-// ${event.subjectCode ? `📋 Subject: ${event.subjectCode}\n` : ''}🎓 Type: ${event.lectureType.toUpperCase()}
-// 👨‍🏫 Instructor: ${event.instructor}
-// 📍 Location: ${event.location}
-// 🕐 Time: ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}
-// 📅 Date: ${moment(event.start).format('MMMM Do, YYYY')}
-// ${event.description ? `📝 Description: ${event.description}\n` : ''}
-//     `.trim();
+  //   const handleSelectEvent = useCallback((event: CalendarEvent) => {
+  //     const eventDetails = `
+  // 📚 ${event.title}
+  // ${event.subjectCode ? `📋 Subject: ${event.subjectCode}\n` : ''}🎓 Type: ${event.lectureType.toUpperCase()}
+  // 👨‍🏫 Instructor: ${event.instructor}
+  // 📍 Location: ${event.location}
+  // 🕐 Time: ${moment(event.start).format('h:mm A')} - ${moment(event.end).format('h:mm A')}
+  // 📅 Date: ${moment(event.start).format('MMMM Do, YYYY')}
+  // ${event.description ? `📝 Description: ${event.description}\n` : ''}
+  //     `.trim();
 
-//     const response = window.confirm(
-//       `${eventDetails}\n\nWould you like to delete this event?`
-//     );
+  //     const response = window.confirm(
+  //       `${eventDetails}\n\nWould you like to delete this event?`
+  //     );
 
-//     if (response) {
-//       setEvents((prev) => prev.filter((ev) => ev.id !== event.id));
-//     }
-//   }, []);
+  //     if (response) {
+  //       setEvents((prev) => prev.filter((ev) => ev.id !== event.id));
+  //     }
+  //   }, []);
 
   const handleViewChange = useCallback((view: View) => {
     setCurrentView(view);
@@ -423,27 +540,58 @@ export default function Selectable({ localizer: propLocalizer }: SelectableProps
     setCurrentDate(date);
   }, []);
 
+const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+const handleEventSelect = (event: any) => {
+  setSelectedEvent(event);
+  setIsDetailModalOpen(true);
+};
+
+const handleEventUpdate = async(eventId: string, updatedData: any) => {
+  // console.log(updatedData);
+  //  try {
+  //     const res = await fetch('/api/tutor-availability/update', {
+  //       method: 'put',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ id: eventId,updatedData }),
+  //     });
+  //     if (!res.ok) {
+  //       console.error('Error saving availability', res);
+  //     }
+  //   } catch (e: any) {
+  //   } finally {
+  //   }
+  setEvents(prev => prev.map(e => e.id === eventId ? updatedData : e));
+};
+
+const handleEventDelete = (eventId: string) => {
+  // Remove event from state
+  console.log('eventId',eventId)
+  setEvents(prev => prev.filter(e => e.id !== eventId));
+};
+
   // Custom components for different views
-  const components: Components<CalendarEvent> = useMemo(() => ({
-    event: (props) => (
-      <CustomEvent event={props.event} view={currentView} />
-    ),
-  }), [currentView]);
+  const components: Components<CalendarEvent> = useMemo(
+    () => ({
+      event: (props) => <CustomEvent event={props.event} view={currentView} />,
+    }),
+    [currentView]
+  );
 
   // Custom event style for background color
   const eventStyleGetter = useCallback((event: CalendarEvent) => {
-    const backgroundColor = 'green';
+    const backgroundColor = "green";
 
     return {
       style: {
         backgroundColor,
         opacity: 0.95,
-        color: 'white',
-        border: 'none',
-        display: 'block',
-        padding: '2px',
-        overflow: 'hidden',
-      }
+        color: "white",
+        border: "none",
+        display: "block",
+        padding: "2px",
+        overflow: "hidden",
+      },
     };
   }, []);
 
@@ -459,21 +607,24 @@ export default function Selectable({ localizer: propLocalizer }: SelectableProps
       <div className="min-h-screen bg-gray-50 p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 bg-white rounded-lg shadow p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Academic Calendar</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              Academic Calendar
+            </h1>
             <p className="text-gray-600 mb-4">
               Schedule and manage your lectures
             </p>
-            
+
             <div className="flex flex-wrap gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-blue-600"></div>
                 <span className="text-sm">Lecture</span>
               </div>
             </div>
-            
+
             <div className="flex justify-between items-center">
               <p className="text-gray-700">
-                Total Events: <span className="font-bold">{myEvents.length}</span>
+                Total Events:{" "}
+                <span className="font-bold">{myEvents.length}</span>
               </p>
             </div>
           </div>
@@ -487,7 +638,7 @@ export default function Selectable({ localizer: propLocalizer }: SelectableProps
                 onNavigate={handleNavigate}
                 events={myEvents}
                 localizer={propLocalizer || localizer}
-                onSelectEvent={handleSelectEvent}
+                onSelectEvent={handleEventSelect}
                 onSelectSlot={handleSelectSlot}
                 selectable
                 scrollToTime={scrollToTime}
@@ -498,9 +649,11 @@ export default function Selectable({ localizer: propLocalizer }: SelectableProps
                 eventPropGetter={eventStyleGetter}
                 popup
                 formats={{
-                  timeGutterFormat: 'h:mm A',
+                  timeGutterFormat: "h:mm A",
                   eventTimeRangeFormat: ({ start, end }) =>
-                    `${moment(start).format('h:mm A')} - ${moment(end).format('h:mm A')}`,
+                    `${moment(start).format("h:mm A")} - ${moment(end).format(
+                      "h:mm A"
+                    )}`,
                 }}
               />
             </div>
@@ -508,7 +661,7 @@ export default function Selectable({ localizer: propLocalizer }: SelectableProps
         </div>
       </div>
 
-    <EventModal
+      <EventModal
         isOpen={modalOpen}
         onClose={() => {
           setModalOpen(false);
@@ -520,15 +673,13 @@ export default function Selectable({ localizer: propLocalizer }: SelectableProps
       />
 
       {/* Event Detail Modal */}
-      <EventDetailModal
-        isOpen={detailModalOpen}
-        onClose={() => {
-          setDetailModalOpen(false);
-          setSelectedEvent(null);
-        }}
-        event={selectedEvent}
-        onDelete={handleDeleteEvent}
-      />
+     <EventDetailModal
+  isOpen={isDetailModalOpen}
+  onClose={() => setIsDetailModalOpen(false)}
+  event={selectedEvent}
+  onDelete={handleEventDelete}
+  onUpdate={handleEventUpdate}
+/>
     </>
   );
 }

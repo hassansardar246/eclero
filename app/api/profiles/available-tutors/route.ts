@@ -33,24 +33,24 @@ export async function GET(req: Request) {
         isAvailableNow: true,
         rating: true,
         education: true,
-        subjects: { select: { subject: { select: { id: true, name: true, code: true, grade: true } } } },
+        subjects: { select: { Subjects: { select: { id: true, name: true, code: true, grade: true } } } },
       },
       orderBy: { name: "asc" },
     });
 
     const tutorIds = tutors.map(t => t.id);
     const slots = await prisma.tutorAvailability.findMany({
-      where: { tutorId: { in: tutorIds }, isActive: true },
-      select: { tutorId: true, dayOfWeek: true, startTime: true, endTime: true, timezone: true },
+      where: { tutor_id: { in: tutorIds }, is_active: true },
+      select: { tutor_id: true, day_of_week: true, start_time: true, end_time: true, timezone: true },
     });
 
     const byTutor = new Map<string, { timezone: string; items: { dayOfWeek: number; start: string; end: string }[] }>();
     for (const s of slots) {
       const hhmm = (d: Date) => `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
-      const row = byTutor.get(s.tutorId) || { timezone: s.timezone || 'UTC', items: [] };
+      const row = byTutor.get(s.tutor_id) || { timezone: s.timezone || 'UTC', items: [] };
       row.timezone = row.timezone || s.timezone || 'UTC';
-      row.items.push({ dayOfWeek: s.dayOfWeek, start: hhmm(s.startTime), end: hhmm(s.endTime) });
-      byTutor.set(s.tutorId, row);
+      row.items.push({ dayOfWeek: s.day_of_week, start: hhmm(s.start_time), end: hhmm(s.end_time) });
+      byTutor.set(s.tutor_id, row);
     }
 
     const tutorsWithDerived = tutors.map(t => {

@@ -28,9 +28,10 @@ export async function GET(request: Request) {
         created_at: true,
         updated_at: true,
         profile_setup: true,
+        is_tutor: true,
         subjects: {
           select: {
-            subject: {
+            Subjects: {
               select: {
                 id: true,
                 name: true,

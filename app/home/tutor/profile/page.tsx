@@ -39,6 +39,7 @@ export default function TutorProfile() {
           setEditPhone(profileData.phone || "");
           setEditBio(profileData.bio || "");
           setEditHourlyRate(profileData.hourlyRate?.toString() || "");
+          console.log("Profile data in profile:", profileData);
 
           // Normalize selected subject ids from profile
           let normalizedSubjects: string[] = [];
@@ -46,12 +47,13 @@ export default function TutorProfile() {
             normalizedSubjects = profileData.subjects
               .map((s: any) => {
                 if (s && typeof s.id === "string") return s.id;
-                if (s && s.subject && typeof s.subject.id === "string") return s.subject.id;
+                if (s && s.Subjects && typeof s.Subjects.id === "string") return s.Subjects.id;
                 return undefined;
               })
               .filter((id: any): id is string => typeof id === "string" && id.length > 0);
           }
           setSubjects(normalizedSubjects);
+          console.log("Normalized subjects:", normalizedSubjects);
         }
         setLoading(false);
       } catch (error) {
@@ -146,9 +148,9 @@ export default function TutorProfile() {
                     {/* Display selected subject chips based on local state for consistency */}
                     {Array.isArray(profile.subjects) && profile.subjects.length > 0
                       ? profile.subjects.map((subj: any) => (
-                          <span key={subj.subject?.id || subj.id || subj.subject?.code || subj.code}
+                          <span key={subj.Subjects?.id || subj.id || subj.Subjects?.code || subj.code}
                                 className="bg-gradient-to-r from-blue-400 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                            {(subj.subject?.name || subj.name) ?? "Subject"} ({(subj.subject?.code || subj.code) ?? ""})
+                            {(subj.Subjects?.name || subj.name) ?? "Subject"} ({(subj.Subjects?.code || subj.code) ?? ""})
                           </span>
                         ))
                       : null}

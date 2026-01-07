@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BookOpen,
   Calculator,
@@ -9,109 +9,249 @@ import {
   X,
   CheckCircle,
   XCircle,
+  Briefcase,
+  Heart,
+  Palette,
+  Users,
 } from "lucide-react";
 
-type SubjectKey =
-  | "English"
-  | "Math"
-  | "Science"
-  | "History"
-  | "Computer Science"
-  | "Languages";
+type SubjectKey = string;
 
-const SUBJECTS: {
-  key: SubjectKey;
-  icon: any;
-  color: string;
-  subcategories: string[];
-}[] = [
+// Icon mapping for different categories
+const CATEGORY_ICONS: Record<string, any> = {
+  "Business": Briefcase,
+  "English": BookOpen,
+  "French": MessageCircle,
+  "Health and Phys Ed": Heart,
+  "Mathematics": Calculator,
+  "Science": Microscope,
+  "Social Sciences": Users,
+  "The Arts": Palette,
+};
+
+// Color mapping for different categories
+const CATEGORY_COLORS: Record<string, string> = {
+  "Business": "from-blue-500 to-indigo-500",
+  "English": "from-pink-500 to-purple-500",
+  "French": "from-rose-500 to-pink-500",
+  "Health and Phys Ed": "from-emerald-500 to-teal-500",
+  "Mathematics": "from-purple-500 to-indigo-500",
+  "Science": "from-blue-500 to-cyan-500",
+  "Social Sciences": "from-yellow-500 to-orange-500",
+  "The Arts": "from-violet-500 to-purple-500",
+};
+
+// Default categories data in case none is provided
+const DEFAULT_CATEGORIES = [
   {
-    key: "English",
-    icon: BookOpen,
-    color: "from-pink-500 to-purple-500",
-    subcategories: ["Grammar", "Writing", "Literature", "Comprehension"],
+    name: "Business",
+    subjects: [
+      { id: "1", name: "Accounting", code: "ACC", grade: 10 },
+      { id: "2", name: "Business Studies", code: "BUS", grade: 10 },
+      { id: "3", name: "Entrepreneurship", code: "ENT", grade: 11 },
+      { id: "4", name: "Finance", code: "FIN", grade: 12 },
+      { id: "5", name: "Marketing", code: "MKT", grade: 11 },
+      { id: "6", name: "Management", code: "MGT", grade: 12 }
+    ]
   },
   {
-    key: "Math",
-    icon: Calculator,
-    color: "from-purple-500 to-indigo-500",
-    subcategories: [
-      "Algebra",
-      "Geometry",
-      "Calculus",
-      "Statistics",
-      "Trigonometry",
-      "Probability",
-    ],
+    name: "English",
+    subjects: [
+      { id: "7", name: "Literature", code: "LIT", grade: 9 },
+      { id: "8", name: "Writing", code: "WRT", grade: 9 },
+      { id: "9", name: "Grammar", code: "GRAM", grade: 9 },
+      { id: "10", name: "Comprehension", code: "COMP", grade: 10 },
+      { id: "11", name: "Creative Writing", code: "CRW", grade: 11 }
+    ]
   },
   {
-    key: "Science",
-    icon: Microscope,
-    color: "from-blue-500 to-cyan-500",
-    subcategories: ["Physics", "Chemistry", "Biology", "Earth Science"],
+    name: "Health and Phys Ed",
+    subjects: [
+      { id: "12", name: "Physical Education", code: "PE", grade: 9 },
+      { id: "13", name: "Health Science", code: "HSC", grade: 10 },
+      { id: "14", name: "Nutrition", code: "NUT", grade: 11 },
+      { id: "15", name: "Anatomy", code: "ANA", grade: 12 },
+      { id: "16", name: "First Aid", code: "FAID", grade: 10 },
+      { id: "17", name: "Sports Science", code: "SPSC", grade: 12 }
+    ]
   },
   {
-    key: "History",
-    icon: Landmark,
-    color: "from-yellow-500 to-orange-500",
-    subcategories: ["World History", "Islamic History", "Modern History"],
+    name: "Mathematics",
+    subjects: [
+      { id: "18", name: "Algebra", code: "ALG", grade: 9 },
+      { id: "19", name: "Geometry", code: "GEO", grade: 10 },
+      { id: "20", name: "Calculus", code: "CALC", grade: 12 },
+      { id: "21", name: "Statistics", code: "STAT", grade: 11 },
+      { id: "22", name: "Trigonometry", code: "TRIG", grade: 11 }
+    ]
   },
   {
-    key: "Computer Science",
-    icon: Monitor,
-    color: "from-emerald-500 to-teal-500",
-    subcategories: ["Programming", "Databases", "Web Development", "AI Basics"],
+    name: "Science",
+    subjects: [
+      { id: "23", name: "Physics", code: "PHY", grade: 11 },
+      { id: "24", name: "Chemistry", code: "CHEM", grade: 11 },
+      { id: "25", name: "Biology", code: "BIO", grade: 10 },
+      { id: "26", name: "Earth Science", code: "EARTH", grade: 9 },
+      { id: "27", name: "Environmental Science", code: "ENV", grade: 11 },
+      { id: "28", name: "Astronomy", code: "ASTRO", grade: 12 },
+      { id: "29", name: "Computer Science", code: "CS", grade: 10 },
+      { id: "30", name: "Engineering", code: "ENG", grade: 12 }
+    ]
   },
   {
-    key: "Languages",
-    icon: MessageCircle,
-    color: "from-rose-500 to-pink-500",
-    subcategories: ["Urdu", "Arabic", "French", "Spanish"],
+    name: "Social Sciences",
+    subjects: [
+      { id: "31", name: "History", code: "HIST", grade: 10 },
+      { id: "32", name: "Geography", code: "GEOG", grade: 9 },
+      { id: "33", name: "Economics", code: "ECON", grade: 12 },
+      { id: "34", name: "Political Science", code: "POLI", grade: 11 },
+      { id: "35", name: "Psychology", code: "PSYC", grade: 12 },
+      { id: "36", name: "Sociology", code: "SOC", grade: 11 }
+    ]
   },
+  {
+    name: "The Arts",
+    subjects: [
+      { id: "37", name: "Visual Arts", code: "ART", grade: 9 },
+      { id: "38", name: "Music", code: "MUS", grade: 10 },
+      { id: "39", name: "Drama", code: "DRAMA", grade: 11 },
+      { id: "40", name: "Dance", code: "DANCE", grade: 10 },
+      { id: "41", name: "Art History", code: "AHIST", grade: 12 },
+      { id: "42", name: "Photography", code: "PHOTO", grade: 11 }
+    ]
+  }
 ];
 
-export default function SelectSubject() {
+interface SelectSubjectProps {
+  categories?: Array<{
+    name: string;
+    subjects: Array<{
+      id: string;
+      name: string;
+      code: string;
+      grade?: number;
+    }>;
+  }>;
+  selectedSubjects?: Array<{
+    id: string;
+    name: string;
+    code: string;
+    grade?: number;
+  }>;
+  onSubjectsChange?: (subjects: Array<{
+    id: string;
+    name: string;
+    code: string;
+    grade?: number;
+  }>) => void;
+}
+
+export default function SelectSubject({ 
+  categories = DEFAULT_CATEGORIES, 
+  selectedSubjects: initialSelectedSubjects = [],
+  onSubjectsChange 
+}: SelectSubjectProps) {
   const [activeSubject, setActiveSubject] = useState<SubjectKey | null>(null);
-  const [selectedSubs, setSelectedSubs] = useState<Record<string, string[]>>(
-    {}
-  );
+  const [selectedSubjects, setSelectedSubjects] = useState<Array<{
+    id: string;
+    name: string;
+    code: string;
+    grade?: number;
+  }>>(initialSelectedSubjects);
 
-  const toggleSub = (subject: SubjectKey, sub: string) => {
-    setSelectedSubs((prev) => {
-      const current = prev[subject] || [];
-      return {
-        ...prev,
-        [subject]: current.includes(sub)
-          ? current.filter((s) => s !== sub)
-          : [...current, sub],
-      };
+  // Group selected subjects by category for display
+  const getSelectedSubjectsByCategory = () => {
+    const grouped: Record<string, any[]> = {};
+    
+    selectedSubjects.forEach(subject => {
+      // Find which category this subject belongs to
+      const category = categories.find(cat => 
+        cat.subjects.some(s => s.id === subject.id || s.name === subject.name)
+      );
+      
+      if (category) {
+        if (!grouped[category.name]) {
+          grouped[category.name] = [];
+        }
+        grouped[category.name].push(subject);
+      }
+    });
+    
+    return grouped;
+  };
+console.log("Selected subjects576:", selectedSubjects);
+  const toggleSubject = (subject: { id: string; name: string; code: string; grade?: number }) => {
+    let newSubjects = null;
+    setSelectedSubjects(prev => {
+      const isAlreadySelected = prev.some(s => s.id === subject.id);
+      
+      if (isAlreadySelected) {
+        newSubjects = prev.filter(s => s.id !== subject.id);
+      } else {
+        newSubjects = [...prev, subject];
+      }
+                if (onSubjectsChange) {
+        onSubjectsChange(newSubjects || []);
+      }
+      return newSubjects;
+    });
+
+  };
+
+  const removeSubject = (subjectId: string) => {
+    let newSubjects = null;
+    setSelectedSubjects(prev => {
+       newSubjects = prev.filter(s => s.id !== subjectId);
+      return newSubjects;
+    });
+      if (onSubjectsChange) {
+        onSubjectsChange(newSubjects || []);
+      }
+  };
+
+  const removeAllSubjectsFromCategory = (categoryName: string) => {
+    setSelectedSubjects(prev => {
+      // Get all subject IDs from this category
+      const category = categories.find(c => c.name === categoryName);
+      if (!category) return prev;
+      
+      const categorySubjectIds = category.subjects.map(s => s.id);
+      const newSubjects = prev.filter(s => !categorySubjectIds.includes(s.id));
+      
+      if (onSubjectsChange) {
+        onSubjectsChange(newSubjects);
+      }
+      
+      return newSubjects;
     });
   };
 
-  // Get total selected count
-  const totalSelected = Object.values(selectedSubs).reduce(
-    (sum, subs) => sum + subs.length,
-    0
-  );
-
-  // Get subjects that have selections
-  const selectedSubjects = Object.keys(selectedSubs).filter(
-    (subject) => selectedSubs[subject]?.length > 0
-  );
-
-  // Remove a subject entirely
-  const removeSubject = (subject: SubjectKey) => {
-    setSelectedSubs((prev) => {
-      const newSelected = { ...prev };
-      delete newSelected[subject];
-      return newSelected;
-    });
+  // Get icon for category
+  const getIconForCategory = (categoryName: string) => {
+    return CATEGORY_ICONS[categoryName] || BookOpen;
   };
 
-  // Remove a specific subcategory
-  const removeSubcategory = (subject: SubjectKey, sub: string) => {
-    toggleSub(subject, sub);
+  // Get color for category
+  const getColorForCategory = (categoryName: string) => {
+    return CATEGORY_COLORS[categoryName] || "from-gray-500 to-gray-700";
   };
+
+  // Check if a subject is selected
+  const isSubjectSelected = (subjectId: string) => {
+    return selectedSubjects.some(s => s.id === subjectId);
+  };
+
+  // Get selected count for a category
+  const getSelectedCountForCategory = (categoryName: string) => {
+    const category = categories.find(c => c.name === categoryName);
+    if (!category) return 0;
+    
+    return selectedSubjects.filter(s => 
+      category.subjects.some(cs => cs.id === s.id)
+    ).length;
+  };
+
+  const selectedByCategory = getSelectedSubjectsByCategory();
 
   return (
     <div className="space-y-8">
@@ -119,102 +259,85 @@ export default function SelectSubject() {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Select Grade
         </label>
-
         <div className="relative">
-          {/* Decorative top border */}
           <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-
-          {/* Input wrapper with gradient border */}
           <div className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100">
             <div className="flex items-center">
-              {/* Input field */}
               <div className="flex-1 px-4">
                 <select
                   name="grade"
-                  // value={grade}
-                  // onChange={(e) => onChange(e)}
                   className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
                 >
-                  <option value="" className="">
-                    Choose a grade
-                  </option>
-                  <option value="1" className="">
-                    All
-                  </option>
-                  <option value="2" className="">
-                    9th
-                  </option>
-                  <option value="3" className="">
-                    10th
-                  </option>
-                  <option value="4" className="">
-                    11th
-                  </option>
-                  <option value="5" className="">
-                    12th
-                  </option>
+                  <option value="">Choose a grade</option>
+                  <option value="all">All Grades</option>
+                  <option value="9">9th Grade</option>
+                  <option value="10">10th Grade</option>
+                  <option value="11">11th Grade</option>
+                  <option value="12">12th Grade</option>
+                  <option value="college">College Level</option>
                 </select>
               </div>
             </div>
           </div>
-
-          {/* Decorative bottom border */}
           <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
         </div>
       </div>
+      
       {/* Selected Subjects Display */}
-      {selectedSubjects.length > 0 && (
+      {Object.keys(selectedByCategory).length > 0 && (
         <div className="">
           <div className="gap-3 flex items-center flex-wrap">
-            {selectedSubjects.map((subjectKey) => {
-              const subject = SUBJECTS.find((s) => s.key === subjectKey);
-              const selectedSubcategories = selectedSubs[subjectKey] || [];
-              const Icon = subject?.icon;
+            {Object.entries(selectedByCategory).map(([categoryName, subjects]) => {
+              const Icon = getIconForCategory(categoryName);
+              const color = getColorForCategory(categoryName);
 
               return (
                 <div
-                  key={subjectKey}
+                  key={categoryName}
                   className="border border-gray-200 flex-1 min-w-[40%] max-w-[50%] rounded-xl p-4"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-lg bg-gradient-to-br ${subject?.color} text-white flex items-center justify-center`}
+                        className={`w-10 h-10 rounded-lg bg-gradient-to-br ${color} text-white flex items-center justify-center`}
                       >
                         {Icon && <Icon size={18} />}
                       </div>
                       <div>
                         <h4 className="font-medium text-gray-900">
-                          {subjectKey}
+                          {categoryName}
                         </h4>
                         <p className="text-xs text-gray-500">
-                          {selectedSubcategories.length} topic
-                          {selectedSubcategories.length !== 1 ? "s" : ""}{" "}
+                          {subjects.length} subject
+                          {subjects.length !== 1 ? "s" : ""}{" "}
                           selected
                         </p>
                       </div>
                     </div>
                     <button
-                      onClick={() => removeSubject(subjectKey as SubjectKey)}
+                      onClick={() => removeAllSubjectsFromCategory(categoryName)}
                       className="text-gray-400 hover:text-gray-600"
-                      title="Remove subject"
+                      title="Remove all subjects from this category"
                     >
                       <XCircle size={18} />
                     </button>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {selectedSubcategories.map((sub) => (
+                    {subjects.map((subject) => (
                       <div
-                        key={sub}
+                        key={subject.id}
                         className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg text-sm"
                       >
                         <CheckCircle size={14} className="text-purple-500" />
-                        <span>{sub}</span>
+                        <span>{subject.name}</span>
+                        {subject.code && (
+                          <span className="text-xs text-purple-500 ml-1">
+                            ({subject.code})
+                          </span>
+                        )}
                         <button
-                          onClick={() =>
-                            removeSubcategory(subjectKey as SubjectKey, sub)
-                          }
+                          onClick={() => removeSubject(subject.id)}
                           className="text-purple-400 hover:text-purple-600 ml-1"
                         >
                           <X size={14} />
@@ -229,21 +352,22 @@ export default function SelectSubject() {
         </div>
       )}
 
-      {/* Subject Selection Grid */}
+      {/* Category Selection Grid */}
       <div
         className={`w-full ${
-          selectedSubjects.length > 0 ? "" : "mt-12"
+          Object.keys(selectedByCategory).length > 0 ? "" : "mt-12"
         } h-full grid grid-cols-12 gap-8`}
       >
-        {/* Main Content */}
         <main className="col-span-12">
           <div className="grid grid-cols-3 gap-4 relative">
-            {SUBJECTS.map((subject, index) => {
-              const Icon = subject.icon;
-              const isActive = activeSubject === subject.key;
+            {categories.map((category, index) => {
+              const Icon = getIconForCategory(category.name);
+              const color = getColorForCategory(category.name);
+              const isActive = activeSubject === category.name;
+              const selectedCount = getSelectedCountForCategory(category.name);
 
               // Calculate column position for panel alignment
-              const columnPosition = (index % 3) + 1; // 1, 2, or 3
+              const columnPosition = (index % 3) + 1;
               const panelPosition =
                 columnPosition === 3
                   ? "right"
@@ -251,43 +375,35 @@ export default function SelectSubject() {
                   ? "center"
                   : "left";
 
-              // Check if subject has any selections
-              const hasSelections = selectedSubs[subject.key]?.length > 0;
-
               return (
-                <div key={subject.key} className="relative">
+                <div key={category.name} className="relative">
                   <button
                     onClick={() =>
-                      setActiveSubject(isActive ? null : subject.key)
+                      setActiveSubject(isActive ? null : category.name)
                     }
                     className={`relative rounded-2xl border p-5 flex items-center gap-4 transition-all w-full
                     ${
                       isActive
                         ? "border-purple-500 bg-purple-50"
-                        : hasSelections
+                        : selectedCount > 0
                         ? "border-purple-300 bg-purple-50/50"
                         : "hover:border-gray-300"
                     }`}
                   >
                     <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${subject.color} text-white flex items-center justify-center relative`}
+                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} text-white flex items-center justify-center relative`}
                     >
                       <Icon size={22} />
-                      {hasSelections && (
+                      {selectedCount > 0 && (
                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center text-xs text-white">
-                          {selectedSubs[subject.key]?.length}
+                          {selectedCount}
                         </div>
                       )}
                     </div>
-                    <span className="font-sm">{subject.key}</span>
-                    {/* {hasSelections && (
-                      <div className="ml-auto">
-                        <CheckCircle size={18} className="text-purple-500" />
-                      </div>
-                    )} */}
+                    <span className="font-sm">{category.name}</span>
                   </button>
 
-                  {/* Subcategory Panel - Positioned under the active subject */}
+                  {/* Subcategory Panel - Positioned under the active category */}
                   {isActive && (
                     <div
                       className={`absolute top-full z-10 mt-3 ${
@@ -298,7 +414,6 @@ export default function SelectSubject() {
                           : "left-0"
                       }`}
                     >
-                      {/* Triangle tip */}
                       <div className="relative">
                         <div
                           className={`absolute -top-2 w-4 h-4 bg-white border-l border-t border-gray-200 transform rotate-45 ${
@@ -310,11 +425,10 @@ export default function SelectSubject() {
                           }`}
                         ></div>
 
-                        {/* Panel */}
                         <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-6 w-80">
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-semibold">
-                              {activeSubject}
+                              {category.name}
                             </h3>
                             <button
                               onClick={() => setActiveSubject(null)}
@@ -325,24 +439,23 @@ export default function SelectSubject() {
                           </div>
 
                           <div className="grid grid-cols-2 gap-3">
-                            {SUBJECTS.find(
-                              (s) => s.key === activeSubject
-                            )!.subcategories.map((sub) => {
-                              const selected =
-                                selectedSubs[activeSubject]?.includes(sub);
+                            {category.subjects.map((subject) => {
+                              const selected = isSubjectSelected(subject.id);
 
                               return (
                                 <button
-                                  key={sub}
-                                  onClick={() => toggleSub(activeSubject, sub)}
-                                  className={`rounded-xl border px-4 py-2 text-sm transition flex items-center justify-center gap-2 ${
+                                  key={subject.id}
+                                  onClick={() => toggleSubject(subject)}
+                                  className={`rounded-xl border px-4 py-2 text-sm transition flex flex-col justify-start items-start gap-2 ${
                                     selected
                                       ? "bg-purple-600 text-white border-purple-600"
                                       : "hover:border-gray-400"
                                   }`}
                                 >
-                                  {selected && <CheckCircle size={14} />}
-                                  {sub}
+                                  <div className="flex items-start justify-start gap-2">
+                                    {/* {selected && <CheckCircle size={14} />} */}
+                                    <span className="block">{subject.name}</span>
+                                  </div>
                                 </button>
                               );
                             })}
@@ -357,6 +470,7 @@ export default function SelectSubject() {
           </div>
         </main>
       </div>
+    
     </div>
   );
 }

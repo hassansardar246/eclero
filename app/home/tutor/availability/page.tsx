@@ -42,37 +42,11 @@ function addMinutes(t: string, minutes: number) {
 }
 
 export default function TutorAvailability() {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [timezone, setTimezone] = useState<string>('UTC');
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string>('');
+  const [data, setData] = useState([]);
   const [email, setEmail] = useState<string>('');
-  // (UI was simplified; week offset removed)
-
-  // Range helper for batch apply
-  const [rangeStart, setRangeStart] = useState<string>('09:00');
-  const [rangeEnd, setRangeEnd] = useState<string>('17:00');
-
-  const ALLOWED_TZS: { value: string; label: string }[] = [
-    { value: 'America/New_York', label: 'ET (Eastern)' },
-    { value: 'America/Chicago', label: 'CT (Central)' },
-    { value: 'America/Denver', label: 'MT (Mountain)' },
-    { value: 'America/Los_Angeles', label: 'PT (Pacific)' },
-    { value: 'UTC', label: 'UTC' },
-  ];
-
-  function mapSystemTzToAllowed(sysTz: string | undefined): string {
-    const s = sysTz || '';
-    const map: { re: RegExp; target: string }[] = [
-      { re: /^America\/(New_York|Toronto|Detroit|Montreal|Nassau|Indiana|Kentucky|Louisville)/, target: 'America/New_York' },
-      { re: /^America\/(Chicago|Winnipeg|Mexico_City|Guatemala|Belize)/, target: 'America/Chicago' },
-      { re: /^America\/(Denver|Phoenix|Edmonton)/, target: 'America/Denver' },
-      { re: /^America\/(Los_Angeles|Vancouver|Tijuana)/, target: 'America/Los_Angeles' },
-    ];
-    for (const m of map) if (m.re.test(s)) return m.target;
-    return 'UTC';
-  }
+  const [id, setId] = useState<string>('');
+  // (UI was simplified; week offset removed
 
   useEffect(() => {
     const init = async () => {
@@ -83,157 +57,20 @@ export default function TutorAvailability() {
           return;
         }
         setEmail(user.email);
+        setId(user.id);
         const res = await fetch(`/api/tutor-availability/get?email=${encodeURIComponent(user.email)}`);
         if (res.ok) {
           const data = await res.json();
-          const savedTz: string | undefined = data.timezone;
-          const allowedValues = ALLOWED_TZS.map(t => t.value);
-          if (savedTz && allowedValues.includes(savedTz)) {
-            setTimezone(savedTz);
-          } else {
-            setTimezone(mapSystemTzToAllowed(Intl.DateTimeFormat().resolvedOptions().timeZone));
-          }
-          // Mark all 30-min slots covered by intervals as selected
-          const next = new Set<string>();
-          (data.slots as ApiSlot[]).forEach((s) => {
-            let t = s.start;
-            while (t < s.end) {
-              next.add(`${s.dayOfWeek}-${t}`);
-              t = addMinutes(t, 30);
-            }
-          });
-          setSelected(next);
-        } else {
-          setTimezone(mapSystemTzToAllowed(Intl.DateTimeFormat().resolvedOptions().timeZone));
+          console.log('Tutor availability data222:', data);
+          setData(data);
         }
       } catch (e) {
-        setTimezone(mapSystemTzToAllowed(Intl.DateTimeFormat().resolvedOptions().timeZone));
       } finally {
         setLoading(false);
       }
     };
     init();
   }, []);
-
-  const toggleCell = (dayIdx: number, time: string) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      const key = `${dayIdx}-${time}`;
-      if (next.has(key)) next.delete(key); else next.add(key);
-      return next;
-    });
-  };
-
-  const toggleDayAll = (dayIdx: number) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      const allSelected = TIMES.every(t => next.has(`${dayIdx}-${t}`));
-      TIMES.forEach(t => {
-        const k = `${dayIdx}-${t}`;
-        if (allSelected) next.delete(k); else next.add(k);
-      });
-      return next;
-    });
-  };
-
-  const applyRangeAllDays = () => {
-    if (rangeEnd <= rangeStart) return;
-    setSelected(prev => {
-      const next = new Set(prev);
-      DAYS.forEach(({ idx }) => {
-        let t = rangeStart;
-        while (t < rangeEnd) {
-          next.add(`${idx}-${t}`);
-          t = addMinutes(t, 30);
-        }
-      });
-      return next;
-    });
-  };
-
-  const clearAll = () => setSelected(new Set());
-
-  function buildIntervals(): ApiSlot[] {
-    // For each day, merge contiguous 30-min slots
-    const out: ApiSlot[] = [];
-    DAYS.forEach(({ idx }) => {
-      const times = TIMES.filter(t => selected.has(`${idx}-${t}`));
-      if (!times.length) return;
-      // iterate groups
-      let groupStart: string | null = null;
-      let prev: string | null = null;
-      const flush = () => {
-        if (groupStart && prev) {
-          out.push({ dayOfWeek: idx, start: groupStart, end: addMinutes(prev, 30) });
-        }
-        groupStart = null;
-        prev = null;
-      };
-      for (const t of times) {
-        if (!groupStart) {
-          groupStart = t;
-          prev = t;
-        } else {
-          // check continuity with prev
-          const nextOfPrev = addMinutes(prev!, 30);
-          if (t === nextOfPrev) {
-            prev = t;
-          } else {
-            flush();
-            groupStart = t;
-            prev = t;
-          }
-        }
-      }
-      flush();
-    });
-    return out;
-  }
-
-  const save = async () => {
-    try {
-      setSaving(true);
-      const slots = buildIntervals();
-      const res = await fetch('/api/tutor-availability/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userEmail: email, timezone, slots }),
-      });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt);
-      }
-      setMessage('Availability saved');
-      setTimeout(() => setMessage(''), 2500);
-    } catch (e: any) {
-      setMessage('Error saving availability');
-      setTimeout(() => setMessage(''), 3500);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const reload = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/tutor-availability/get?email=${encodeURIComponent(email)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setTimezone(data.timezone || timezone);
-        const next = new Set<string>();
-        (data.slots as ApiSlot[]).forEach((s) => {
-          let t = s.start;
-          while (t < s.end) {
-            next.add(`${s.dayOfWeek}-${t}`);
-            t = addMinutes(t, 30);
-          }
-        });
-        setSelected(next);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -242,12 +79,10 @@ export default function TutorAvailability() {
       </div>
     );
   }
-
-  // Simplified UI: no week date header
 const localizer = momentLocalizer(moment)
   return (
     <>
-      <Selectable localizer={localizer} />
+      <Selectable localizer={localizer} email={email} id={id} data={data} />
     </>
 
   );
