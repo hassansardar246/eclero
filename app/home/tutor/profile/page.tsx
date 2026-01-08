@@ -1,14 +1,10 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import Button from "@/components/ui/components/ui/button/Button";
-import SubjectSelector from "@/components/SubjectSelector";
-import { Modal } from "@/components/ui/components/ui/modal";
 import TiptapEditor from "@/components/RichTextEditor";
 import Swal from "sweetalert2";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import SubjectSelectProfile from "@/components/ui/components/SubjectSelectProfile";
 export type Subjects = {
   id: string;
@@ -32,8 +28,6 @@ export default function TutorProfile() {
   const [editBio, setEditBio] = useState("");
   const [editHourlyRate, setEditHourlyRate] = useState("");
   const [saving, setSaving] = useState(false);
-  const [subjects, setSubjects] = useState<string[]>([]);
-  const [subjectsModalOpen, setSubjectsModalOpen] = useState(false);
   const router = useRouter();
 
   const [educationText, setEducationText] = useState<string>("");
@@ -82,7 +76,6 @@ export default function TutorProfile() {
                   typeof id === "string" && id.length > 0
               );
           }
-          setSubjects(normalizedSubjects);
           console.log("Normalized subjects:", normalizedSubjects);
         }
         setLoading(false);
