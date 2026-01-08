@@ -62,7 +62,10 @@ export default function TutorProfile() {
           setEditHourlyRate(profileData.hourlyRate?.toString() || "");
           console.log("Profile data in profile:", profileData);
           if (profileData.education) {
-            setEducationText(profileData.education);
+            // Ensure it's a string
+            setEducationText(String(profileData.education) || "");
+          } else {
+            setEducationText(""); // Set empty string if undefined/null
           }
           // Normalize selected subject ids from profile
           let normalizedSubjects: string[] = [];
@@ -489,8 +492,6 @@ export default function TutorProfile() {
           </section>
         </div>
       </div>
-
-      {/* Courses Modal (unchanged) */}
     </div>
   );
 }
