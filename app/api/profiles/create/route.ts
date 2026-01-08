@@ -5,8 +5,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    console.log("[API] Received body:", body);
-
     const { id, email, name, role, profile_setup } = body;
 
     if (!id || !email || !name || !role) {
@@ -25,8 +23,6 @@ export async function POST(req: Request) {
         profile_setup: profile_setup ?? false
       }
     });
-
-    console.log("[API] Profile created:", profile);
 
     return NextResponse.json(profile);
 

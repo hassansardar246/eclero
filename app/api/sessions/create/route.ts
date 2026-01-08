@@ -4,7 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('📝 Creating session...');
 
     // Create server-side Supabase client with service role key
     const supabase = createClient(
@@ -18,7 +17,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing tutorId or studentId' }, { status: 400 });
     }
 
-    console.log('📊 Inserting session data...');
 
     // Insert new Session
     const { data, error } = await supabase

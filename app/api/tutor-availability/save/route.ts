@@ -7,86 +7,67 @@ function isValidTimeString(t: string) {
   return /^\d{2}:\d{2}$/.test(t);
 }
 
+// Build a Date from date (YYYY-MM-DD) and time (HH:mm) in local time to preserve wall clock
+function toDateTime(dateStr: string, timeStr: string): Date {
+  return new Date(`${dateStr}T${timeStr}:00`);
+}
+
+// For @db.Time fields we can still store as UTC time-only
 function toTimeDate(time: string): Date {
-  // Expect HH:mm, store as 1970-01-01T..Z to preserve time component only
-  return new Date(`1970-01-01T${time}:00.000Z`);
+  const [hh, mm] = time.split(":").map(Number);
+  return new Date(Date.UTC(1970, 0, 1, hh, mm, 0, 0));
 }
 
 export async function POST(req: Request) {
   try {
-    const { email, newEvent, id } = await req.json();
-    console.log('[TUTOR_AVAILABILITY_SAVE] Received request:', { newEvent});
-    // return;
+    const { email, newEvent } = await req.json();
 
     if (!email && !newEvent) {
-      return NextResponse.json({ error: 'userEmail or tutorId is required' }, { status: 400 });
+      return NextResponse.json({ error: "userEmail or tutorId is required" }, { status: 400 });
     }
 
     // Resolve tutor id
     let resolvedTutorId: any;
     if (email) {
-      const profile = await prisma.profiles.findUnique({ where: { email: email }, select: { id: true } });
-      if (!profile) return NextResponse.json({ error: 'Tutor not found' }, { status: 404 });
+      const profile = await prisma.profiles.findUnique({
+        where: { email },
+        select: { id: true },
+      });
+      if (!profile) return NextResponse.json({ error: "Tutor not found" }, { status: 404 });
       resolvedTutorId = profile.id;
     }
     if (!resolvedTutorId) {
-      return NextResponse.json({ error: 'Could not resolve tutorId' }, { status: 400 });
+      return NextResponse.json({ error: "Could not resolve tutorId" }, { status: 400 });
     }
 
-    // Validate slots
-    // const toCreate: SlotInput[] = [];
-    // for (const s of slots as SlotInput[]) {
-    //   if (typeof s.dayOfWeek !== 'number' || s.dayOfWeek < 0 || s.dayOfWeek > 6) {
-    //     return NextResponse.json({ error: 'Invalid dayOfWeek' }, { status: 400 });
-    //   }
-    //   if (!isValidTimeString(s.start) || !isValidTimeString(s.end)) {
-    //     return NextResponse.json({ error: 'Invalid time format (HH:mm expected)' }, { status: 400 });
-    //   }
-    //   if (s.start === s.end) continue;
-    //   toCreate.push(s);
-    // }
+    // Build full datetime from the provided date + time strings
+    const startDate = new Date(`${newEvent.date}T${newEvent.start_time}:00Z`);
+    const endDate = new Date(`${newEvent.endDate}T${newEvent.end_time}:00Z`);
+    console.log('startDate',startDate)
+    console.log('endDate',endDate)
 
-    // Replace existing active slots
     await prisma.tutorAvailability.create({
-  data: {
-    tutor_id: resolvedTutorId,
-    
-    // Day of week from the start date (adjust based on your system)
-    // getUTCDay() returns 0-6 (Sun-Sat)
-    day_of_week: new Date(newEvent.start).getUTCDay() + 1, // Convert to 1-7 (Mon-Sun)
-    
-    // Convert time strings to Date objects for @db.Time fields
-    start_time: convertTimeStringToDate(newEvent.start_time), // "10:00" → Time object
-    end_time: convertTimeStringToDate(newEvent.end_time),     // "10:30" → Time object
-    
-    // Optional date fields - use the full datetime
-    start_date: new Date(newEvent.start),  // 2026-01-06T05:00:00.000Z
-    end_date: new Date(newEvent.end),      // 2026-01-07T05:30:00.000Z
-    
-    // Other fields
-    price: parseFloat(newEvent.price) || 0,
-    subject: newEvent.title,
-    // If you have subject_id, add it. Otherwise store title:
-    // subject_id: newEvent.subjectId,
-    is_active: true,
-    timezone: "UTC" // Or use user's timezone
-  }
-});
+      data: {
+        tutor_id: resolvedTutorId,
+        day_of_week: startDate.getDay() + 1, // 1-7 Mon-Sun
+        start_time: toTimeDate(newEvent.start_time),
+        end_time: toTimeDate(newEvent.end_time),
+        start_date: startDate, // includes selected time
+        end_date: endDate,     // includes selected time
+        price: parseFloat(newEvent.price) || 0,
+        subject: newEvent.subject, // text subject name
+        subject_id: newEvent.subject_id, // if you pass id separately
+        is_active: true,
+        timezone: newEvent.timezone || "UTC",
+      },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('[TA_SAVE] Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error?.message || error }, { status: 500 });
+    console.error("[TA_SAVE] Error:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error", details: error?.message || error },
+      { status: 500 }
+    );
   }
-}
-
-function convertTimeStringToDate(timeString:any) {
-  // Handle formats: "10:00", "10:00:00", "10:00 AM", etc.
-  const timeParts = timeString.split(':');
-  const hours = parseInt(timeParts[0]);
-  const minutes = parseInt(timeParts[1]);
-  const seconds = timeParts[2] ? parseInt(timeParts[2]) : 0;
-  
-  // Create a date with the time portion (date doesn't matter for @db.Time)
-  return new Date(Date.UTC(1970, 0, 1, hours, minutes, seconds));
 }

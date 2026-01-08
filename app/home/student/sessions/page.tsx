@@ -43,23 +43,18 @@ export default function StudentSessions() {
   useEffect(() => {
     const getCurrentUser = async () => {
       try {
-        console.log('Getting current user...');
         const { data: { user } } = await supabase.auth.getUser();
-        console.log('Supabase user:', user);
         
         if (user) {
-          console.log('User ID:', user.id);
           const profileRes = await fetch(`/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`);
           if (profileRes.ok) {
             const profile = await profileRes.json();
-            console.log('User profile:', profile);
             
             setUserInfo({
               identity: user.id,
               name: profile.name || 'Student'
             });
             setUserId(user.id);
-            console.log('User ID set to:', user.id);
           } else {
             console.error('Failed to fetch user profile');
           }
@@ -76,17 +71,14 @@ export default function StudentSessions() {
   // Fetch sessions function  
   const fetchSessions = async () => {
     if (!userId || userId.length === 0) {
-      console.log('No userId available, skipping fetch');
       return; // Wait for userId to be available
     }
     
     try {
-      console.log('Fetching sessions for user:', userId);
       const res = await fetch(`/api/sessions/student?studentId=${encodeURIComponent(userId)}`);
       
       if (res.ok) {
         const data = await res.json();
-        console.log('Sessions API response:', data);
         
         if (data.success && data.sessions) {
           const formattedSessions: Session[] = data.sessions.map((session: any) => {
@@ -139,12 +131,10 @@ export default function StudentSessions() {
     
     // Auto-refresh every 5 seconds to check for session status updates
     const interval = setInterval(() => {
-      console.log('Auto-refreshing sessions...');
       fetchSessions();
     }, 5000);
     
     return () => {
-      console.log('Cleaning up auto-refresh interval');
       clearInterval(interval);
     };
   }, [userId]);

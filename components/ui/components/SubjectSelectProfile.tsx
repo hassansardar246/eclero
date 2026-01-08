@@ -19,108 +19,27 @@ type SubjectKey = string;
 
 // Icon mapping for different categories
 const CATEGORY_ICONS: Record<string, any> = {
-  "Business": Briefcase,
-  "English": BookOpen,
-  "French": MessageCircle,
+  Business: Briefcase,
+  English: BookOpen,
+  French: MessageCircle,
   "Health and Phys Ed": Heart,
-  "Mathematics": Calculator,
-  "Science": Microscope,
+  Mathematics: Calculator,
+  Science: Microscope,
   "Social Sciences": Users,
   "The Arts": Palette,
 };
 
 // Color mapping for different categories
 const CATEGORY_COLORS: Record<string, string> = {
-  "Business": "from-blue-500 to-indigo-500",
-  "English": "from-pink-500 to-purple-500",
-  "French": "from-rose-500 to-pink-500",
+  Business: "from-blue-500 to-indigo-500",
+  English: "from-pink-500 to-purple-500",
+  French: "from-rose-500 to-pink-500",
   "Health and Phys Ed": "from-emerald-500 to-teal-500",
-  "Mathematics": "from-purple-500 to-indigo-500",
-  "Science": "from-blue-500 to-cyan-500",
+  Mathematics: "from-purple-500 to-indigo-500",
+  Science: "from-blue-500 to-cyan-500",
   "Social Sciences": "from-yellow-500 to-orange-500",
   "The Arts": "from-violet-500 to-purple-500",
 };
-
-// Default categories data in case none is provided
-const DEFAULT_CATEGORIES = [
-  {
-    name: "Business",
-    subjects: [
-      { id: "1", name: "Accounting", code: "ACC", grade: 10 },
-      { id: "2", name: "Business Studies", code: "BUS", grade: 10 },
-      { id: "3", name: "Entrepreneurship", code: "ENT", grade: 11 },
-      { id: "4", name: "Finance", code: "FIN", grade: 12 },
-      { id: "5", name: "Marketing", code: "MKT", grade: 11 },
-      { id: "6", name: "Management", code: "MGT", grade: 12 }
-    ]
-  },
-  {
-    name: "English",
-    subjects: [
-      { id: "7", name: "Literature", code: "LIT", grade: 9 },
-      { id: "8", name: "Writing", code: "WRT", grade: 9 },
-      { id: "9", name: "Grammar", code: "GRAM", grade: 9 },
-      { id: "10", name: "Comprehension", code: "COMP", grade: 10 },
-      { id: "11", name: "Creative Writing", code: "CRW", grade: 11 }
-    ]
-  },
-  {
-    name: "Health and Phys Ed",
-    subjects: [
-      { id: "12", name: "Physical Education", code: "PE", grade: 9 },
-      { id: "13", name: "Health Science", code: "HSC", grade: 10 },
-      { id: "14", name: "Nutrition", code: "NUT", grade: 11 },
-      { id: "15", name: "Anatomy", code: "ANA", grade: 12 },
-      { id: "16", name: "First Aid", code: "FAID", grade: 10 },
-      { id: "17", name: "Sports Science", code: "SPSC", grade: 12 }
-    ]
-  },
-  {
-    name: "Mathematics",
-    subjects: [
-      { id: "18", name: "Algebra", code: "ALG", grade: 9 },
-      { id: "19", name: "Geometry", code: "GEO", grade: 10 },
-      { id: "20", name: "Calculus", code: "CALC", grade: 12 },
-      { id: "21", name: "Statistics", code: "STAT", grade: 11 },
-      { id: "22", name: "Trigonometry", code: "TRIG", grade: 11 }
-    ]
-  },
-  {
-    name: "Science",
-    subjects: [
-      { id: "23", name: "Physics", code: "PHY", grade: 11 },
-      { id: "24", name: "Chemistry", code: "CHEM", grade: 11 },
-      { id: "25", name: "Biology", code: "BIO", grade: 10 },
-      { id: "26", name: "Earth Science", code: "EARTH", grade: 9 },
-      { id: "27", name: "Environmental Science", code: "ENV", grade: 11 },
-      { id: "28", name: "Astronomy", code: "ASTRO", grade: 12 },
-      { id: "29", name: "Computer Science", code: "CS", grade: 10 },
-      { id: "30", name: "Engineering", code: "ENG", grade: 12 }
-    ]
-  },
-  {
-    name: "Social Sciences",
-    subjects: [
-      { id: "31", name: "History", code: "HIST", grade: 10 },
-      { id: "32", name: "Geography", code: "GEOG", grade: 9 },
-      { id: "33", name: "Economics", code: "ECON", grade: 12 },
-      { id: "34", name: "Political Science", code: "POLI", grade: 11 },
-      { id: "35", name: "Psychology", code: "PSYC", grade: 12 },
-      { id: "36", name: "Sociology", code: "SOC", grade: 11 }
-    ]
-  },
-  {
-    name: "The Arts",
-    subjects: [
-      { id: "37", name: "Visual Arts", code: "ART", grade: 9 },
-      { id: "38", name: "Music", code: "MUS", grade: 10 },
-      { id: "39", name: "Drama", code: "DRAMA", grade: 11 },
-      { id: "40", name: "Dance", code: "DANCE", grade: 10 },
-      { id: "41", name: "Art History", code: "AHIST", grade: 12 },
-      { id: "42", name: "Photography", code: "PHOTO", grade: 11 }
-    ]
-  }
-];
 
 interface SelectSubjectProps {
   categories?: Array<{
@@ -138,38 +57,42 @@ interface SelectSubjectProps {
     code: string;
     grade?: number;
   }>;
-  onSubjectsChange?: (subjects: Array<{
-    id: string;
-    name: string;
-    code: string;
-    grade?: number;
-  }>) => void;
+  onSubjectsChange?: (
+    subjects: Array<{
+      id: string;
+      name: string;
+      code: string;
+      grade?: number;
+    }>
+  ) => void;
 }
 
-export default function SelectSubject({ 
-  categories = DEFAULT_CATEGORIES, 
+export default function SubjectSelectProfile({
+  categories,
   selectedSubjects: initialSelectedSubjects = [],
-  onSubjectsChange 
+  onSubjectsChange,
 }: SelectSubjectProps) {
   const [activeSubject, setActiveSubject] = useState<SubjectKey | null>(null);
-  const [selectedSubjects, setSelectedSubjects] = useState<Array<{
-    id: string;
-    name: string;
-    code: string;
-    grade?: number;
-  }>>(initialSelectedSubjects);
-   const [gradeFilter, setGradeFilter] = useState<number | null>(null);
+  const [selectedSubjects, setSelectedSubjects] = useState<
+    Array<{
+      id: string;
+      name: string;
+      code: string;
+      grade?: number;
+    }>
+  >(initialSelectedSubjects);
+  const [gradeFilter, setGradeFilter] = useState<number | null>(null);
 
   // Group selected subjects by category for display
   const getSelectedSubjectsByCategory = () => {
     const grouped: Record<string, any[]> = {};
-    
-    selectedSubjects.forEach(subject => {
+
+    selectedSubjects.forEach((subject) => {
       // Find which category this subject belongs to
-      const category = categories.find(cat => 
-        cat.subjects.some(s => s.id === subject.id || s.name === subject.name)
+      const category = categories.find((cat) =>
+        cat.subjects.some((s) => s.id === subject.id || s.name === subject.name)
       );
-      
+
       if (category) {
         if (!grouped[category.name]) {
           grouped[category.name] = [];
@@ -177,52 +100,57 @@ export default function SelectSubject({
         grouped[category.name].push(subject);
       }
     });
-    
+
     return grouped;
   };
-console.log("Selected subjects576:", selectedSubjects);
-  const toggleSubject = (subject: { id: string; name: string; code: string; grade?: number }) => {
+  const toggleSubject = (subject: {
+    id: string;
+    name: string;
+    code: string;
+    grade?: number;
+  }) => {
     let newSubjects = null;
-    setSelectedSubjects(prev => {
-      const isAlreadySelected = prev.some(s => s.id === subject.id);
-      
+    setSelectedSubjects((prev) => {
+      const isAlreadySelected = prev.some((s) => s.id === subject.id);
+
       if (isAlreadySelected) {
-        newSubjects = prev.filter(s => s.id !== subject.id);
+        newSubjects = prev.filter((s) => s.id !== subject.id);
       } else {
         newSubjects = [...prev, subject];
       }
-                if (onSubjectsChange) {
+      if (onSubjectsChange) {
         onSubjectsChange(newSubjects || []);
       }
       return newSubjects;
     });
-
   };
 
   const removeSubject = (subjectId: string) => {
     let newSubjects = null;
-    setSelectedSubjects(prev => {
-       newSubjects = prev.filter(s => s.id !== subjectId);
+    setSelectedSubjects((prev) => {
+      newSubjects = prev.filter((s) => s.id !== subjectId);
       return newSubjects;
     });
-      if (onSubjectsChange) {
-        onSubjectsChange(newSubjects || []);
-      }
+    if (onSubjectsChange) {
+      onSubjectsChange(newSubjects || []);
+    }
   };
 
   const removeAllSubjectsFromCategory = (categoryName: string) => {
-    setSelectedSubjects(prev => {
+    setSelectedSubjects((prev) => {
       // Get all subject IDs from this category
-      const category = categories.find(c => c.name === categoryName);
+      const category = categories.find((c) => c.name === categoryName);
       if (!category) return prev;
-      
-      const categorySubjectIds = category.subjects.map(s => s.id);
-      const newSubjects = prev.filter(s => !categorySubjectIds.includes(s.id));
-      
+
+      const categorySubjectIds = category.subjects.map((s) => s.id);
+      const newSubjects = prev.filter(
+        (s) => !categorySubjectIds.includes(s.id)
+      );
+
       if (onSubjectsChange) {
         onSubjectsChange(newSubjects);
       }
-      
+
       return newSubjects;
     });
   };
@@ -239,16 +167,16 @@ console.log("Selected subjects576:", selectedSubjects);
 
   // Check if a subject is selected
   const isSubjectSelected = (subjectId: string) => {
-    return selectedSubjects.some(s => s.id === subjectId);
+    return selectedSubjects.some((s) => s.id === subjectId);
   };
 
   // Get selected count for a category
   const getSelectedCountForCategory = (categoryName: string) => {
-    const category = categories.find(c => c.name === categoryName);
+    const category = categories.find((c) => c.name === categoryName);
     if (!category) return 0;
-    
-    return selectedSubjects.filter(s => 
-      category.subjects.some(cs => cs.id === s.id)
+
+    return selectedSubjects.filter((s) =>
+      category.subjects.some((cs) => cs.id === s.id)
     ).length;
   };
 
@@ -257,7 +185,7 @@ console.log("Selected subjects576:", selectedSubjects);
   return (
     <div className="space-y-8">
       <div className="relative group">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-white mb-2">
           Select Grade
         </label>
         <div className="relative">
@@ -265,7 +193,7 @@ console.log("Selected subjects576:", selectedSubjects);
           <div className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100">
             <div className="flex items-center">
               <div className="flex-1 px-4">
-                <select
+              <select
               value={gradeFilter || ""} // Bind to state
               onChange={(e:any) => setGradeFilter(e.target.value || null)} // Handle change
               className="w-full py-2 px-0 border-0 focus:ring-0 focus:outline-none text-sm placeholder:text-gray-400 bg-transparent"
@@ -286,67 +214,71 @@ console.log("Selected subjects576:", selectedSubjects);
           <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
         </div>
       </div>
-      
+
       {/* Selected Subjects Display */}
       {Object.keys(selectedByCategory).length > 0 && (
         <div className="">
           <div className="gap-3 flex items-center flex-wrap">
-            {Object.entries(selectedByCategory).map(([categoryName, subjects]) => {
-              const Icon = getIconForCategory(categoryName);
-              const color = getColorForCategory(categoryName);
+            {Object.entries(selectedByCategory).map(
+              ([categoryName, subjects]) => {
+                const Icon = getIconForCategory(categoryName);
+                const color = getColorForCategory(categoryName);
 
-              return (
-                <div
-                  key={categoryName}
-                  className="border border-gray-200 flex-1 min-w-[40%] max-w-[50%] rounded-xl p-4"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-7 h-7 rounded-lg bg-gradient-to-br ${color} text-white flex items-center justify-center`}
-                      >
-                        {Icon && <Icon size={15} />}
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">
-                          {categoryName}
-                        </h4>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeAllSubjectsFromCategory(categoryName)}
-                      className="text-gray-400 hover:text-gray-600"
-                      title="Remove all subjects from this category"
-                    >
-                      <XCircle size={18} />
-                    </button>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {subjects.map((subject) => (
-                      <div
-                        key={subject.id}
-                        className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg text-sm"
-                      >
-                        <CheckCircle size={14} className="text-purple-500" />
-                        <span>{subject.name}</span>
-                        {subject.code && (
-                          <span className="text-xs text-purple-500 ml-1">
-                            ({subject.code})
-                          </span>
-                        )}
-                        <button
-                          onClick={() => removeSubject(subject.id)}
-                          className="text-purple-400 hover:text-purple-600 ml-1"
+                return (
+                  <div
+                    key={categoryName}
+                    className="border border-gray-200 flex-1 rounded-xl p-2"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-5 h-5 rounded-lg bg-gradient-to-br ${color} text-white flex items-center justify-center`}
                         >
-                          <X size={14} />
-                        </button>
+                          {Icon && <Icon size={18} />}
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-white">
+                            {categoryName}
+                          </h4>
+                        </div>
                       </div>
-                    ))}
+                      <button
+                        onClick={() =>
+                          removeAllSubjectsFromCategory(categoryName)
+                        }
+                        className="text-gray-400 hover:text-gray-600"
+                        title="Remove all subjects from this category"
+                      >
+                        <XCircle size={18} />
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {subjects.map((subject) => (
+                        <div
+                          key={subject.id}
+                          className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1 rounded-lg text-sm"
+                        >
+                          <CheckCircle size={14} className="text-purple-500" />
+                          <span className="text-[10px]">{subject.name}</span>
+                          {subject.code && (
+                            <span className="text-xs text-purple-500 ml-1">
+                              ({subject.code})
+                            </span>
+                          )}
+                          <button
+                            onClick={() => removeSubject(subject.id)}
+                            className="text-purple-400 hover:text-purple-600 ml-1"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              }
+            )}
           </div>
         </div>
       )}
@@ -358,12 +290,13 @@ console.log("Selected subjects576:", selectedSubjects);
         } h-full grid grid-cols-12 gap-8`}
       >
         <main className="col-span-12">
-          <div className="grid grid-cols-3 gap-4 relative">
+          <div className="grid grid-cols-2 gap-4 relative">
             {categories.map((category, index) => {
               const Icon = getIconForCategory(category.name);
               const color = getColorForCategory(category.name);
               const isActive = activeSubject === category.name;
               const selectedCount = getSelectedCountForCategory(category.name);
+              console.log(category)
 
               // Calculate column position for panel alignment
               const columnPosition = (index % 3) + 1;
@@ -399,7 +332,9 @@ console.log("Selected subjects576:", selectedSubjects);
                         </div>
                       )}
                     </div>
-                    <span className="font-sm">{category.name}</span>
+                    <span className={`${isActive ? "" : "text-white"} font-sm text-[10px]`}>
+                      {category.name}
+                    </span>
                   </button>
 
                   {/* Subcategory Panel - Positioned under the active category */}
@@ -424,7 +359,7 @@ console.log("Selected subjects576:", selectedSubjects);
                           }`}
                         ></div>
 
-                        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-6 w-80">
+                        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-2 w-80">
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-semibold">
                               {category.name}
@@ -448,30 +383,30 @@ console.log("Selected subjects576:", selectedSubjects);
                                 return subject.grade == gradeFilter;
                               })
                               .map((subject) => {
-                              const selected = isSubjectSelected(subject.id);
+                                const selected = isSubjectSelected(subject.id);
 
-                              return (
-                                <button
-                                  key={subject.id}
-                                  onClick={() => toggleSubject(subject)}
-                                  className={`rounded-xl border px-2 py-2 text-sm transition gap-2 ${
-                                    selected
-                                      ? "bg-purple-600 text-white border-purple-600"
-                                      : "hover:border-gray-400"
-                                  }`}
-                                >
-                               <div className="flex flex-col items-center justify-center">
+                                return (
+                                  <button
+                                    key={subject.id}
+                                    onClick={() => toggleSubject(subject)}
+                                    className={`rounded-xl border px-1 py-2 text-sm transition gap-2 ${
+                                      selected
+                                        ? "bg-purple-600 text-white border-purple-600"
+                                        : "hover:border-gray-400"
+                                    }`}
+                                  >
+                                    <div className="flex flex-col items-center justify-center">
                                       {/* {selected && <CheckCircle size={14} />} */}
-                                      <span className="block">
+                                      <span className="block text-[10px]">
                                         {subject.name}
                                       </span>
                                       <span className=" text-[10px] text-white rounded-lg px-[15px] bg-slate-600">
                                         {subject.code}
                                       </span>
                                     </div>
-                                </button>
-                              );
-                            })}
+                                  </button>
+                                );
+                              })}
                           </div>
                         </div>
                       </div>
@@ -483,7 +418,6 @@ console.log("Selected subjects576:", selectedSubjects);
           </div>
         </main>
       </div>
-    
     </div>
   );
 }

@@ -20,14 +20,11 @@ function LoginContent() {
         setLoading(true);
 
         try {
-            console.log('[LOGIN] Attempting login for:', { email });
             
             const { data, error: signInError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
-
-            console.log('[LOGIN] Supabase user:', data.user);
 
             if (signInError) {
                 console.error('[LOGIN] Sign in error:', signInError);
@@ -41,7 +38,6 @@ function LoginContent() {
             // Fetch user role from the database using email via API
             const profileRes = await fetch(`/api/profiles/get?email=${encodeURIComponent(email)}`);
             
-            console.log('[LOGIN] Profile API response status:', profileRes.status);
             
             if (!profileRes.ok) {
                 const errorData = await profileRes.json().catch(() => ({ error: 'Failed to parse error response' }));
@@ -50,11 +46,6 @@ function LoginContent() {
             }
 
             const userData = await profileRes.json();
-            console.log('[LOGIN] Profile lookup result:', {
-                email,
-                userData,
-                hasRole: !!userData?.role
-            });
             
             if (!userData?.role) {
                 console.error('[LOGIN] No role found in profile data:', userData);
@@ -76,7 +67,6 @@ function LoginContent() {
                     homePath = "/home";
             }
 
-            console.log('[LOGIN] Success:', { userId: data.user.id });
             router.push(homePath);
         } catch (err: any) {
             console.error('[LOGIN] Error:', err?.message || err, err);

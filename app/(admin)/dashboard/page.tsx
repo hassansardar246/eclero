@@ -31,7 +31,6 @@ export default function CreateSubjectPage() {
         }
         
         const usersData = await response.json();
-        console.log("Users data:", usersData);
         setUsers(usersData);
       } catch (err) {
         console.error("Error fetching users:", err);

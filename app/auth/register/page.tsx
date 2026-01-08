@@ -24,12 +24,9 @@ function RegisterContent() {
         setLoading(true);
 
         try {
-            console.log('[REGISTER] Starting registration for:', { email });
 
             const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
 
-            // Step 1: Sign up the user (without metadata)
-            console.log('[REGISTER] Step 1: Creating user account');
             const { data, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password
@@ -45,10 +42,6 @@ function RegisterContent() {
                 throw new Error('Failed to create user account');
             }
 
-            console.log('[REGISTER] Step 1 completed - User created:', { userId: data.user.id });
-
-            // Step 2: Update user metadata with name and role
-            console.log('[REGISTER] Step 2: Updating user metadata');
             const { error: metadataError } = await supabase.auth.updateUser({
                 data: {
                     name: fullName,
@@ -61,23 +54,13 @@ function RegisterContent() {
                 throw new Error('Failed to update user profile information');
             }
 
-            console.log('[REGISTER] Step 2 completed - Metadata updated successfully');
 
-            // Step 3: Create Profile in database
-            console.log('[REGISTER] Step 3: Creating profile in database');
             const requestData = {
                 id: data.user.id,
                 email,
                 name: fullName,
                 role: normalizedRole
             };
-            console.log("[REGISTER] Step 3 - Sending profile create request with:", {
-                id: data.user.id,
-                email,
-                name: fullName,
-                role: normalizedRole,
-                profile_setup: false
-            });
             
             const profileRes = await fetch("/api/profiles/create", {
                 method: "POST",
@@ -90,12 +73,10 @@ function RegisterContent() {
                 let errorText;
                 try {
                     errorText = await profileRes.text();
-                    console.log('[REGISTER] Raw error response:', errorText);
                     errorData = JSON.parse(errorText);
                 } catch (parseError) {
                     errorData = { error: 'Unknown error (not JSON response)' };
                     errorText = 'Non-JSON response';
-                    console.log('[REGISTER] Failed to parse error response:', parseError);
                 }
                 console.error('[REGISTER] Step 3 failed - Profile creation error:', {
                     status: profileRes.status,
@@ -108,10 +89,7 @@ function RegisterContent() {
             }
 
             const profileData = await profileRes.json();
-            console.log('[REGISTER] Step 3 completed - Profile created:', profileData);
 
-            // Step 4: Sign in the user
-            console.log('[REGISTER] Step 4: Signing in user');
             const { error: loginError } = await supabase.auth.signInWithPassword({ 
                 email, 
                 password 
@@ -123,11 +101,6 @@ function RegisterContent() {
                 setLoading(false);
                 return;
             }
-
-            console.log('[REGISTER] Step 4 completed - User signed in successfully');
-
-                    // Step 5: Redirect to home
-        console.log('[REGISTER] Step 5: Redirecting to home');
         router.push("/home");
 
         } catch (err: any) {

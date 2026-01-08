@@ -84,3 +84,30 @@ html {
   opacity: 1;
   pointer-events: auto;
 }
+
+.rendered-html-content {
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.rendered-html-content h1, 
+.rendered-html-content h2, 
+.rendered-html-content h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+.rendered-html-content p {
+  margin-bottom: 1em;
+}
+
+.rendered-html-content ul, 
+.rendered-html-content ol {
+  padding-left: 2em;
+  margin-bottom: 1em;
+}
+
+.rendered-html-content li {
+  margin-bottom: 0.5em;
+}

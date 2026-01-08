@@ -5,14 +5,6 @@ export async function POST(req: NextRequest) {
   try {
     const { room, user } = await req.json();
 
-    console.log('=== LiveKit Token API Request ===');
-    console.log('Request payload:', { room, user });
-    console.log('Environment check:', {
-      apiKeyExists: !!process.env.LIVEKIT_API_KEY,
-      apiSecretExists: !!process.env.LIVEKIT_API_SECRET,
-      apiKeyPrefix: process.env.LIVEKIT_API_KEY?.substring(0, 6) + '...',
-      serverUrl: process.env.NEXT_PUBLIC_LIVEKIT_URL
-    });
 
     if (!room || !user) {
       console.error('Missing required parameters:', { room: !!room, user: !!user });

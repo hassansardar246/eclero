@@ -4,16 +4,13 @@ import { NextRequest } from 'next/server';
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('[PROFILE_UPDATE] Received body:', body);
     const { email, firstName, lastName, name, phone, bio, subjects, hourlyRate, education, experience } = body;
 
-    console.log('[PROFILE_UPDATE] Received data:', body);
 
     if (!email) {
       return new Response(JSON.stringify({ error: 'Email is required' }), { status: 400 });
     }
 
-    console.log('[PROFILE_UPDATE] Updating profile for email:', email);
 
     // Use name if provided, otherwise combine first and last name
     const fullName = name || `${firstName || ''} ${lastName || ''}`.trim();
@@ -62,7 +59,6 @@ export async function PUT(request: NextRequest) {
       return updatedProfile;
     });
 
-    console.log('[PROFILE_UPDATE] Profile updated successfully:', result);
 
     return new Response(JSON.stringify(result), { status: 200 });
   } catch (error: any) {

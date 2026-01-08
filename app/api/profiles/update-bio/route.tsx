@@ -4,7 +4,6 @@ import { NextRequest } from 'next/server';
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('[PROFILE_UPDATE] Received body:', body);
     const { email, firstName, lastName, name, phone, bio, subjects, hourlyRate, education, experience, is_tutor } = body;
 
     if (!email) {

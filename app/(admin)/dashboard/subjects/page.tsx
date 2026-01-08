@@ -62,7 +62,6 @@ export default function CreateSubjectPage() {
         }
         
         const subjectsData: Subject[] = await response.json();
-        console.log("Subjects data:", subjectsData);
         
         if (Array.isArray(subjectsData)) {
           // Extract unique grades
@@ -92,15 +91,10 @@ export default function CreateSubjectPage() {
           setGrades(gradeOptions);
           setCategories(categoryOptions);
           
-          console.log("Extracted grades:", gradeOptions);
-          console.log("Extracted categories:", categoryOptions);
-          
         } else {
-          console.error("Invalid subjects data format:", subjectsData);
           setError("Invalid data format received from server");
         }
       } catch (err) {
-        console.error("Error fetching subjects:", err);
         setError("Failed to load data. Please try again.");
       } finally {
         setLoading(false);
@@ -143,7 +137,6 @@ export default function CreateSubjectPage() {
       category: selectedCategory as string,
     };
 
-    console.log("Submitting subject data:", subjectData);
 
     setSubmitting(true);
     setError(null);

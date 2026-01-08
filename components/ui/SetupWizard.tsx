@@ -75,98 +75,6 @@ type CategoryGroup = {
   name: string;
   subjects: Subjects[];
 };
-
-const getDefaultIcon = (stepNumber: number) => {
-  const icons: any = {
-    1: (
-      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
-        <svg
-          className="w-8 h-8 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-          />
-        </svg>
-      </div>
-    ),
-    2: (
-      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-200">
-        <svg
-          className="w-8 h-8 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-          />
-        </svg>
-      </div>
-    ),
-    3: (
-      <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200">
-        <svg
-          className="w-8 h-8 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-          />
-        </svg>
-      </div>
-    ),
-    4: (
-      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-200">
-        <svg
-          className="w-8 h-8 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      </div>
-    ),
-    5: (
-      <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-200">
-        <svg
-          className="w-8 h-8 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-          />
-        </svg>
-      </div>
-    ),
-  };
-
-  return icons[stepNumber] || icons[1];
-};
 const SetupWizard = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -260,22 +168,6 @@ const SetupWizard = () => {
         setCategories([]);
       });
   }, [router]);
-
-console.log("Selected subjectsssssssss:", selectedSubjects);
-
-  const handleSubjectClick = (subject: any) => {
-    const isSelected = selectedSubjects.some((s: any) => s.id === subject.id);
-
-    if (isSelected) {
-      setSelectedSubjects((prev) =>
-        prev.filter((s: any) => s.id !== subject.id)
-      );
-    } else {
-      setSelectedSubjects((prev) => [...prev, subject]);
-    }
-    const ids = selectedSubjects.map((s: any) => s.id);
-    // console.log("Selected subjects:", ids);
-  };
   const handleInputChange = (e: any) => {
     console.log("Input changed:", e.target.name, e.target.value);
     const { name, value } = e.target;
@@ -569,7 +461,7 @@ console.log("Selected subjectsssssssss:", selectedSubjects);
                           className="relative group"
                         >
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Are you a student or a teacher?
+                            Are you a student or a full time teacher?
                           </label>
 
                           <div className="relative">
@@ -605,7 +497,7 @@ console.log("Selected subjectsssssssss:", selectedSubjects);
                                   htmlFor="bordered-radio-2"
                                   className="w-full  cursor-pointer py-4 select-none ms-2 text-sm font-medium text-heading"
                                 >
-                                  Tutor
+                                  Teacher
                                 </label>
                               </div>
                             </motion.div>

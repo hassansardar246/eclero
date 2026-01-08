@@ -6,11 +6,27 @@ import { supabase } from "@/lib/supabaseClient";
 import Button from "@/components/ui/components/ui/button/Button";
 import SubjectSelector from "@/components/SubjectSelector";
 import { Modal } from "@/components/ui/components/ui/modal";
-
+import TiptapEditor from "@/components/RichTextEditor";
+import Swal from "sweetalert2";
+import { motion, AnimatePresence } from "framer-motion";
+import SubjectSelectProfile from "@/components/ui/components/SubjectSelectProfile";
+export type Subjects = {
+  id: string;
+  name: string;
+  code: string;
+  grade: number;
+  category?: string;
+};
+type CategoryGroup = {
+  name: string;
+  subjects: Subjects[];
+};
 export default function TutorProfile() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
+  const [editMode1, setEditMode1] = useState(false);
+  const [editMode2, setEditMode2] = useState(false);
+  const [editMode3, setEditMode3] = useState(false);
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editBio, setEditBio] = useState("");
@@ -20,6 +36,9 @@ export default function TutorProfile() {
   const [subjectsModalOpen, setSubjectsModalOpen] = useState(false);
   const router = useRouter();
 
+  const [educationText, setEducationText] = useState<string>("");
+  const [categories, setCategories] = useState<CategoryGroup[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<Subjects[]>([]);
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -31,7 +50,9 @@ export default function TutorProfile() {
           router.push("/auth/login");
           return;
         }
-        const profileRes = await fetch(`/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`);
+        const profileRes = await fetch(
+          `/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`
+        );
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           setProfile(profileData);
@@ -40,17 +61,23 @@ export default function TutorProfile() {
           setEditBio(profileData.bio || "");
           setEditHourlyRate(profileData.hourlyRate?.toString() || "");
           console.log("Profile data in profile:", profileData);
-
+          if (profileData.education) {
+            setEducationText(profileData.education);
+          }
           // Normalize selected subject ids from profile
           let normalizedSubjects: string[] = [];
           if (profileData.subjects && Array.isArray(profileData.subjects)) {
             normalizedSubjects = profileData.subjects
               .map((s: any) => {
                 if (s && typeof s.id === "string") return s.id;
-                if (s && s.Subjects && typeof s.Subjects.id === "string") return s.Subjects.id;
+                if (s && s.Subjects && typeof s.Subjects.id === "string")
+                  return s.Subjects.id;
                 return undefined;
               })
-              .filter((id: any): id is string => typeof id === "string" && id.length > 0);
+              .filter(
+                (id: any): id is string =>
+                  typeof id === "string" && id.length > 0
+              );
           }
           setSubjects(normalizedSubjects);
           console.log("Normalized subjects:", normalizedSubjects);
@@ -61,19 +88,34 @@ export default function TutorProfile() {
       }
     };
     fetchProfile();
+
+    fetch("/api/subjects")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          // setSelectedSubjects(data);
+          // Group by category
+          const catMap = new Map<string, Subjects[]>();
+          data.forEach((subject: Subjects) => {
+            const cat = subject.category || "Uncategorized";
+            if (!catMap.has(cat)) catMap.set(cat, []);
+            catMap.get(cat)!.push(subject);
+          });
+          const grouped: CategoryGroup[] = Array.from(catMap.entries()).map(
+            ([name, subjects]) => ({ name, subjects })
+          );
+          setCategories(grouped);
+        } else {
+          setSelectedSubjects([]);
+          setCategories([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Subjects fetch error:", err);
+        setSelectedSubjects([]);
+        setCategories([]);
+      });
   }, [router]);
-
-  const handleEdit = () => {
-    setEditMode(true);
-  };
-
-  const handleCancel = () => {
-    setEditName(profile.name || "");
-    setEditPhone(profile.phone || "");
-    setEditBio(profile.bio || "");
-    setEditHourlyRate(profile.hourlyRate?.toString() || "");
-    setEditMode(false);
-  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -81,33 +123,73 @@ export default function TutorProfile() {
     await fetch("/api/profiles/update", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        email: profile.email, 
-        name: editName, 
+      body: JSON.stringify({
+        email: profile.email,
+        name: editName,
         phone: editPhone,
         bio: editBio,
-        hourlyRate: hourlyRate
+        hourlyRate: hourlyRate,
       }),
     });
-    setProfile({ ...profile, name: editName, phone: editPhone, bio: editBio, hourlyRate: hourlyRate });
-    setEditMode(false);
+    setProfile({
+      ...profile,
+      name: editName,
+      phone: editPhone,
+      bio: editBio,
+      hourlyRate: hourlyRate,
+    });
     setSaving(false);
   };
-
-  const handleSubjectsChange = async (subjectIds: string[]) => {
-    if (!profile?.email) return;
-    setSubjects(subjectIds);
-    console.log('subjects subjectIdssubjectIds', subjectIds);
-    try {
-      await fetch("/api/profiles/update", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: profile.email, subjects: subjectIds }),
-      });
-    } catch (e) {
-      // noop; UI remains updated locally
-    }
+  const handleSaveEducation = async () => {
+    setSaving(true);
+    await fetch("/api/profiles/update-education", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: profile.email,
+        education: educationText,
+      }),
+    });
+    setProfile({ ...profile, education: educationText });
+    setSaving(false);
   };
+  const onSubjectsChange = (subjects: any) => {
+    console.log("Selected subjects parent:", subjects);
+    setSelectedSubjects(subjects);
+  };
+  const handleSubjectsChange = async () => {
+    if (!profile?.email) return;
+    Swal.fire({
+      title: "Are you sure?",
+      text: "All availablity records will be deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Proceed!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await fetch("/api/profiles/update-course", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: profile.email,
+              subjects: selectedSubjects,
+            }),
+          });
+        } catch (e) {
+          // noop; UI remains updated locally
+        }
+        Swal.fire({
+          title: "Updated!",
+          text: "Your subjects have been updated.",
+          icon: "success",
+        });
+      }
+    });
+  };
+  console.log("Selected subjects576:", selectedSubjects);
 
   if (loading) {
     return (
@@ -124,193 +206,291 @@ export default function TutorProfile() {
     );
   }
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-8 flex flex-col md:flex-row gap-8" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
-        {/* Profile Picture */}
-        <div className="flex flex-col items-center md:items-start md:w-1/3">
-          <img
-            src={profile.avatar || "/default-avatar.png"}
-            alt={profile.name}
-            className="w-32 h-32 rounded-full object-cover border-4 border-white/30 mb-4"
-          />
-          <div className="text-center md:text-left">
-            {!editMode ? (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 grid grid-cols-1 md:grid-cols-[1.1fr_1.6fr] gap-8">
+        {/* LEFT COLUMN – Subjects */}
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center gap-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-20 h-20 rounded-2xl object-cover border border-slate-700 shadow-lg bg-slate-700 p-2"
+              viewBox="0 0 48 48"
+              fill="none"
+            >
+              <circle cx="24" cy="24" r="24" fill="#1e293b" />
+              <circle cx="24" cy="19" r="8" fill="#334155" />
+              <ellipse cx="24" cy="34" rx="12" ry="6" fill="#334155" />
+            </svg>
+            <div>
+              <h2 className="text-2xl font-semibold text-white">
+                {profile.name}
+              </h2>
+              <div className="mt-1 inline-flex items-center gap-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/40">
+                  {profile.role === "tutor"
+                    ? "Tutor"
+                    : profile.role || "Student"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            {editMode3 ? (
               <>
-                <h2 className="text-2xl font-bold text-white mb-1">{profile.name}</h2>
-                {profile.rating && (
-                  <div className="flex items-center justify-center md:justify-start mt-1">
-                    <span className="text-yellow-400">★</span>
-                    <span className="ml-1 text-white font-medium">{profile.rating}</span>
-                  </div>
-                )}
-                {subjects && subjects.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {/* Display selected subject chips based on local state for consistency */}
-                    {Array.isArray(profile.subjects) && profile.subjects.length > 0
-                      ? profile.subjects.map((subj: any) => (
-                          <span key={subj.Subjects?.id || subj.id || subj.Subjects?.code || subj.code}
-                                className="bg-gradient-to-r from-blue-400 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                            {(subj.Subjects?.name || subj.name) ?? "Subject"} ({(subj.Subjects?.code || subj.code) ?? ""})
-                          </span>
-                        ))
-                      : null}
-                  </div>
-                )}
-                <div className="flex gap-2 mt-4">
-                  <Button onClick={() => setSubjectsModalOpen(true)} variant="outline">Edit Courses</Button>
-                  <Button onClick={handleEdit} variant="outline">Edit Profile</Button>
+                <motion.div
+                  key="step-2"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <SubjectSelectProfile
+                    categories={categories}
+                    selectedSubjects={selectedSubjects}
+                    onSubjectsChange={onSubjectsChange}
+                  />
+                </motion.div>
+                <div className="pt-5 flex justify-end">
+                  <button
+                    onClick={() => setEditMode3(false)}
+                    className="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-medium border text-white mr-3 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                  >
+                    cancel
+                  </button>
+                  <button
+                    onClick={handleSubjectsChange}
+                    disabled={saving}
+                    className="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-medium bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {saving ? "Saving..." : "Save Changes"}
+                  </button>
                 </div>
               </>
             ) : (
               <>
-                <input
-                  className="w-full mb-2 px-3 py-2 rounded-lg bg-white/20 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  value={editName}
-                  onChange={e => setEditName(e.target.value)}
-                  placeholder="Name"
-                  disabled={saving}
-                />
-                {profile.rating && (
-                  <div className="flex items-center justify-center md:justify-start mt-1 mb-2">
-                    <span className="text-yellow-400">★</span>
-                    <span className="ml-1 text-white font-medium">{profile.rating}</span>
+                <div className="flex items-start justify-between mb-5">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-100">
+                      Subjects you teach
+                    </h3>
                   </div>
-                )}
-                {subjects && subjects.length > 0 && (
-                  <div className="mt-2 mb-2 flex flex-wrap gap-2">
-                    {Array.isArray(profile.subjects) && profile.subjects.length > 0
-                      ? profile.subjects.map((subj: any) => (
-                          <span key={subj.subject?.id || subj.id || subj.subject?.code || subj.code}
-                                className="bg-gradient-to-r from-blue-400 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                            {(subj.subject?.name || subj.name) ?? "Subject"} ({(subj.subject?.code || subj.code) ?? ""})
+                  <button
+                    onClick={() => {
+                      setEditMode3(true);
+                      setEditMode2(false);
+                      setEditMode1(false);
+                    }}
+                    className="inline-flex items-center min-w-[100px] px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-900 hover:bg-white transition-colors"
+                  >
+                    Edit Subjects
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400 mb-3">
+                  Manage the courses that appear on your profile.
+                </p>
+
+                <div className="">
+                  {Array.isArray(profile.subjects) &&
+                  profile.subjects.length > 0 ? (
+                    profile.subjects.map((subject: any) => (
+                      <button
+                        key={subject.id}
+                        className={`rounded-xl border px-5 py-4 w-full text-sm transition gap-2 hover:border-gray-400
+                                    }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          {/* {selected && <CheckCircle size={14} />} */}
+                          <span className="block text-white ">
+                            {subject.Subjects?.name || subject.name}
                           </span>
-                        ))
-                      : null}
-                  </div>
-                )}
-                <div className="flex gap-2 mt-4">
-                  <Button onClick={handleSave} disabled={saving} variant="primary">Save</Button>
-                  <Button onClick={handleCancel} disabled={saving} variant="outline">Cancel</Button>
+                          <span className=" text-white rounded-lg px-[15px] bg-slate-600">
+                            {subject.Subjects?.code || subject.code}
+                          </span>
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      No subjects selected yet. Click &ldquo;Edit
+                      Subjects&rdquo; to add some.
+                    </p>
+                  )}
+                  ;
                 </div>
               </>
             )}
           </div>
         </div>
-        {/* Profile Info */}
-        <div className="flex-1 flex flex-col gap-4 text-white">
-          {!editMode ? (
-            <>
-              {profile.bio && (
+
+        {/* RIGHT COLUMN – Personal Info + Education */}
+        <div className="flex flex-col gap-6">
+          {/* Personal Info */}
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <form action="">
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">Bio</h3>
-                  <p className="text-gray-200 whitespace-pre-line">{profile.bio}</p>
+                  <h3 className="text-sm font-semibold text-slate-100">
+                    Personal Info
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Basic details that students will see on your profile.
+                  </p>
                 </div>
-              )}
-              <div className="flex flex-wrap gap-6">
-                {profile.email && (
-                  <div>
-                    <div className="text-xs text-gray-400">Email</div>
-                    <div className="text-sm font-medium">{profile.email}</div>
-                  </div>
+                {!editMode1 && (
+                  <span
+                    onClick={() => {
+                      setEditMode1(true);
+                      setEditMode2(false);
+                      setEditMode3(false);
+                    }}
+                    className="inline-flex cursor-pointer items-center min-w-[100px] px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-900 hover:bg-white transition-colors"
+                  >
+                    Edit profile
+                  </span>
                 )}
-                {profile.phone && (
+              </div>
+
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                    Full Name
+                  </label>
+                  <input
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Your full name"
+                    disabled={saving}
+                  />
+                </div>
+
+                {/* Bio */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                    Bio
+                  </label>
+                  <textarea
+                    className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none min-h-[96px]"
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                    placeholder="Tell students about your experience, teaching style, and what to expect."
+                    disabled={saving}
+                  />
+                </div>
+
+                {/* Email & Phone */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <div className="text-xs text-gray-400">Phone</div>
-                    <div className="text-sm font-medium">{profile.phone}</div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                      Email
+                    </label>
+                    <input
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      value={profile.email}
+                      disabled
+                    />
                   </div>
-                )}
-                {typeof profile.hourlyRate === 'number' && (
                   <div>
-                    <div className="text-xs text-gray-400">Hourly Rate</div>
-                    <div className="text-sm font-medium">${profile.hourlyRate}</div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                      Phone
+                    </label>
+                    <input
+                      className="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      placeholder="+1 234 567 890"
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+
+                {editMode1 && (
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      onClick={() => setEditMode1(false)}
+                      className="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-medium border text-white mr-3 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                    >
+                      cancel
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-medium bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {saving ? "Saving..." : "Save Changes"}
+                    </button>
                   </div>
                 )}
               </div>
-            </>
-          ) : (
-            <>
+            </form>
+          </section>
+
+          {/* Education (Rich Text-ish) */}
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <div className="flex items-center justify-between mb-3">
               <div>
-                <h3 className="text-lg font-semibold mb-1">Bio</h3>
-                <textarea
-                  className="w-full px-3 py-2 rounded-lg bg-white/20 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                  rows={4}
-                  value={editBio}
-                  onChange={e => setEditBio(e.target.value)}
-                  placeholder="Tell us about yourself..."
+                <h3 className="text-sm font-semibold text-slate-100">
+                  Education
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Share your degrees, institutions and any relevant
+                  qualifications.
+                </p>
+              </div>
+              {!editMode2 && (
+                <span
+                  onClick={() => {
+                    setEditMode2(true);
+                    setEditMode1(false);
+                    setEditMode3(false);
+                  }}
+                  className="inline-flex cursor-pointer items-center min-w-[100px] px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-900 hover:bg-white transition-colors"
+                >
+                  Edit education
+                </span>
+              )}
+            </div>
+            <div className="relative">
+              <div className="relative">
+                {editMode2 ? (
+                  <TiptapEditor
+                    onChange={setEducationText}
+                    value={educationText}
+                  />
+                ) : (
+                  <div className="education-content">
+                    <div
+                      className="rendered-html-content text-white"
+                      dangerouslySetInnerHTML={{ __html: educationText }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            {editMode2 && (
+              <div className="w-full flex mt-3 justify-end">
+                <button
+                  onClick={() => setEditMode2(false)}
+                  className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium border text-white mr-3 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                >
+                  cancel
+                </button>
+                <button
                   disabled={saving}
-                />
+                  onClick={handleSaveEducation}
+                  className="inline-flex items-center justify-end  px-4 py-2.5 rounded-full text-sm font-medium bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
               </div>
-              <div className="flex flex-wrap gap-6">
-                <div>
-                  <div className="text-xs text-gray-400">Email</div>
-                  <div className="text-sm font-medium">{profile.email}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-400">Phone</div>
-                  <input
-                    className="w-full px-3 py-2 rounded-lg bg-white/20 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    value={editPhone}
-                    onChange={e => setEditPhone(e.target.value)}
-                    placeholder="Phone"
-                    disabled={saving}
-                  />
-                </div>
-                <div>
-                  <div className="text-xs text-gray-400">Hourly Rate</div>
-                  <input
-                    className="w-full px-3 py-2 rounded-lg bg-white/20 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    value={editHourlyRate}
-                    onChange={e => setEditHourlyRate(e.target.value)}
-                    placeholder="0"
-                    type="number"
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-          {profile.education && profile.education.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-1 mt-2">Education</h3>
-              <ul className="list-disc list-inside text-gray-200">
-                {profile.education.map((edu: any, idx: number) => (
-                  <li key={idx}>
-                    {edu.degree} @ {edu.institution} ({edu.year})
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {profile.experience && profile.experience.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-1 mt-2">Experience</h3>
-              <ul className="list-disc list-inside text-gray-200">
-                {profile.experience.map((exp: any, idx: number) => (
-                  <li key={idx}>
-                    <span className="font-medium">{exp.title}</span>: {exp.description} ({exp.years} yrs)
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            )}
+          </section>
         </div>
       </div>
 
-      {/* Courses Modal */}
-      <Modal isOpen={subjectsModalOpen} onClose={() => setSubjectsModalOpen(false)} className="max-w-3xl p-6">
-        <div className="text-white">
-          <h3 className="text-2xl font-bold mb-4">Choose Courses You Teach</h3>
-          <SubjectSelector
-            selectedSubjectIds={subjects}
-            onSelectionChange={handleSubjectsChange}
-            maxSelections={10}
-            disabled={false}
-          />
-          <div className="mt-6 flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setSubjectsModalOpen(false)}>Close</Button>
-          </div>
-        </div>
-      </Modal>
+      {/* Courses Modal (unchanged) */}
     </div>
   );
 }

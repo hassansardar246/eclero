@@ -70,13 +70,6 @@ const AppSidebar: React.FC = () => {
             </Link>
           ))}
         </nav>
-
-        {/* Optional: Add some spacing at the bottom */}
-        <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-800">
-          <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-            Simple Sidebar v1.0
-          </div>
-        </div>
       </div>
     </aside>
   );

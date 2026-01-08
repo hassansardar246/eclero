@@ -9,8 +9,6 @@ export async function GET(request: Request) {
       return new Response(JSON.stringify({ error: 'Email parameter is required' }), { status: 400 });
     }
 
-    console.log('[PROFILE_GET_FULL] Looking up full profile for email:', email);
-
     const profile = await prisma.profiles.findUnique({
       where: { email },
       select: { 
@@ -43,8 +41,6 @@ export async function GET(request: Request) {
         }
       }
     });
-
-    console.log('[PROFILE_GET_FULL] Found profile:', profile);
 
     if (!profile) {
       return new Response(JSON.stringify({ error: 'Profile not found' }), { status: 404 });
