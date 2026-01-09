@@ -1,8 +1,4 @@
-import React, { 
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
 import {
   Calendar,
@@ -24,17 +20,17 @@ interface CalendarEvent {
   id: string;
   title: string;
   price: string;
-  start: Date;
-  end: Date;
-  start_time:any,
-  end_time:any
+  start: any;
+  end: any;
+  start_time: any;
+  end_time: any;
   allDay?: boolean;
 }
 
 interface SelectableProps {
   localizer?: DateLocalizer;
-  email:string,
-  id:string,
+  email: string;
+  id: string;
   data?: CalendarEvent[];
 }
 
@@ -99,79 +95,80 @@ const CustomEvent: React.FC<CustomEventProps> = ({ event, view }) => {
   );
 };
 
-
 // Main component
 export default function Selectable({
   localizer: propLocalizer,
   email,
   id,
-  data
+  data,
 }: SelectableProps) {
-const transformEvents = (eventsData: any[]): CalendarEvent[] => {
-  return eventsData.map(event => {
+  const transformEvents = (eventsData: any[]): CalendarEvent[] => {
+ return eventsData.map((event) => {
     // Use start_date and end_date if available
     if (event.start_date && event.end_date) {
-      const startDate = new Date(event.start_date);
-      const endDate = new Date(event.end_date);
+      console.log("Original start_date from event:", event.start_date);
+      console.log("Original end_date from event:", event.end_date);
       
-      // Combine date from start_date/end_date with time from start_time/end_time
-      const startTime = new Date(event.start_date);
-      const endTime = new Date(event.end_date);
+      // Parse the dates - they already contain both date and time
+      const start = moment.utc(event.start_date).local(); // Parse as UTC then convert to local
+      const end = moment.utc(event.end_date).local();     // Parse as UTC then convert to local
       
+      console.log("Parsed start (local):", start.format());
+      console.log("Parsed end (local):", end.format());
+
+        return {
+        id: event.id,
+        title: event.subject || "Available Slot",
+        price: event.price?.toString() || "0",
+        start: start.toDate(), // Convert to Date object
+        end: end.toDate(),
+        start_time: start, // Optional: store formatted time
+        end_time: end,
+        allDay: false,
+        originalData: event,
+      };
+      }
+
+      // Fallback: If no start_date/end_date, use day_of_week logic (for recurring events)
+      const today = new Date();
+      const eventDay = new Date(today);
+
+      const dayOfWeek = event.day_of_week || 0;
+      const currentDay = today.getDay();
+      const daysToAdd = (dayOfWeek - currentDay + 7) % 7;
+      eventDay.setDate(today.getDate() + daysToAdd);
+
+      const startTime = new Date(event.start_time);
+      const endTime = new Date(event.end_time);
+
+      const startDate = new Date(eventDay);
       startDate.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+
+      const endDate = new Date(eventDay);
       endDate.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
-      
+
+      // If end is before start (crosses midnight), add one day to end
+      if (endDate < startDate) {
+        endDate.setDate(endDate.getDate() + 1);
+      }
+
       return {
         id: event.id,
-        title: event.subject || 'Available Slot',
-        price: event.price?.toString() || '0',
+        title: event.subject || "Available Slot",
+        price: event.price?.toString() || "0",
         start: startDate,
         end: endDate,
         start_time: event.start_time,
         end_time: event.end_time,
         allDay: false,
-        originalData: event
+        originalData: event,
       };
-    }
-    
-    // Fallback: If no start_date/end_date, use day_of_week logic (for recurring events)
-    const today = new Date();
-    const eventDay = new Date(today);
-    
-    const dayOfWeek = event.day_of_week || 0;
-    const currentDay = today.getDay();
-    const daysToAdd = (dayOfWeek - currentDay + 7) % 7;
-    eventDay.setDate(today.getDate() + daysToAdd);
-    
-    const startTime = new Date(event.start_time);
-    const endTime = new Date(event.end_time);
-    
-    const startDate = new Date(eventDay);
-    startDate.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
-    
-    const endDate = new Date(eventDay);
-    endDate.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
-    
-    // If end is before start (crosses midnight), add one day to end
-    if (endDate < startDate) {
-      endDate.setDate(endDate.getDate() + 1);
-    }
-    
-    return {
-      id: event.id,
-      title: event.subject || 'Available Slot',
-      price: event.price?.toString() || '0',
-      start: startDate,
-      end: endDate,
-      start_time: event.start_time,
-      end_time: event.end_time,
-      allDay: false,
-      originalData: event
-    };
-  });
-};
+    });
+  };
 
-  const [myEvents, setEvents] = useState<CalendarEvent[]>(transformEvents(data || []));
+  const [myEvents, setEvents] = useState<CalendarEvent[]>(
+    transformEvents(data || [])
+  );
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{
@@ -179,7 +176,7 @@ const transformEvents = (eventsData: any[]): CalendarEvent[] => {
     end: Date;
   } | null>(null);
 
-  const [currentView, setCurrentView] = useState<View>(Views.WEEK);
+  const [currentView, setCurrentView] = useState<View>(Views.MONTH);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null
@@ -194,40 +191,34 @@ const transformEvents = (eventsData: any[]): CalendarEvent[] => {
   //   setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
   // }, []);
 
-  const handleCreateEvent = useCallback(async(formData: EventFormData) => {
-    console.log('formData',formData)  
-    const startDateTime = moment(
-      `${formData.date} ${formData.startTime}`
-    ).toDate();
-    const endDateTime = moment(`${formData.endDate} ${formData.endTime}`).toDate();
-
+  const handleCreateEvent = useCallback(async (formData: EventFormData) => {
     const newEvent = {
       id: Date.now() + "",
-      title: formData.subject,        
+      title: formData.subject,
       subject_id: formData.subject_id,
-      subject: formData.subject,     
+      subject: formData.subject,
       price: formData.price,
-      start: startDateTime,
-      end: endDateTime,
+      start: formData.startDate,
+      end: formData.endDate,
       start_time: formData.startTime,
       end_time: formData.endTime,
-      date: formData.date,
+      startDate: formData.startDate,
       endDate: formData.endDate,
       timezone: formData.timezone,
     };
 
     setEvents((prev) => [...prev, newEvent]);
 
-      try {
+    try {
       // setSaving(true);
       // const slots = buildIntervals();
-      const res = await fetch('/api/tutor-availability/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/tutor-availability/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, newEvent, id }),
       });
       if (!res.ok) {
-        console.error('Error saving availability', res);
+        console.error("Error saving availability", res);
       }
       // setMessage('Availability saved');
       // setTimeout(() => setMessage(''), 2500);
@@ -249,35 +240,35 @@ const transformEvents = (eventsData: any[]): CalendarEvent[] => {
     setCurrentDate(date);
   }, []);
 
-const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-const handleEventSelect = (event: any) => {
-  setSelectedEvent(event);
-  setIsDetailModalOpen(true);
-};
+  const handleEventSelect = (event: any) => {
+    setSelectedEvent(event);
+    setIsDetailModalOpen(true);
+  };
 
-const handleEventUpdate = async(eventId: string, updatedData: any) => {
-  // console.log(updatedData);
-  //  try {
-  //     const res = await fetch('/api/tutor-availability/update', {
-  //       method: 'put',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ id: eventId,updatedData }),
-  //     });
-  //     if (!res.ok) {
-  //       console.error('Error saving availability', res);
-  //     }
-  //   } catch (e: any) {
-  //   } finally {
-  //   }
-  setEvents(prev => prev.map(e => e.id === eventId ? updatedData : e));
-};
+  const handleEventUpdate = async (eventId: string, updatedData: any) => {
+    // console.log(updatedData);
+    //  try {
+    //     const res = await fetch('/api/tutor-availability/update', {
+    //       method: 'put',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify({ id: eventId,updatedData }),
+    //     });
+    //     if (!res.ok) {
+    //       console.error('Error saving availability', res);
+    //     }
+    //   } catch (e: any) {
+    //   } finally {
+    //   }
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? updatedData : e)));
+  };
 
-const handleEventDelete = (eventId: string) => {
-  // Remove event from state
-  console.log('eventId',eventId)
-  setEvents(prev => prev.filter(e => e.id !== eventId));
-};
+  const handleEventDelete = (eventId: string) => {
+    // Remove event from state
+    console.log("eventId", eventId);
+    setEvents((prev) => prev.filter((e) => e.id !== eventId));
+  };
 
   // Custom components for different views
   const components: Components<CalendarEvent> = useMemo(
@@ -321,34 +312,34 @@ const handleEventDelete = (eventId: string) => {
     <>
       <div className="min-h-screen bg-gray-50 p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-6 bg-white rounded-lg shadow p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              Academic Calendar
-            </h1>
-            <p className="text-gray-600 mb-4">
-              Schedule and manage your lectures
-            </p>
+          <div className="mb-6 bg-white flex items-start justify-between rounded-lg shadow p-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                Availability Calendar
+              </h1>
+              <p className="text-gray-600 mb-4">
+                Schedule and manage your availability
+              </p>
 
-            <div className="flex flex-wrap gap-4 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-                <span className="text-sm">Lecture</span>
+              <div className="flex flex-wrap gap-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                  <span className="text-sm">Lecture</span>
+                </div>
               </div>
-            </div>
-
-            <div className="flex justify-between items-center">
               <p className="text-gray-700">
                 Total Events:{" "}
                 <span className="font-bold">{myEvents.length}</span>
               </p>
-              <button
-                onClick={handleAddLectureClick}
-                className="px-5 py-2.5 bg-[#cf3fad] text-white rounded-full hover:bg-[#cf3fad]/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center gap-2"
-              >
-                <span>➕</span>
-                Add Lecture
-              </button>
             </div>
+
+            <button
+              onClick={handleAddLectureClick}
+              className="px-5 py-2.5 bg-[#cf3fad] text-white rounded-full hover:bg-[#cf3fad]/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center gap-2"
+            >
+              <span>➕</span>
+              Create availability
+            </button>
           </div>
 
           <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -394,13 +385,13 @@ const handleEventDelete = (eventId: string) => {
       />
 
       {/* Event Detail Modal */}
-     <EventDetailModal
-  isOpen={isDetailModalOpen}
-  onClose={() => setIsDetailModalOpen(false)}
-  event={selectedEvent}
-  onDelete={handleEventDelete}
-  onUpdate={handleEventUpdate}
-/>
+      <EventDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        event={selectedEvent}
+        onDelete={handleEventDelete}
+        onUpdate={handleEventUpdate}
+      />
     </>
   );
 }

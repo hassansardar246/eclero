@@ -187,15 +187,13 @@ export default function HomeLayout({
           </button>
         </div>
 
-        <div className="flex h-screen pt-14 lg:pt-0" style={{
-          background: 'linear-gradient(to bottom, #2b3340, #23272f, #181a1b)'
-        }}>
+        <div className="flex h-screen pt-14 lg:pt-0 bg-[#F3F4F4]">
           {/* Sidebar: desktop */}
           <div className="hidden lg:block">
             <HomeSidebar userRole={userRole} userName={userName} />
           </div>
           <main className="flex-1 overflow-y-auto relative">
-            <div className="p-6">{children}</div>
+            <div className="">{children}</div>
           </main>
         </div>
 

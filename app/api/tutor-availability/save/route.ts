@@ -1,16 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-type SlotInput = { dayOfWeek: number; start: string; end: string };
-
-function isValidTimeString(t: string) {
-  return /^\d{2}:\d{2}$/.test(t);
-}
 
 // Build a Date from date (YYYY-MM-DD) and time (HH:mm) in local time to preserve wall clock
-function toDateTime(dateStr: string, timeStr: string): Date {
-  return new Date(`${dateStr}T${timeStr}:00`);
-}
 
 // For @db.Time fields we can still store as UTC time-only
 function toTimeDate(time: string): Date {
@@ -41,10 +33,11 @@ export async function POST(req: Request) {
     }
 
     // Build full datetime from the provided date + time strings
-    const startDate = new Date(`${newEvent.date}T${newEvent.start_time}:00Z`);
-    const endDate = new Date(`${newEvent.endDate}T${newEvent.end_time}:00Z`);
+// Remove the 'Z' to store as local time
+const startDate = new Date(`${newEvent.startDate}T${newEvent.start_time}:00`);
+const endDate = new Date(`${newEvent.endDate}T${newEvent.end_time}:00`);
     console.log('startDate',startDate)
-    console.log('endDate',endDate)
+    console.log('endDate',endDate);
 
     await prisma.tutorAvailability.create({
       data: {

@@ -198,167 +198,167 @@ export default function TutorSessions() {
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">My Sessions</h1>
-            <p className="text-gray-300">Manage your tutoring sessions and track student progress</p>
-          </div>
-          <button
-            onClick={fetchSessions}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2"
+  <div className="min-h-screen bg-[#F3F4F4] p-6">
+  <div className="max-w-7xl mx-auto">
+    {/* Header */}
+    <div className="mb-8 flex items-center justify-between">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Sessions</h1>
+        <p className="text-gray-600">Manage your tutoring sessions and track student progress</p>
+      </div>
+      <button
+        onClick={fetchSessions}
+        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    {/* Filters */}
+    <div className="mb-6 flex flex-wrap gap-2">
+      {(['all', 'active', 'upcoming', 'completed', 'requested'] as const).map((filterOption) => (
+        <button
+          key={filterOption}
+          onClick={() => setFilter(filterOption)}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            filter === filterOption
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-800 text-gray-200 hover:bg-gray-700'
+          }`}
+        >
+          {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+          {filterOption !== 'all' && (
+            <span className="ml-2 bg-gray-700 px-2 py-1 rounded-full text-xs">
+              {sessions.filter(s => s.status === filterOption).length}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+
+    {/* Sessions List */}
+    <div className="space-y-4">
+      {filteredSessions.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-gray-500 text-lg">No sessions found</div>
+        </div>
+      ) : (
+        filteredSessions.map((session) => (
+          <div
+            key={session.id}
+            className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-all"
+            style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          {(['all', 'active', 'upcoming', 'completed', 'requested'] as const).map((filterOption) => (
-            <button
-              key={filterOption}
-              onClick={() => setFilter(filterOption)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                filter === filterOption
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white/10 text-gray-300 hover:bg-white/20'
-              }`}
-            >
-              {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-              {filterOption !== 'all' && (
-                <span className="ml-2 bg-white/20 px-2 py-1 rounded-full text-xs">
-                  {sessions.filter(s => s.status === filterOption).length}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Sessions List */}
-        <div className="space-y-4">
-          {filteredSessions.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-lg">No sessions found</div>
-            </div>
-          ) : (
-            filteredSessions.map((session) => (
-              <div
-                key={session.id}
-                className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all"
-                style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={session.studentAvatar || "/default-avatar.png"}
-                      alt={session.studentName}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">{session.studentName}</h3>
-                      <p className="text-blue-400">{session.subject}</p>
-                      {session.status === 'active' ? (
-                        <p className="text-green-400 text-sm font-medium">
-                          🔴 Live Session • {session.duration} min
-                        </p>
-                      ) : (
-                        <p className="text-gray-400 text-sm">{session.date} at {session.time} • {session.duration} min</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      {session.price > 0 && (
-                        <div className="text-white font-semibold">${session.price}/hr</div>
-                      )}
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        session.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                        session.status === 'upcoming' ? 'bg-blue-500/20 text-blue-400' :
-                        session.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
-                        'bg-yellow-500/20 text-yellow-400'
-                      }`}>
-                        {session.status}
-                      </span>
-                    </div>
-                    {session.status === 'active' && (
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="flex items-center gap-2 text-green-400 text-sm">
-                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                          Session in progress
-                        </div>
-                        <button
-                          onClick={() => handleRejoinSession(session)}
-                          className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors font-medium animate-pulse"
-                          disabled={!userInfo}
-                        >
-                          Rejoin Session
-                        </button>
-                      </div>
-                    )}
-                    {session.status === 'upcoming' && (
-                      <div className="text-center">
-                        <div className="text-blue-400 text-sm mb-2">Session scheduled</div>
-                        <div className="text-gray-400 text-xs">Waiting to start</div>
-                      </div>
-                    )}
-                    {session.status === 'requested' && (
-                      <div className="text-center">
-                        <div className="text-yellow-400 text-sm mb-2">Pending response</div>
-                        <div className="text-gray-400 text-xs">Check your inbox</div>
-                      </div>
-                    )}
-                    {session.status === 'completed' && (
-                      <div className="text-center">
-                        <div className="text-gray-400 text-sm mb-2">Session completed</div>
-                        <div className="text-gray-500 text-xs">
-                          {session.progress ? 'Notes available' : 'No notes'}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <img
+                  src={session.studentAvatar || "/default-avatar.png"}
+                  alt={session.studentName}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">{session.studentName}</h3>
+                  <p className="text-blue-600">{session.subject}</p>
+                  {session.status === 'active' ? (
+                    <p className="text-green-600 text-sm font-medium">
+                      🔴 Live Session • {session.duration} min
+                    </p>
+                  ) : (
+                    <p className="text-gray-500 text-sm">{session.date} at {session.time} • {session.duration} min</p>
+                  )}
                 </div>
-                
-                {/* Additional Info */}
-                {session.homework && (
-                  <div className="mt-4 p-3 bg-white/5 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-300 mb-1">Homework Assigned:</h4>
-                    <p className="text-sm text-white">{session.homework}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  {session.price > 0 && (
+                    <div className="text-gray-900 font-semibold">${session.price}/hr</div>
+                  )}
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    session.status === 'active' ? 'bg-green-100 text-green-800' :
+                    session.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                    session.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {session.status}
+                  </span>
+                </div>
+                {session.status === 'active' && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-2 text-green-600 text-sm">
+                      <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
+                      Session in progress
+                    </div>
+                    <button
+                      onClick={() => handleRejoinSession(session)}
+                      className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors font-medium animate-pulse"
+                      disabled={!userInfo}
+                    >
+                      Rejoin Session
+                    </button>
                   </div>
                 )}
-                
-                {session.progress && (
-                  <div className="mt-4 p-3 bg-white/5 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-300 mb-1">Session Notes:</h4>
-                    <p className="text-sm text-white">{session.progress}</p>
-                    {session.rating && (
-                      <div className="flex items-center mt-2">
-                        <span className="text-sm text-gray-400 mr-2">Student Rating:</span>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <span
-                              key={i}
-                              className={`text-lg ${i < session.rating! ? 'text-yellow-400' : 'text-gray-600'}`}
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                {session.status === 'upcoming' && (
+                  <div className="text-center">
+                    <div className="text-blue-600 text-sm mb-2">Session scheduled</div>
+                    <div className="text-gray-500 text-xs">Waiting to start</div>
+                  </div>
+                )}
+                {session.status === 'requested' && (
+                  <div className="text-center">
+                    <div className="text-yellow-600 text-sm mb-2">Pending response</div>
+                    <div className="text-gray-500 text-xs">Check your inbox</div>
+                  </div>
+                )}
+                {session.status === 'completed' && (
+                  <div className="text-center">
+                    <div className="text-gray-600 text-sm mb-2">Session completed</div>
+                    <div className="text-gray-500 text-xs">
+                      {session.progress ? 'Notes available' : 'No notes'}
+                    </div>
                   </div>
                 )}
               </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Session view moved to /home/session/[id] */}
+            </div>
+            
+            {/* Additional Info */}
+            {session.homework && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Homework Assigned:</h4>
+                <p className="text-sm text-gray-900">{session.homework}</p>
+              </div>
+            )}
+            
+            {session.progress && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-700 mb-1">Session Notes:</h4>
+                <p className="text-sm text-gray-900">{session.progress}</p>
+                {session.rating && (
+                  <div className="flex items-center mt-2">
+                    <span className="text-sm text-gray-600 mr-2">Student Rating:</span>
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <span
+                          key={i}
+                          className={`text-lg ${i < session.rating! ? 'text-yellow-500' : 'text-gray-300'}`}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))
+      )}
     </div>
+  </div>
+
+  {/* Session view moved to /home/session/[id] */}
+</div>
   );
 }

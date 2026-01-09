@@ -38,6 +38,7 @@ interface Subject {
   grade: string | null;
 }
 
+
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   isOpen,
   onClose,
@@ -198,7 +199,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         return;
       }
 
-      const result = await res.json();
+  
 
       // Update local state with the updated event
       onUpdate(event.id, {
@@ -208,6 +209,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       });
 
       setIsEditMode(false);
+         onClose();
     } catch (error: any) {
       console.error("Error updating event:", error);
       alert("Error updating event. Please try again.");

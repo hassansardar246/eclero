@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import EventCalender from "@/components/EventCalender";
 import Selectable from "@/components/EventCalender";
 import { momentLocalizer } from 'react-big-calendar'
-import moment from 'moment'
+import moment from 'moment-timezone'
 type ApiSlot = { dayOfWeek: number; start: string; end: string };
 
 const DAYS = [
@@ -74,12 +74,14 @@ export default function TutorAvailability() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="min-h-[60vh] h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-white/90">Loading availability…</div>
       </div>
     );
   }
-const localizer = momentLocalizer(moment)
+moment.tz.setDefault("Asia/Karachi"); // or your timezone
+
+const localizer = momentLocalizer(moment);
   return (
     <>
       <Selectable localizer={localizer} email={email} id={id} data={data} />

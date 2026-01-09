@@ -33,6 +33,9 @@ export default function TutorProfile() {
   const [educationText, setEducationText] = useState<string>("");
   const [categories, setCategories] = useState<CategoryGroup[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<Subjects[]>([]);
+  const [error, setError] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string>("");
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -150,11 +153,17 @@ export default function TutorProfile() {
     setSaving(false);
   };
   const onSubjectsChange = (subjects: any) => {
-    console.log("Selected subjects parent:", subjects);
+    setError(false);
+    setErrorMsg("");
     setSelectedSubjects(subjects);
   };
   const handleSubjectsChange = async () => {
     if (!profile?.email) return;
+    if(selectedSubjects.length === 0) {
+      setError(true);
+      setErrorMsg("Please select at least one subject");
+      return;
+    }
     Swal.fire({
       title: "Are you sure?",
       text: "All availablity records will be deleted!",
@@ -189,7 +198,7 @@ export default function TutorProfile() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen bg-slate-900 items-center justify-center">
         <div className="text-white text-xl font-bold">Loading profile...</div>
       </div>
     );
@@ -202,10 +211,10 @@ export default function TutorProfile() {
     );
   }
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 grid grid-cols-1 md:grid-cols-[1.1fr_1.6fr] gap-8">
+    <div className="h-screen flex items-center justify-center">
+      <div className="w-full max-w-7xl lg:min-h-[750px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 grid grid-cols-1 md:grid-cols-[1.1fr_1.6fr] gap-8">
         {/* LEFT COLUMN – Subjects */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 ">
           <div className="flex items-center gap-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -234,6 +243,7 @@ export default function TutorProfile() {
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
             {editMode3 ? (
               <>
+              {error && <div className="text-red-500 text-sm mb-2">{errorMsg}</div>}
                 <motion.div
                   key="step-2"
                   initial={{ opacity: 0, scale: 0.95 }}

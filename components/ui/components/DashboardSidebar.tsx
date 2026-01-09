@@ -172,14 +172,9 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
 
   return (
    <div
-  className={`flex flex-col h-screen transition-all duration-500 ease-out ${
+  className={`flex flex-col h-screen transition-all duration-500 ease-out bg-[#E6E6E6] rounded-r-[50px] ${
     isCollapsed ? "w-20" : "w-64"
   }`}
-  style={{
-    background: "linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)",
-    backdropFilter: "blur(20px)",
-    boxShadow: "inset 1px 0 0 rgba(255, 255, 255, 0.1), 16px 0 40px rgba(0, 0, 0, 0.2)"
-  }}
 >
   {/* Header with user info and toggle button */}
   <div className="p-6 pb-4 border-b border-white/10 relative">
@@ -190,7 +185,6 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
       <div className="flex items-center gap-3 overflow-hidden">
         {/* Animated avatar with gradient ring */}
         <div className="relative flex-shrink-0">
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-full opacity-70 blur-sm animate-pulse"></div>
           <div className="relative w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
             {userName.charAt(0).toUpperCase()}
           </div>
@@ -198,20 +192,20 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
         
         {!isCollapsed && (
           <div className="overflow-hidden">
-            <p className="text-sm font-semibold text-white truncate">{userName}</p>
-            <p className="text-xs text-blue-300/70 font-medium">{userRole}</p>
+            <p className="text-sm font-semibold text-[#0F2854] truncate">{userName}</p>
+            <p className="text-sm text-white py-1 text-center bg-[#0F2854] rounded-full font-medium">{userRole}</p>
           </div>
         )}
       </div>
       
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="relative w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all duration-300 group flex-shrink-0"
+        className="relative w-8 h-8 rounded-lg bg-white/50 hover:bg-[#0F2854] border border-white/10 flex items-center justify-center text-[#0F2854] hover:text-white transition-all duration-300 group flex-shrink-0"
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
-        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-400/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-400/10 group-hover:via-purple-500/10 group-hover:to-pink-500/10 transition-all duration-500"></div>
+        {/* <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-400/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-400/10 group-hover:via-purple-500/10 group-hover:bg-[#0F2854] transition-all duration-500"></div> */}
         <svg
-          className={`w-4 h-4 transition-transform duration-500 ${isCollapsed ? "rotate-180" : ""}`}
+         className={`w-4 h-4 transition-transform duration-500 ${isCollapsed ? "-rotate-180" : "rotate-0"}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -220,7 +214,7 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d={isCollapsed ? "M13 5l7 7-7 7M5 5l7 7-7 7" : "M11 19l-7-7 7-7m8 14l-7-7 7-7"}
+            d={"M11 19l-7-7 7-7m8 14l-7-7 7-7"}
           />
         </svg>
       </button>
@@ -236,26 +230,18 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
           : pathname === item.href || pathname.startsWith(item.href + "/");
       
       return (
-        <div key={item.href} className="relative group">
-          {/* Active state glow effect */}
-          {isActive && (
-            <>
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-blue-400 to-purple-500 rounded-r-full shadow-lg shadow-blue-400/30"></div>
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-400 rounded-r-full blur-sm"></div>
-            </>
-          )}
-          
+        <div key={item.href} className="relative group">  
           <Link
             href={item.href}
             className={`relative flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 overflow-hidden ${
               isActive
-                ? "bg-gradient-to-r from-blue-500/15 to-purple-500/15 text-white shadow-lg shadow-blue-500/10"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
+                ? "bg-[#0F2854] text-white shadow-lg shadow-blue-500/10"
+                : "text-[#0F2854] hover:text-white/70"
             } ${isCollapsed ? "justify-center px-3" : ""}`}
             title={isCollapsed ? item.label : undefined}
           >
             {/* Hover gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500"></div>
+            <div className="absolute inset-0 to-pink-500/0 group-hover:bg-[#0F2854]/20 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500"></div>
             
             <span
               className={`relative z-10 flex items-center ${
@@ -349,7 +335,7 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
           />
         </svg>
         {!isCollapsed && (
-          <span className="font-medium text-gray-300 group-hover:text-white tracking-wide">
+          <span className="font-medium text-black group-hover:text-white tracking-wide">
             Sign out
           </span>
         )}

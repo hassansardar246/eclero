@@ -4,20 +4,22 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { DateRange } from "react-date-range";
 import { format } from "date-fns";
-import { X } from "lucide-react";
+import { BookOpen, CalendarIcon, Clock, DollarSign, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 export interface EventFormData {
-    title: string;      // subject_id
-    price: string;
-    startTime: string;
-    endTime: string;
-    date: string;
-    endDate: string;
-    subject?: string;   // subject name
-    subject_id?: string;
-    timezone?: string;
-  }
+  title: string; // subject_id
+  price: string;
+  startTime: string;
+  start: string;
+  end: string;
+  endTime: string;
+  startDate: string;
+  endDate: string;
+  subject?: string; // subject name
+  subject_id?: string;
+  timezone?: string;
+}
 
 interface EventModalProps {
   isOpen: boolean;
@@ -42,11 +44,14 @@ export const EventModal: React.FC<EventModalProps> = ({
   defaultEnd,
 }) => {
   const [formData, setFormData] = useState<EventFormData>({
+    subject_id: "",
     title: "",
     price: "",
+    start: "",
+    end: "",
     startTime: moment(defaultStart).format("HH:mm"),
     endTime: moment(defaultEnd).format("HH:mm"),
-    date: moment(defaultStart).format("YYYY-MM-DD"),
+    startDate: moment(defaultStart).format("YYYY-MM-DD"),
     endDate: moment(defaultEnd).format("YYYY-MM-DD"),
   });
 
@@ -72,7 +77,7 @@ export const EventModal: React.FC<EventModalProps> = ({
             data: { user },
             error: sessionError,
           } = await supabase.auth.getUser();
-          
+
           if (sessionError || !user?.email) {
             console.error("Error getting user:", sessionError);
             setLoadingSubjects(false);
@@ -82,10 +87,10 @@ export const EventModal: React.FC<EventModalProps> = ({
           const profileRes = await fetch(
             `/api/profiles/get-full?email=${encodeURIComponent(user.email)}`
           );
-          
+
           if (profileRes.ok) {
             const profileData = await profileRes.json();
-            
+
             // Transform subjects from the API response
             if (profileData.subjects && Array.isArray(profileData.subjects)) {
               const transformedSubjects: Subject[] = profileData.subjects
@@ -101,7 +106,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                   return null;
                 })
                 .filter((s: Subject | null): s is Subject => s !== null);
-              
+
               setSubjects(transformedSubjects);
             }
           }
@@ -151,60 +156,57 @@ export const EventModal: React.FC<EventModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-  
-    const startDateTime = moment(`${formData.date} ${formData.startTime}`).toDate();
-    const endDateTime = moment(`${formData.endDate} ${formData.endTime}`).toDate();
-  
+
+    const startDateTime = moment(
+      `${formData.startDate} ${formData.startTime}`
+    ).toDate();
+    const endDateTime = moment(
+      `${formData.endDate} ${formData.endTime}`
+    ).toDate();
+
     if (endDateTime <= startDateTime) {
       alert("End time must be after start time");
       return;
     }
-  
+
     if (!formData.title) {
       alert("Please select a subject");
       return;
     }
-  
+
     // Map subject_id to subject name
-    const selectedSubject = subjects.find((s) => s.id === formData.title);
+    const selectedSubject = subjects.find((s) => s.id === formData.subject_id);
     const subjectName = selectedSubject?.name || "";
-  
+
     onSubmit({
       ...formData,
-      subject_id: formData.title,
+      subject_id: formData.subject_id,
       subject: subjectName,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
     });
     onClose();
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
+    if (name === "subject_id") {
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      const subjectName = selectedOption.getAttribute("data-name");
+      setFormData((prev) => ({
+        ...prev,
+        ["title"]: subjectName,
+      }));
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleDateRangeChange = (item: any) => {
-    console.log("Selected date range:", item.selection);
-    setDateRange([item.selection]);
-    const newDate = moment(item.selection.startDate).format("YYYY-MM-DD");
-    const endDate = moment(item.selection.endDate).format("YYYY-MM-DD");
-    setFormData((prev) => ({
-      ...prev,
-      date: newDate,
-      endDate
-    }));
-  };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-100 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] min-h-[570px] scrollbar-hide overflow-y-auto">
+      <div className="bg-slate-100 rounded-lg shadow-xl max-w-2xl w-full scrollbar-hide overflow-y-auto">
         <div className="flex relative m-2.5 text-white h-24 rounded-md bg-slate-800 justify-between items-center border-b px-6 py-4">
           <h3 className="text-xl font-semibold text-white">
             Create New Lecture
@@ -217,45 +219,95 @@ export const EventModal: React.FC<EventModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
-          <div className="mb-6" ref={calendarRef}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date:
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Subject *
             </label>
-            <div className="relative">
-              <div
-                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer bg-white flex justify-between items-center hover:border-gray-400 transition-colors"
-              >
-                <span>
-                  {dateRange[0]?.startDate
-                    ? format(dateRange[0].startDate, "MM/dd/yyyy")
-                    : "Start Date"}
-                  {" - "}
-                  {dateRange[0]?.endDate
-                    ? format(dateRange[0].endDate, "MM/dd/yyyy")
-                    : "End Date"}
-                </span>
-                <span className="text-gray-500">📅</span>
-              </div>
+            <select
+              name="subject_id"
+              value={formData.subject_id}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              required
+              disabled={loadingSubjects}
+            >
+              <option value="">
+                {loadingSubjects ? "Loading subjects..." : "Select a subject"}
+              </option>
+              {subjects.map((subject) => (
+                <option
+                  key={subject.id}
+                  value={subject.id}
+                  data-name={subject.name}
+                >
+                  {subject.name}
+                  {subject.code ? ` (${subject.code})` : ""}
+                  {subject.grade ? ` - Grade ${subject.grade}` : ""}
+                </option>
+              ))}
+            </select>
+            {subjects.length === 0 && !loadingSubjects && (
+              <p className="text-sm text-gray-500 mt-1">
+                No subjects available. Please add subjects to your profile.
+              </p>
+            )}
+          </div>
 
-              {isCalendarOpen && (
-                <div className="absolute top-full left-0 mt-1 z-10 bg-white border border-gray-300 rounded-lg shadow-lg">
-                  <DateRange
-                    editableDateInputs={false}
-                    onChange={handleDateRangeChange}
-                    moveRangeOnFirstSelection={false}
-                    ranges={dateRange}
-                    className="w-full"
-                  />
-                </div>
-              )}
+          {/* Price */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Price *
+            </label>
+            <input
+              type="text"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              placeholder="Enter price"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              required
+            />
+          </div>
+          {/* Date Range */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4" />
+                Start Date *
+              </label>
+              <input
+                type="date"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4" />
+                End Date *
+              </label>
+              <input
+                type="date"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                required
+              />
             </div>
           </div>
 
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          {/* Time Range */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
                 Start Time *
               </label>
               <input
@@ -263,13 +315,13 @@ export const EventModal: React.FC<EventModalProps> = ({
                 name="startTime"
                 value={formData.startTime}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 required
               />
             </div>
-
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
                 End Time *
               </label>
               <input
@@ -277,58 +329,11 @@ export const EventModal: React.FC<EventModalProps> = ({
                 name="endTime"
                 value={formData.endTime}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 required
               />
             </div>
           </div>
-
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subject *
-              </label>
-              <select
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-                disabled={loadingSubjects}
-              >
-                <option value="">
-                  {loadingSubjects ? "Loading subjects..." : "Select a subject"}
-                </option>
-                {subjects.map((subject) => (
-                  <option key={subject.id} value={subject.id}>
-                    {subject.name}
-                    {subject.code ? ` (${subject.code})` : ""}
-                    {subject.grade ? ` - Grade ${subject.grade}` : ""}
-                  </option>
-                ))}
-              </select>
-              {subjects.length === 0 && !loadingSubjects && (
-                <p className="text-sm text-gray-500 mt-1">
-                  No subjects available. Please add subjects to your profile.
-                </p>
-              )}
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Session Price *
-              </label>
-              <input
-                type="text"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="20"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-          </div>
-
           <div className="flex justify-end gap-3 pt-10 mt-auto border-t">
             <button
               type="button"

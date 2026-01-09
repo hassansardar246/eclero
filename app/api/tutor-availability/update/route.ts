@@ -53,8 +53,8 @@ export async function PUT(request: NextRequest) {
     let startTimeStr = '00:00';
     let endTimeStr = '00:00';
 
-    startDate = new Date(`${updatedData.date}T${updatedData.startTime}:00Z`);
-    endDate = new Date(`${updatedData.endDate}T${updatedData.endTime}:00Z`);
+    startDate = new Date(`${updatedData.date}T${updatedData.startTime}:00`);
+    endDate = new Date(`${updatedData.endDate}T${updatedData.endTime}:00`);
 
     startTimeStr = updatedData.startTime;
     endTimeStr = updatedData.endTime;

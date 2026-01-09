@@ -257,165 +257,163 @@ export default function InboxPage() {
   const declinedCount = requests.filter(req => req.status === 'declined').length;
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Session Requests</h1>
-            <p className="text-gray-300">Manage your incoming tutoring session requests</p>
-          </div>
+   <div className="min-h-screen bg-[#F3F4F4]">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {/* Header */}
+    <div className="mb-8 flex items-center justify-between">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Session Requests</h1>
+        <p className="text-gray-600">Manage your incoming tutoring session requests</p>
+      </div>
+      <button
+        onClick={fetchSessions}
+        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    {/* Filter Tabs */}
+    <div className="bg-white rounded-2xl p-6 border border-gray-200 mb-8" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+        {(['all', 'pending', 'accepted', 'declined'] as const).map((filterOption) => (
           <button
-            onClick={fetchSessions}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2"
+            key={filterOption}
+            onClick={() => setFilter(filterOption)}
+            className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
+              filter === filterOption
+                ? 'bg-gradient-to-r from-blue-400 to-purple-500 text-white shadow-lg'
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'
+            }`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh
+            {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+            {filterOption !== 'all' && (
+              <span className="ml-2 text-xs bg-gray-300 px-2 py-0.5 rounded-full">
+                {filterOption === 'pending' ? pendingCount : 
+                 filterOption === 'accepted' ? acceptedCount : declinedCount}
+              </span>
+            )}
           </button>
+        ))}
+      </div>
+    </div>
+
+    {/* Requests List */}
+    <div className="bg-white rounded-2xl border border-gray-200" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
+      {filteredRequests.length === 0 ? (
+        <div className="p-12 text-center text-gray-500">
+          <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+          <p className="text-xl text-gray-700">No {filter === 'all' ? '' : filter + ' '}session requests</p>
+          <p className="text-sm mt-2 text-gray-600">
+            {filter === 'pending' ? 'All requests have been responded to' : 
+             filter === 'accepted' ? 'No accepted requests yet' :
+             filter === 'declined' ? 'No declined requests yet' :
+             'You have no session requests at the moment'}
+          </p>
         </div>
-
-
-
-        {/* Filter Tabs */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
-          <div className="flex space-x-1 bg-white/5 p-1 rounded-lg">
-            {(['all', 'pending', 'accepted', 'declined'] as const).map((filterOption) => (
-              <button
-                key={filterOption}
-                onClick={() => setFilter(filterOption)}
-                className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
-                  filter === filterOption
-                    ? 'bg-gradient-to-r from-blue-400 to-purple-500 text-white shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-                {filterOption !== 'all' && (
-                  <span className="ml-2 text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                    {filterOption === 'pending' ? pendingCount : 
-                     filterOption === 'accepted' ? acceptedCount : declinedCount}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Requests List */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
-          {filteredRequests.length === 0 ? (
-            <div className="p-12 text-center text-gray-400">
-              <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-              <p className="text-xl">No {filter === 'all' ? '' : filter + ' '}session requests</p>
-              <p className="text-sm mt-2 text-gray-500">
-                {filter === 'pending' ? 'All requests have been responded to' : 
-                 filter === 'accepted' ? 'No accepted requests yet' :
-                 filter === 'declined' ? 'No declined requests yet' :
-                 'You have no session requests at the moment'}
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-white/10">
-              {filteredRequests.map((request) => (
-                <div key={request.id} className="p-6 hover:bg-white/5 transition-colors">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src={request.studentAvatar || "/default-avatar.png"}
-                      alt={request.studentName}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <h3 className="font-medium text-white">{request.studentName}</h3>
-                          <p className="text-sm text-blue-400">{request.subject}</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-xs text-gray-400">
-                            {formatTimeAgo(request.requestedAt)}
-                          </span>
-                          <div className="mt-1">
-                            {request.status === 'pending' && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
-                                Pending
-                              </span>
-                            )}
-                            {request.status === 'accepted' && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-400/20 text-green-400 border border-green-400/30">
-                                Accepted
-                              </span>
-                            )}
-                            {request.status === 'declined' && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-400/20 text-red-400 border border-red-400/30">
-                                Declined
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {request.message && (
-                        <p className="text-sm text-gray-300 mb-4 bg-white/5 p-3 rounded-lg">
-                          "{request.message}"
-                        </p>
-                      )}
-                      
-                      <div className="flex gap-3">
+      ) : (
+        <div className="divide-y divide-gray-200">
+          {filteredRequests.map((request) => (
+            <div key={request.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div className="flex items-start gap-4">
+                <img
+                  src={request.studentAvatar || "/default-avatar.png"}
+                  alt={request.studentName}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h3 className="font-medium text-gray-900">{request.studentName}</h3>
+                      <p className="text-sm text-blue-600">{request.subject}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-gray-500">
+                        {formatTimeAgo(request.requestedAt)}
+                      </span>
+                      <div className="mt-1">
                         {request.status === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => handleAcceptRequest(request.id)}
-                              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors font-medium"
-                            >
-                              Accept Request
-                            </button>
-                            <button
-                              onClick={() => handleDeclineRequest(request.id)}
-                              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition-colors font-medium"
-                            >
-                              Decline
-                            </button>
-                          </>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                            Pending
+                          </span>
                         )}
-                        
                         {request.status === 'accepted' && (
-                          <div className="flex gap-3">
-                            <button 
-                              onClick={() => handleStartSession(request)}
-                              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors font-medium"
-                              disabled={!userInfo}
-                            >
-                              Start Session
-                            </button>
-                            <button className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm rounded-lg transition-colors font-medium">
-                              Message Student
-                            </button>
-                          </div>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                            Accepted
+                          </span>
                         )}
-                        
                         {request.status === 'declined' && (
-                          <button
-                            onClick={() => handleAcceptRequest(request.id)}
-                            className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors font-medium"
-                          >
-                            Reconsider
-                          </button>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                            Declined
+                          </span>
                         )}
                       </div>
                     </div>
                   </div>
+                  
+                  {request.message && (
+                    <p className="text-sm text-gray-700 mb-4 bg-gray-100 p-3 rounded-lg">
+                      "{request.message}"
+                    </p>
+                  )}
+                  
+                  <div className="flex gap-3">
+                    {request.status === 'pending' && (
+                      <>
+                        <button
+                          onClick={() => handleAcceptRequest(request.id)}
+                          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors font-medium"
+                        >
+                          Accept Request
+                        </button>
+                        <button
+                          onClick={() => handleDeclineRequest(request.id)}
+                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition-colors font-medium"
+                        >
+                          Decline
+                        </button>
+                      </>
+                    )}
+                    
+                    {request.status === 'accepted' && (
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => handleStartSession(request)}
+                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors font-medium"
+                          disabled={!userInfo}
+                        >
+                          Start Session
+                        </button>
+                        <button className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm rounded-lg transition-colors font-medium">
+                          Message Student
+                        </button>
+                      </div>
+                    )}
+                    
+                    {request.status === 'declined' && (
+                      <button
+                        onClick={() => handleAcceptRequest(request.id)}
+                        className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors font-medium"
+                      >
+                        Reconsider
+                      </button>
+                    )}
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
+          ))}
         </div>
-      </div>
-
-      {/* Session view moved to /home/session/[id] */}
+      )}
     </div>
+  </div>
+
+  {/* Session view moved to /home/session/[id] */}
+</div>
   );
 } 
