@@ -31,29 +31,33 @@ export async function POST(req: Request) {
     if (!resolvedTutorId) {
       return NextResponse.json({ error: "Could not resolve tutorId" }, { status: 400 });
     }
-
-    // Build full datetime from the provided date + time strings
-// Remove the 'Z' to store as local time
 const startDate = new Date(`${newEvent.startDate}T${newEvent.start_time}:00`);
 const endDate = new Date(`${newEvent.endDate}T${newEvent.end_time}:00`);
-    console.log('startDate',startDate)
-    console.log('endDate',endDate);
 
-    await prisma.tutorAvailability.create({
-      data: {
-        tutor_id: resolvedTutorId,
-        day_of_week: startDate.getDay() + 1, // 1-7 Mon-Sun
-        start_time: toTimeDate(newEvent.start_time),
+        if (newEvent.subject_id.trim()) {
+      // First, try to find existing record
+      const existing = await prisma.tutorAvailability.findFirst({
+        where: {
+          tutor_id: resolvedTutorId,
+          id: newEvent.subject_id.trim()
+        }
+      });
+
+      if (existing) {
+        // Update existing
+        await prisma.tutorAvailability.update({
+          where: {
+            id: existing.id
+          },
+          data: {
+             start_time: toTimeDate(newEvent.start_time),
         end_time: toTimeDate(newEvent.end_time),
-        start_date: startDate, // includes selected time
-        end_date: endDate,     // includes selected time
-        price: parseFloat(newEvent.price) || 0,
-        subject: newEvent.subject, // text subject name
-        subject_id: newEvent.subject_id, // if you pass id separately
-        is_active: true,
-        timezone: newEvent.timezone || "UTC",
-      },
-    });
+        start_date: startDate,
+        end_date: endDate,
+          }
+        });
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

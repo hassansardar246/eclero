@@ -18,13 +18,16 @@ import { EventModal, EventFormData } from "./EventModal";
 // Define TypeScript interfaces
 interface CalendarEvent {
   id: string;
-  title: string;
-  price: string;
-  start: any;
-  end: any;
-  start_time: any;
-  end_time: any;
-  allDay?: boolean;
+  subject: string;
+  startDate: any;
+  endDate: any;
+  subject_id: string;
+  startTime: any;
+  endTime: any;
+  timezone: any;
+  duration: any;
+
+
 }
 
 interface SelectableProps {
@@ -46,20 +49,22 @@ const localizer = momentLocalizer(moment);
 
 // Custom Event Components
 interface CustomEventProps {
-  event: CalendarEvent;
+  event: any;
   view?: View;
 }
 
 const CustomEvent: React.FC<CustomEventProps> = ({ event, view }) => {
-  const startTime = moment(event.start).format("h:mm A");
-  const endTime = moment(event.end).format("h:mm A");
-  const dateStr = moment(event.start).format("MMM D, YYYY");
+  const startTime = moment(event.start_time).format("h:mm A");
+  const endTime = moment(event.end_time).format("h:mm A");
+  const dateStr = moment(event.start_date).format("MMM D, YYYY");
+  console.log('event',event);
 
   if (view === Views.MONTH) {
     return (
       <div className={` text-white p-1 rounded text-xs overflow-hidden`}>
         <div className="flex items-center gap-1 mb-0.5">
-          <div className="font-bold truncate">{event.title}</div>
+          <div className="font-bold truncate">{event.originalData.subject}</div>
+          
         </div>
       </div>
     );
@@ -70,7 +75,7 @@ const CustomEvent: React.FC<CustomEventProps> = ({ event, view }) => {
       <div className="bg-gray-50 p-3 rounded-lg border-l-4 border-blue-500 mb-2">
         <div className="flex items-center gap-3">
           <div>
-            <div className="font-bold text-gray-800">{event.title}</div>
+            <div className="font-bold text-gray-800">{event.originalData.subject}</div>
           </div>
         </div>
         <div className="mt-2 text-sm text-gray-700">
@@ -87,7 +92,7 @@ const CustomEvent: React.FC<CustomEventProps> = ({ event, view }) => {
 
   return (
     <div className={` text-white p-2 rounded-md h-full overflow-hidden`}>
-      <div className="font-bold text-sm mb-1 truncate">{event.title}</div>
+      <div className="font-bold text-sm mb-1 truncate">{event.originalData.subject}</div>
       <div className="text-xs opacity-90 mb-0.5 flex items-center gap-1">
         <span className="text-[10px]">🕐</span> {startTime} - {endTime}
       </div>
@@ -102,19 +107,11 @@ export default function Selectable({
   id,
   data,
 }: SelectableProps) {
-  const transformEvents = (eventsData: any[]): CalendarEvent[] => {
+  const transformEvents = (eventsData: any[]): any[] => {
  return eventsData.map((event) => {
-    // Use start_date and end_date if available
     if (event.start_date && event.end_date) {
-      console.log("Original start_date from event:", event.start_date);
-      console.log("Original end_date from event:", event.end_date);
-      
-      // Parse the dates - they already contain both date and time
-      const start = moment.utc(event.start_date).local(); // Parse as UTC then convert to local
-      const end = moment.utc(event.end_date).local();     // Parse as UTC then convert to local
-      
-      console.log("Parsed start (local):", start.format());
-      console.log("Parsed end (local):", end.format());
+      const start = moment.utc(event.start_date).local();
+      const end = moment.utc(event.end_date).local();
 
         return {
         id: event.id,
@@ -128,45 +125,10 @@ export default function Selectable({
         originalData: event,
       };
       }
-
-      // Fallback: If no start_date/end_date, use day_of_week logic (for recurring events)
-      const today = new Date();
-      const eventDay = new Date(today);
-
-      const dayOfWeek = event.day_of_week || 0;
-      const currentDay = today.getDay();
-      const daysToAdd = (dayOfWeek - currentDay + 7) % 7;
-      eventDay.setDate(today.getDate() + daysToAdd);
-
-      const startTime = new Date(event.start_time);
-      const endTime = new Date(event.end_time);
-
-      const startDate = new Date(eventDay);
-      startDate.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
-
-      const endDate = new Date(eventDay);
-      endDate.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
-
-      // If end is before start (crosses midnight), add one day to end
-      if (endDate < startDate) {
-        endDate.setDate(endDate.getDate() + 1);
-      }
-
-      return {
-        id: event.id,
-        title: event.subject || "Available Slot",
-        price: event.price?.toString() || "0",
-        start: startDate,
-        end: endDate,
-        start_time: event.start_time,
-        end_time: event.end_time,
-        allDay: false,
-        originalData: event,
-      };
     });
   };
 
-  const [myEvents, setEvents] = useState<CalendarEvent[]>(
+  const [myEvents, setEvents] = useState<any[]>(
     transformEvents(data || [])
   );
 
@@ -181,11 +143,6 @@ export default function Selectable({
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null
   );
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const handleSelectSlot = useCallback(({ start, end }: SlotInfo) => {
-    setSelectedSlot({ start, end });
-    setModalOpen(true);
-  }, []);
 
   // const handleDeleteEvent = useCallback((eventId: string) => {
   //   setEvents((prev) => prev.filter((ev) => ev.id !== eventId));
@@ -197,9 +154,6 @@ export default function Selectable({
       title: formData.subject,
       subject_id: formData.subject_id,
       subject: formData.subject,
-      price: formData.price,
-      start: formData.startDate,
-      end: formData.endDate,
       start_time: formData.startTime,
       end_time: formData.endTime,
       startDate: formData.startDate,
@@ -243,24 +197,13 @@ export default function Selectable({
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const handleEventSelect = (event: any) => {
+    console.log('event selected in main',event);
     setSelectedEvent(event);
     setIsDetailModalOpen(true);
   };
 
   const handleEventUpdate = async (eventId: string, updatedData: any) => {
-    // console.log(updatedData);
-    //  try {
-    //     const res = await fetch('/api/tutor-availability/update', {
-    //       method: 'put',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify({ id: eventId,updatedData }),
-    //     });
-    //     if (!res.ok) {
-    //       console.error('Error saving availability', res);
-    //     }
-    //   } catch (e: any) {
-    //   } finally {
-    //   }
+    console.log(updatedData);
     setEvents((prev) => prev.map((e) => (e.id === eventId ? updatedData : e)));
   };
 
@@ -271,7 +214,7 @@ export default function Selectable({
   };
 
   // Custom components for different views
-  const components: Components<CalendarEvent> = useMemo(
+  const components: Components<any> = useMemo(
     () => ({
       event: (props) => <CustomEvent event={props.event} view={currentView} />,
     }),
@@ -279,7 +222,7 @@ export default function Selectable({
   );
 
   // Custom event style for background color
-  const eventStyleGetter = useCallback((event: CalendarEvent) => {
+  const eventStyleGetter = useCallback((event: any) => {
     const backgroundColor = "green";
 
     return {

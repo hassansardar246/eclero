@@ -8,11 +8,7 @@ import { BookOpen, CalendarIcon, Clock, DollarSign, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 export interface EventFormData {
-  title: string; // subject_id
-  price: string;
   startTime: string;
-  start: string;
-  end: string;
   endTime: string;
   startDate: string;
   endDate: string;
@@ -45,27 +41,16 @@ export const EventModal: React.FC<EventModalProps> = ({
 }) => {
   const [formData, setFormData] = useState<EventFormData>({
     subject_id: "",
-    title: "",
-    price: "",
-    start: "",
-    end: "",
     startTime: moment(defaultStart).format("HH:mm"),
     endTime: moment(defaultEnd).format("HH:mm"),
     startDate: moment(defaultStart).format("YYYY-MM-DD"),
     endDate: moment(defaultEnd).format("YYYY-MM-DD"),
   });
 
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [subjects, setSubjects] = useState<[]>([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
-  const [dateRange, setDateRange] = useState([
-    {
-      startDate: defaultStart,
-      endDate: defaultEnd,
-      key: "selection",
-    },
-  ]);
 
   // Fetch subjects when modal opens
   useEffect(() => {
@@ -85,30 +70,16 @@ export const EventModal: React.FC<EventModalProps> = ({
           }
 
           const profileRes = await fetch(
-            `/api/profiles/get-full?email=${encodeURIComponent(user.email)}`
+            `/api/tutor-availability/get-full?email=${encodeURIComponent(
+              user.email
+            )}`
           );
 
           if (profileRes.ok) {
             const profileData = await profileRes.json();
+            console.log("Profile data:", profileData);
 
-            // Transform subjects from the API response
-            if (profileData.subjects && Array.isArray(profileData.subjects)) {
-              const transformedSubjects: Subject[] = profileData.subjects
-                .map((s: any) => {
-                  if (s?.Subjects) {
-                    return {
-                      id: s.Subjects.id,
-                      name: s.Subjects.name,
-                      code: s.Subjects.code || null,
-                      grade: s.Subjects.grade || null,
-                    };
-                  }
-                  return null;
-                })
-                .filter((s: Subject | null): s is Subject => s !== null);
-
-              setSubjects(transformedSubjects);
-            }
+            setSubjects(profileData);
           }
         } catch (error) {
           console.error("Error fetching subjects:", error);
@@ -143,13 +114,6 @@ export const EventModal: React.FC<EventModalProps> = ({
       endTime: moment(defaultEnd).format("HH:mm"),
       date: moment(defaultStart).format("YYYY-MM-DD"),
     }));
-    setDateRange([
-      {
-        startDate: defaultStart,
-        endDate: defaultEnd,
-        key: "selection",
-      },
-    ]);
   }, [defaultStart, defaultEnd]);
 
   if (!isOpen) return null;
@@ -169,15 +133,17 @@ export const EventModal: React.FC<EventModalProps> = ({
       return;
     }
 
-    if (!formData.title) {
+    if (!formData.subject) {
       alert("Please select a subject");
       return;
     }
 
     // Map subject_id to subject name
-    const selectedSubject = subjects.find((s) => s.id === formData.subject_id);
-    const subjectName = selectedSubject?.name || "";
-
+    const selectedSubject: any = subjects.find(
+      (s: any) => s.id === formData.subject_id
+    );
+    const subjectName = selectedSubject?.subjects.name || "";
+console.log("formData selectedSubject", selectedSubject)
     onSubmit({
       ...formData,
       subject_id: formData.subject_id,
@@ -186,7 +152,9 @@ export const EventModal: React.FC<EventModalProps> = ({
     });
     onClose();
   };
-
+  const selectedSubject: any = subjects.find(
+      (s: any) => s.id === formData.subject_id
+    );
   const handleChange = (e: any) => {
     const { name, value } = e.target;
     if (name === "subject_id") {
@@ -194,7 +162,7 @@ export const EventModal: React.FC<EventModalProps> = ({
       const subjectName = selectedOption.getAttribute("data-name");
       setFormData((prev) => ({
         ...prev,
-        ["title"]: subjectName,
+        ["subject"]: subjectName,
       }));
     }
 
@@ -236,15 +204,15 @@ export const EventModal: React.FC<EventModalProps> = ({
               <option value="">
                 {loadingSubjects ? "Loading subjects..." : "Select a subject"}
               </option>
-              {subjects.map((subject) => (
+              {subjects.map((obj: any) => (
                 <option
-                  key={subject.id}
-                  value={subject.id}
-                  data-name={subject.name}
+                  key={obj.subjects.id}
+                  value={obj.id}
+                  data-name={obj.subjects.name}
                 >
-                  {subject.name}
-                  {subject.code ? ` (${subject.code})` : ""}
-                  {subject.grade ? ` - Grade ${subject.grade}` : ""}
+                  {obj.subjects.name}
+                  {obj.subjects.code ? ` (${obj.subjects.code})` : ""}
+                  {obj.subjects.grade ? ` - Grade ${obj.subjects.grade}` : ""}
                 </option>
               ))}
             </select>
@@ -256,20 +224,37 @@ export const EventModal: React.FC<EventModalProps> = ({
           </div>
 
           {/* Price */}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Price *
+              Price
             </label>
             <input
+            disabled
               type="text"
               name="price"
-              value={formData.price}
-              onChange={handleChange}
+              value={selectedSubject?.price || ""}
               placeholder="Enter price"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
               required
             />
+          </div>
+           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Duration
+            </label>
+            <input
+            disabled
+              type="text"
+              name="price"
+              value={selectedSubject?.duration == 1 ? "1 hour": selectedSubject?.duration == 0.5 ? "30 minutes": '1:30 hours'}
+              placeholder="Enter price"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              required
+            />
+          </div>
           </div>
           {/* Date Range */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

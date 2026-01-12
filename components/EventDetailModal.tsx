@@ -38,7 +38,6 @@ interface Subject {
   grade: string | null;
 }
 
-
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   isOpen,
   onClose,
@@ -47,7 +46,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   onUpdate,
 }) => {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<any | null>(null);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [updateForm, setUpdateForm] = useState<UpdateFormData>({
     subject_id: "",
@@ -77,29 +77,25 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           }
 
           const profileRes = await fetch(
-            `/api/profiles/get-full?email=${encodeURIComponent(user.email)}`
+            `/api/tutor-availability/get-full?email=${encodeURIComponent(
+              user.email
+            )}`
           );
 
           if (profileRes.ok) {
             const profileData = await profileRes.json();
+            console.log("Profile data:", profileData);
+            console.log("Profile data:", event);
 
-            if (profileData.subjects && Array.isArray(profileData.subjects)) {
-              const transformedSubjects: Subject[] = profileData.subjects
-                .map((s: any) => {
-                  if (s?.Subjects) {
-                    return {
-                      id: s.Subjects.id,
-                      name: s.Subjects.name,
-                      code: s.Subjects.code || null,
-                      grade: s.Subjects.grade || null,
-                    };
-                  }
-                  return null;
-                })
-                .filter((s: Subject | null): s is Subject => s !== null);
-
-              setSubjects(transformedSubjects);
-            }
+            setSubjects(profileData);
+              const selected = profileData.find(
+              (s:any) => s.id === event.id
+            );
+            console.log("Selected subject:", selected);
+            console.log("Selected all subject:", subjects);
+            // console.log("Selected subject:", updateForm);
+            setSelectedSubject(selected || null);
+           
           }
         } catch (error) {
           console.error("Error fetching subjects:", error);
@@ -111,12 +107,11 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       fetchSubjects();
     }
   }, [isOpen, isEditMode]);
-
   useEffect(() => {
     if (event && isEditMode) {
       // Extract subject_id from event if available
       const subjectId =
-        event.originalData?.subject_id || event.subject_id || "";
+        event.originalData?.id || event.id || "";
       const subjectName =
         event.title || event.originalData?.subject || event.subject || "";
 
@@ -133,7 +128,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   }, [event, isEditMode]);
 
   if (!isOpen || !event) return null;
-
   const handleUpdateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -153,11 +147,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       alert("Please select a subject");
       return;
     }
-
-    // Get the selected subject name
-    const selectedSubject = subjects.find(
-      (s) => s.id === updateForm.subject_id
-    );
     const subjectName = selectedSubject?.name || updateForm.subject;
 
     // Get user email for tutor_id resolution
@@ -199,8 +188,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         return;
       }
 
-  
-
       // Update local state with the updated event
       onUpdate(event.id, {
         ...event,
@@ -209,7 +196,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       });
 
       setIsEditMode(false);
-         onClose();
+      onClose();
     } catch (error: any) {
       console.error("Error updating event:", error);
       alert("Error updating event. Please try again.");
@@ -221,6 +208,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
+    console.log("event selectedSubject", selectedSubject);
     const { name, value } = e.target;
     setUpdateForm((prev) => ({
       ...prev,
@@ -245,7 +233,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   const endDateStr = moment(event.end).format("MMMM Do, YYYY");
   const duration = moment(event.end).diff(moment(event.start), "hours", true);
   const isMultiDay = moment(event.end).date() !== moment(event.start).date();
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 lg:p-4 overflow-y-auto">
       <div className="bg-slate-100 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
@@ -287,27 +274,10 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     <BookOpen className="w-4 h-4" />
                     Subject *
                   </label>
-                  <select
-                    name="subject_id"
-                    value={updateForm.subject_id}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                    required
-                    disabled={loadingSubjects}
-                  >
-                    <option value="">
-                      {loadingSubjects
-                        ? "Loading subjects..."
-                        : "Select a subject"}
-                    </option>
-                    {subjects.map((subject) => (
-                      <option key={subject.id} value={subject.id}>
-                        {subject.name}
-                        {subject.code ? ` (${subject.code})` : ""}
-                        {subject.grade ? ` - Grade ${subject.grade}` : ""}
-                      </option>
-                    ))}
-                  </select>
+                  <span
+                    className="w-full block px-4 py-3 border border-gray-300 rounded-lg bg-white/30 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+
+                  >{selectedSubject?.subjects.name}</span>
                   {subjects.length === 0 && !loadingSubjects && (
                     <p className="text-sm text-gray-500 mt-1">
                       No subjects available. Please add subjects to your
@@ -316,21 +286,31 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   )}
                 </div>
 
-                {/* Price */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Price *
-                  </label>
-                  <input
-                    type="text"
-                    name="price"
-                    value={updateForm.price}
-                    onChange={handleInputChange}
-                    placeholder="Enter price"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />
+                      Price
+                    </label>
+                    <span
+                      className="w-full block px-4 py-3 border border-gray-300 rounded-lg bg-white/30 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                    >{selectedSubject?.price || ""}</span>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Duration
+                    </label>
+                    <span
+                      className="w-full block px-4 py-3 border border-gray-300 rounded-lg bg-white/30 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                    >{
+                        selectedSubject?.duration == 1
+                          ? "1 hour"
+                          : selectedSubject?.duration == 0.5
+                          ? "30 minutes"
+                          : "1:30 hours"
+                      }</span>
+                  </div>
                 </div>
 
                 {/* Date Range */}

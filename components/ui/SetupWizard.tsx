@@ -14,9 +14,11 @@ import {
   Phone,
   PrinterCheck,
   ArrowRight,
+  Book,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SelectSubject from "./components/SelectSubject";
+import WizardTimeSlot from "./components/WizardTimeSlot";
 const ArrowLeftIcon = () => (
   <svg
     className="w-5 h-5"
@@ -76,7 +78,6 @@ type CategoryGroup = {
   subjects: Subjects[];
 };
 const SetupWizard = () => {
-  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     bio: "",
     name: "",
@@ -91,6 +92,10 @@ const SetupWizard = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CategoryGroup[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<Subjects[]>([]);
+  const [selectedSubjectsWithPrice, setSelectedSubjectsWithPrice] = useState<
+    Subjects[]
+  >([]);
+  console.log("Selected subjects after time:", selectedSubjectsWithPrice);
   const router = useRouter();
 
   useEffect(() => {
@@ -132,7 +137,9 @@ const SetupWizard = () => {
                 }
                 return undefined;
               })
-              .filter((Subjects: any): Subjects is any => Subjects !== undefined);
+              .filter(
+                (Subjects: any): Subjects is any => Subjects !== undefined
+              );
           }
           setSelectedSubjects(normalizedSubjects);
         }
@@ -201,6 +208,14 @@ const SetupWizard = () => {
     },
     {
       number: 3,
+      title: "Subjects & Pricing",
+      des: "Set your session pricing and durations to help students find you!",
+      bigdes:
+        "Set your session pricing and durations to help students find you!",
+      icon: <Book className="w-4 h-4" />,
+    },
+    {
+      number: 4,
       title: "Stripe Integrations",
       des: "Connect your Stripe account to start accepting payments! you will be able to accept payments for your services",
       bigdes:
@@ -209,11 +224,12 @@ const SetupWizard = () => {
     },
   ];
   const calculateProgress = () => {
-    if (activeStep === 3) {
+    if (activeStep === 4) {
       return 100;
     } else if (activeStep === 2) {
       return 50;
-    } else {
+    } else if (activeStep === 3) {
+      return 75;
       return 0;
     }
   };
@@ -235,7 +251,11 @@ const SetupWizard = () => {
       }
     } catch (e) {}
   };
-
+  // Returns true if ALL subjects have valid price and duration
+  let is_all_selected = selectedSubjectsWithPrice.every(
+    (s: any, index) =>
+      s.duration && s.duration !== "0.0" && s.price && s.price !== 0
+  );
   const HandleNextButton = async () => {
     if (activeStep === 1) {
       if (!profile?.email) return;
@@ -260,15 +280,15 @@ const SetupWizard = () => {
           }),
         });
         setLoading(false);
-            setActiveStep(activeStep + 1);
+        setActiveStep(activeStep + 1);
       } catch (e) {
         setLoading(false);
         console.log(e);
       }
     }
-    if(activeStep === 2){
-         if (!profile?.email) return;
-      if(selectedSubjects.length === 0) return;
+    if (activeStep === 2) {
+      if (!profile?.email) return;
+      if (selectedSubjects.length === 0) return;
       setLoading(true);
       try {
         await fetch("/api/profiles/update-subjects", {
@@ -280,21 +300,43 @@ const SetupWizard = () => {
           }),
         });
         setLoading(false);
-            setActiveStep(activeStep + 1);
+        setActiveStep(activeStep + 1);
       } catch (e) {
         setLoading(false);
         console.log(e);
       }
     }
-    if(activeStep === 3){
+    if (activeStep === 3) {
+      if (!profile?.email) return;
+      if (selectedSubjectsWithPrice.length === 0) return;
+      if(!is_all_selected) return;
+      setLoading(true);
+      try {
+        const response = await fetch("/api/subjects/update-subjects-and-prices", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: profile.email,
+            subjects: selectedSubjectsWithPrice,
+          }),
+        });
+        setLoading(false);
+        if(response.status === 200){
+          setActiveStep(activeStep + 1);
+        }
+      } catch (e) {
+        setLoading(false);
+        console.log(e);
+      }
+    }
+    if (activeStep === 4) {
       HandleChangeSetUpStatus();
     }
-
   };
+
   const onSubjectsChange = (subjects: any) => {
-    console.log("Selected subjects parent:", subjects);
     setSelectedSubjects(subjects);
-  }
+  };
   return (
     <div className=" bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-5 rounded-3xl lg:min-h-[736px]">
       <div className="max-w-6xl p-5 bg-[#F3F5F7] border border-gray-200 rounded-3xl mx-auto">
@@ -635,11 +677,30 @@ const SetupWizard = () => {
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                       >
-                        <SelectSubject categories={categories} selectedSubjects= {selectedSubjects} onSubjectsChange={onSubjectsChange} />
+                        <SelectSubject
+                          categories={categories}
+                          selectedSubjects={selectedSubjects}
+                          onSubjectsChange={onSubjectsChange}
+                        />
+                      </motion.div>
+                    )}
+                    {steps[activeStep - 1].number == 3 && (
+                      <motion.div
+                        key="step-2"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                      >
+                        <WizardTimeSlot
+                          setSelectedSubjectsWithPrice={
+                            setSelectedSubjectsWithPrice
+                          }
+                        />
                       </motion.div>
                     )}
 
-                    {steps[activeStep - 1].number == 3 && (
+                    {steps[activeStep - 1].number == 4 && (
                       <motion.div
                         key="step-3"
                         initial={{ opacity: 0, y: 20 }}
@@ -726,14 +787,14 @@ const SetupWizard = () => {
                   </button>
                   <button
                     type="button"
-                    disabled={loading}
+                    disabled={loading || (activeStep == 3 && !is_all_selected)}
                     onClick={() => HandleNextButton()}
                     className={`
     hidden md:flex items-center gap-2 px-6 py-3 
     text-white rounded-full font-medium
     transition-all duration-300 ease-in-out
     ${
-      loading
+      loading || (activeStep == 3 && !is_all_selected)
         ? "bg-[#CF3FAD]/60 cursor-not-allowed"
         : "bg-[#CF3FAD] hover:bg-[#CF3FAD]/80 cursor-pointer"
     }

@@ -61,7 +61,7 @@ export default function TutorAvailability() {
         const res = await fetch(`/api/tutor-availability/get?email=${encodeURIComponent(user.email)}`);
         if (res.ok) {
           const data = await res.json();
-          console.log('Tutor availability data222:', data);
+          console.log('data',data);
           setData(data);
         }
       } catch (e) {

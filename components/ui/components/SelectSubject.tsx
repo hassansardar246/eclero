@@ -180,7 +180,6 @@ export default function SelectSubject({
     
     return grouped;
   };
-console.log("Selected subjects576:", selectedSubjects);
   const toggleSubject = (subject: { id: string; name: string; code: string; grade?: number }) => {
     let newSubjects = null;
     setSelectedSubjects(prev => {

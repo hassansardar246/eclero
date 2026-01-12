@@ -462,7 +462,7 @@ model Profiles {
   availability                                     Json?                @db.Json
   isAvailableNow                                   Boolean?
   rating                                           Float?
-  education                                        Json?                @db.Json
+  education                                        String?
   experience                                       Json?                @db.Json
   created_at                                       DateTime?            @default(now()) @db.Timestamptz(6)
   updated_at                                       DateTime?            @default(now()) @db.Timestamptz(6)
@@ -520,6 +520,7 @@ model Subjects {
   created_at         DateTime?            @default(now()) @db.Timestamptz(6)
   updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
   ProfilesOnSubjects ProfilesOnSubjects[]
+  availabilities     TutorAvailability[]
 
   @@schema("public")
 }
@@ -527,10 +528,10 @@ model Subjects {
 model TutorAvailability {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tutor_id    String    @db.Uuid
-  day_of_week Int
-  start_time  DateTime  @db.Time(6)
-  end_time    DateTime  @db.Time(6)
-  timezone    String    @default("UTC")
+  day_of_week Int?
+  start_time  DateTime? @db.Time(6)
+  end_time    DateTime? @db.Time(6)
+  timezone    String?   @default("UTC")
   is_active   Boolean   @default(true)
   created_at  DateTime  @default(now())
   updated_at  DateTime  @default(now())
@@ -539,7 +540,9 @@ model TutorAvailability {
   start_date  DateTime? @db.Timestamptz(6)
   end_date    DateTime? @db.Timestamptz(6)
   subject     String?
-  Profiles    Profiles  @relation(fields: [tutor_id], references: [id], onDelete: Cascade)
+  duration    Float?
+  tutor       Profiles  @relation(fields: [tutor_id], references: [id], onDelete: Cascade)
+  subjects    Subjects? @relation(fields: [subject_id], references: [id], onDelete: Cascade)
 
   @@index([day_of_week, start_time, end_time], map: "TutorAvailability_day_time_idx")
   @@index([tutor_id])

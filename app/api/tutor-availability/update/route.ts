@@ -58,21 +58,11 @@ export async function PUT(request: NextRequest) {
 
     startTimeStr = updatedData.startTime;
     endTimeStr = updatedData.endTime;
-
-
-    const dayOfWeek = startDate ? startDate.getDay() + 1 : 1; // 1-7 Mon-Sun
-
     const updateData: any = {
-      tutor_id: resolvedTutorId,
-      day_of_week: dayOfWeek,
       start_time: convertTimeStringToDate(startTimeStr),
       end_time: convertTimeStringToDate(endTimeStr),
       start_date: startDate, // includes user-selected time
       end_date: endDate,     // includes user-selected time
-      price: updatedData.price ? parseFloat(updatedData.price) : 0,
-      subject: updatedData.subject || updatedData.title || null,
-      subject_id: updatedData.subject_id || null,
-      timezone: updatedData.timezone || 'UTC',
       updated_at: new Date(),
     };
 

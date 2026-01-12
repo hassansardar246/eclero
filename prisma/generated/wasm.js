@@ -454,7 +454,8 @@ exports.Prisma.TutorAvailabilityScalarFieldEnum = {
   subject_id: 'subject_id',
   start_date: 'start_date',
   end_date: 'end_date',
-  subject: 'subject'
+  subject: 'subject',
+  duration: 'duration'
 };
 
 exports.Prisma.SortOrder = {
