@@ -4,7 +4,7 @@ export async function POST(req: Request) {
   try {
     const { category, grade, name,code } = await req.json();
 
-    const subjects = await prisma.subjects.create({
+    const subject = await prisma.subjects.create({
       data: {
         category: category,
         grade: grade,
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       }
     });
 
-    return new Response(JSON.stringify(subjects), { status: 200 });
+    return new Response(JSON.stringify(subject), { status: 200 });
   } catch (error: any) {
     console.error('[SUBJECTS_GET] Error:', error);
     return new Response(JSON.stringify({

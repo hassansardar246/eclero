@@ -22,11 +22,11 @@ export async function PUT(request: NextRequest) {
 
         // Create new subject relationships
         for (const s of subjects) {
-          if (s.id.trim()) {
+          if (s) {
             await prisma.profilesOnSubjects.create({
               data: {
                 profile_id: profile.id,
-                subject_id: s.id.trim()
+                subject_id: s
               }
             });
           }

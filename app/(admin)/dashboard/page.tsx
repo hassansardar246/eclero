@@ -81,8 +81,8 @@ export default function CreateSubjectPage() {
 const uniqueRoles = Array.from(new Set(users.map((user: any) => user.role)));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="w-full mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
