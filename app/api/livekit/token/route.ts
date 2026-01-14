@@ -34,13 +34,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    console.log('Creating AccessToken with:', {
-      identity: user,
-      roomGrant: room,
-      apiKeyLength: apiKey.length,
-      apiSecretLength: apiSecret.length
-    });
-
     const at = new AccessToken(apiKey, apiSecret, {
       identity: user,
     });
@@ -53,14 +46,6 @@ export async function POST(req: NextRequest) {
     });
 
     const token = await at.toJwt();
-    
-    console.log('LiveKit token generated successfully:', {
-      room,
-      user,
-      tokenType: typeof token,
-      tokenLength: token?.length || 'no length',
-      tokenPrefix: typeof token === 'string' ? token.substring(0, 20) + '...' : 'not a string'
-    });
 
     return new Response(JSON.stringify({ 
       token,

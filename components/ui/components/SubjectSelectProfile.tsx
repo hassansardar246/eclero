@@ -296,8 +296,6 @@ export default function SubjectSelectProfile({
           const color = getColorForCategory(category.name);
           const isActive = activeSubject === category.name;
           const selectedCount = getSelectedCountForCategory(category.name);
-          console.log(category)
-
           // Calculate column position for panel alignment
           const columnPosition = (index % 3) + 1;
           const panelPosition =

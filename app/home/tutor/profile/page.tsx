@@ -6,12 +6,16 @@ import TiptapEditor from "@/components/RichTextEditor";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import SubjectSelectProfile from "@/components/ui/components/SubjectSelectProfile";
+import WizardTimeSlot from "@/components/ui/components/WizardTimeSlot";
+import UpdateProfileTimeSlot from "@/components/ui/components/UpdateProfileTimeSlot";
 export type Subjects = {
   id: string;
   name: string;
   code: string;
   grade: number;
   category?: string;
+  created_at?: Date;
+  updated_at?: Date;
 };
 type CategoryGroup = {
   name: string;
@@ -19,6 +23,7 @@ type CategoryGroup = {
 };
 export default function TutorProfile() {
   const [profile, setProfile] = useState<any>(null);
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [editMode1, setEditMode1] = useState(false);
   const [editMode2, setEditMode2] = useState(false);
@@ -32,60 +37,60 @@ export default function TutorProfile() {
 
   const [educationText, setEducationText] = useState<string>("");
   const [categories, setCategories] = useState<CategoryGroup[]>([]);
-  const [selectedSubjects, setSelectedSubjects] = useState<Subjects[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<any[]>([]);
+  const [selectedSubjectsWithPrice, setSelectedSubjectsWithPrice] = useState<
+    any[]
+  >([]);
   const [error, setError] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>("");
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const {
-          data: { user },
-          error: sessionError,
-        } = await supabase.auth.getUser();
-        if (sessionError || !user) {
-          router.push("/auth/login");
-          return;
-        }
-        const profileRes = await fetch(
-          `/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`
-        );
-        if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          setProfile(profileData);
-          setEditName(profileData.name || "");
-          setEditPhone(profileData.phone || "");
-          setEditBio(profileData.bio || "");
-          setEditHourlyRate(profileData.hourlyRate?.toString() || "");
-          console.log("Profile data in profile:", profileData);
-          if (profileData.education) {
-            // Ensure it's a string
-            setEducationText(String(profileData.education) || "");
-          } else {
-            setEducationText(""); // Set empty string if undefined/null
-          }
-          // Normalize selected subject ids from profile
-          let normalizedSubjects: string[] = [];
-          if (profileData.subjects && Array.isArray(profileData.subjects)) {
-            normalizedSubjects = profileData.subjects
-              .map((s: any) => {
-                if (s && typeof s.id === "string") return s.id;
-                if (s && s.Subjects && typeof s.Subjects.id === "string")
-                  return s.Subjects.id;
-                return undefined;
-              })
-              .filter(
-                (id: any): id is string =>
-                  typeof id === "string" && id.length > 0
-              );
-          }
-          console.log("Normalized subjects:", normalizedSubjects);
-        }
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
+  const fetchProfile = async () => {
+    try {
+      const {
+        data: { user },
+        error: sessionError,
+      } = await supabase.auth.getUser();
+      if (sessionError || !user) {
+        router.push("/auth/login");
+        return;
       }
-    };
+      const profileRes = await fetch(
+        `/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`
+      );
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setProfile(profileData);
+        setEditName(profileData.name || "");
+        setEditPhone(profileData.phone || "");
+        setEditBio(profileData.bio || "");
+        setEditHourlyRate(profileData.hourlyRate?.toString() || "");
+        if (profileData.education) {
+          setEducationText(String(profileData.education) || "");
+        } else {
+          setEducationText(""); 
+        }
+        let normalizedSubjects: string[] = [];
+        if (profileData.subjects && Array.isArray(profileData.subjects)) {
+          normalizedSubjects = profileData.subjects
+            .map((s: any) => {
+              if (s && typeof s.id === "string") return s.id;
+              if (s && s.Subjects && typeof s.Subjects.id === "string")
+                return s.Subjects;
+              return undefined;
+            })
+            .filter(
+                (subject: any): subject is Subjects =>
+                typeof subject.id === "string" && subject.id.length > 0
+            );
+        }
+        setSelectedSubjects(normalizedSubjects);
+      }
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+
     fetchProfile();
 
     fetch("/api/subjects")
@@ -93,7 +98,6 @@ export default function TutorProfile() {
       .then((data) => {
         if (Array.isArray(data)) {
           // setSelectedSubjects(data);
-          // Group by category
           const catMap = new Map<string, Subjects[]>();
           data.forEach((subject: Subjects) => {
             const cat = subject.category || "Uncategorized";
@@ -110,7 +114,6 @@ export default function TutorProfile() {
         }
       })
       .catch((err) => {
-        console.error("Subjects fetch error:", err);
         setSelectedSubjects([]);
         setCategories([]);
       });
@@ -159,7 +162,7 @@ export default function TutorProfile() {
   };
   const handleSubjectsChange = async () => {
     if (!profile?.email) return;
-    if(selectedSubjects.length === 0) {
+    if(selectedSubjectsWithPrice.length === 0) {
       setError(true);
       setErrorMsg("Please select at least one subject");
       return;
@@ -180,12 +183,14 @@ export default function TutorProfile() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               email: profile.email,
-              subjects: selectedSubjects,
+              subjects: selectedSubjectsWithPrice,
             }),
           });
         } catch (e) {
         }
         setEditMode3(false);
+        setStep(1);
+        fetchProfile();
         Swal.fire({
           title: "Updated!",
           text: "Your subjects have been updated.",
@@ -194,7 +199,6 @@ export default function TutorProfile() {
       }
     });
   };
-  console.log("Selected subjects576:", selectedSubjects);
 
   if (loading) {
     return (
@@ -244,33 +248,63 @@ export default function TutorProfile() {
         {editMode3 ? (
           <>
             {error && <div className="text-red-500 text-sm mb-2">{errorMsg}</div>}
-            <motion.div
-              key="step-2"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-              <SubjectSelectProfile
-                categories={categories}
-                selectedSubjects={selectedSubjects}
-                onSubjectsChange={onSubjectsChange}
-              />
-            </motion.div>
+            {step === 1 && (
+              <motion.div
+                key="subjects-step"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
+                <SubjectSelectProfile
+                  categories={categories}
+                  selectedSubjects={selectedSubjects}
+                  onSubjectsChange={onSubjectsChange}
+                />
+              </motion.div>
+            )}
+            {step === 2 && (
+              <motion.div
+                key="timeslot-step"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
+                <UpdateProfileTimeSlot
+                  selectedSubjectsfromProfile={selectedSubjects}
+                  setSelectedSubjectsWithPrice={setSelectedSubjectsWithPrice}
+                />
+              </motion.div>
+            )}
             <div className="pt-5 flex justify-end">
               <button
-                onClick={() => setEditMode3(false)}
+                onClick={() => {
+                  setEditMode3(false);
+                  setStep(1);
+                }}
                 className="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-medium border border-gray-300 text-gray-700 mr-3 disabled:opacity-60 disabled:cursor-not-allowed transition-colors hover:bg-gray-100"
               >
                 cancel
               </button>
+              {step === 1 && (
               <button
-                onClick={handleSubjectsChange}
+                onClick={() => setStep(2)}
                 disabled={saving}
                 className="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
               >
-                {saving ? "Saving..." : "Save Changes"}
+                Next
               </button>
+              )}
+              {step === 2 && (
+                <button
+                  onClick={handleSubjectsChange}
+                  disabled={saving}
+                  className="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                >
+                  Save Changes
+                </button>
+              )}
             </div>
           </>
         ) : (
@@ -296,12 +330,12 @@ export default function TutorProfile() {
               Manage the courses that appear on your profile.
             </p>
 
-            <div className="">
+            <div className=" flex flex-wrap gap-2">
               {Array.isArray(profile.subjects) &&
               profile.subjects.length > 0 ? (
-                profile.subjects.map((subject: any) => (
+                profile.subjects.map((subject: any, index: number) => (
                   <button
-                    key={subject.id}
+                    key={index}
                     className={`rounded-xl border border-gray-300 px-5 py-4 w-full text-sm transition gap-2 hover:border-gray-400 hover:bg-gray-50`}
                   >
                     <div className="flex items-center justify-between">

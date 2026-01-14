@@ -34,7 +34,10 @@ export async function GET(request: Request) {
                 id: true,
                 name: true,
                 code: true,
-                grade: true
+                grade: true,
+                category: true,
+                created_at: true,
+                updated_at: true,
               }
             }
           }

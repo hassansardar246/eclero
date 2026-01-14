@@ -43,31 +43,24 @@ export default function TutorSessions() {
   useEffect(() => {
     const getCurrentUser = async () => {
       try {
-        console.log('Getting current tutor user...');
         const { data: { user } } = await supabase.auth.getUser();
-        console.log('Supabase tutor user:', user);
         
         if (user) {
-          console.log('Tutor User ID:', user.id);
           const profileRes = await fetch(`/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`);
           if (profileRes.ok) {
             const profile = await profileRes.json();
-            console.log('Tutor user profile:', profile);
             
             setUserInfo({
               identity: user.id,
               name: profile.name || 'Tutor'
             });
             setUserId(user.id);
-            console.log('Tutor User ID set to:', user.id);
           } else {
             console.error('Failed to fetch tutor user profile');
           }
         } else {
-          console.log('No tutor user found');
         }
       } catch (error) {
-        console.error('Error getting tutor user info:', error);
       }
     };
     getCurrentUser();
@@ -76,17 +69,14 @@ export default function TutorSessions() {
   // Fetch sessions function  
   const fetchSessions = async () => {
     if (!userId || userId.length === 0) {
-      console.log('No tutor userId available, skipping fetch');
       return; // Wait for userId to be available
     }
     
     try {
-      console.log('Fetching sessions for tutor:', userId);
       const res = await fetch(`/api/sessions/tutor?tutorId=${encodeURIComponent(userId)}`);
       
       if (res.ok) {
         const data = await res.json();
-        console.log('Tutor Sessions API response:', data);
         
         if (data.success && data.sessions) {
           const formattedSessions: Session[] = data.sessions.map((session: any) => {
@@ -111,18 +101,14 @@ export default function TutorSessions() {
             };
           });
           setSessions(formattedSessions);
-          console.log('Formatted tutor sessions:', formattedSessions);
         } else {
-          console.log('No tutor sessions found in response');
           setSessions([]);
         }
       } else {
         const errorData = await res.json();
-        console.error('Tutor API error response:', errorData);
         setSessions([]);
       }
     } catch (error) {
-      console.error('Error fetching tutor sessions:', error);
       setSessions([]); // Set empty array on error
     }
   };
@@ -130,21 +116,17 @@ export default function TutorSessions() {
   // Initial fetch and auto-refresh
   useEffect(() => {
     if (!userId || userId.length === 0) {
-      console.log('No tutor userId, skipping auto-refresh setup');
       return;
     }
     
-    console.log('Setting up auto-refresh for tutor:', userId);
     fetchSessions(); // Initial fetch
     
     // Auto-refresh every 5 seconds to check for session status updates
     const interval = setInterval(() => {
-      console.log('Auto-refreshing tutor sessions...');
       fetchSessions();
     }, 5000);
     
     return () => {
-      console.log('Cleaning up tutor auto-refresh interval');
       clearInterval(interval);
     };
   }, [userId]);
@@ -159,7 +141,6 @@ export default function TutorSessions() {
   };
 
   const handleEndSession = async (forceComplete = false) => {
-    console.log('Tutor handleEndSession called, forceComplete:', forceComplete);
     
     if (currentSessionData && forceComplete) {
       try {
@@ -183,14 +164,11 @@ export default function TutorSessions() {
           
           // Refresh sessions list
           fetchSessions();
-          console.log('Tutor session marked as completed');
-        }
+            }
       } catch (error) {
-        console.error('Error ending tutor session:', error);
       }
     } else if (currentSessionData && !forceComplete) {
       // If it's just a disconnect (not intentional end), keep session as in_progress
-      console.log('Tutor session disconnected but keeping as in_progress');
     }
     
     setIsSessionOpen(false);

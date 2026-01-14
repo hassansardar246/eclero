@@ -84,21 +84,15 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
           if (profileRes.ok) {
             const profileData = await profileRes.json();
-            console.log("Profile data:", profileData);
-            console.log("Profile data:", event);
 
             setSubjects(profileData);
               const selected = profileData.find(
               (s:any) => s.id === event.id
-            );
-            console.log("Selected subject:", selected);
-            console.log("Selected all subject:", subjects);
-            // console.log("Selected subject:", updateForm);
+            );  
             setSelectedSubject(selected || null);
            
           }
         } catch (error) {
-          console.error("Error fetching subjects:", error);
         } finally {
           setLoadingSubjects(false);
         }
@@ -187,8 +181,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         alert(`Error updating event: ${errorData.error || "Unknown error"}`);
         return;
       }
-
-      // Update local state with the updated event
       onUpdate(event.id, {
         ...event,
         ...updatedEvent,
@@ -208,23 +200,11 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    console.log("event selectedSubject", selectedSubject);
     const { name, value } = e.target;
     setUpdateForm((prev) => ({
       ...prev,
       [name]: value,
     }));
-
-    // If subject dropdown changed, update subject name
-    if (name === "subject_id") {
-      const selectedSubject = subjects.find((s) => s.id === value);
-      if (selectedSubject) {
-        setUpdateForm((prev) => ({
-          ...prev,
-          subject: selectedSubject.name,
-        }));
-      }
-    }
   };
 
   const startTime = moment(event.start).format("h:mm A");
@@ -274,43 +254,69 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     <BookOpen className="w-4 h-4" />
                     Subject *
                   </label>
-                  <span
-                    className="w-full block px-4 py-3 border border-gray-300 rounded-lg bg-white/30 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-
-                  >{selectedSubject?.subjects.name}</span>
+                  {loadingSubjects ? (
+                    <p className="text-sm text-gray-500">Loading subjects...</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {subjects.map((obj: any) => {
+                        const isSelected = updateForm.subject_id === obj.id;
+                        return (
+                          <button
+                            type="button"
+                            key={obj.id}
+                            className={`inline-flex items-center gap-1 border rounded-lg text-xs px-3 py-1.5 shadow-sm transition-all duration-150 cursor-pointer ${
+                              isSelected
+                                ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-blue-700 ring-2 ring-blue-200"
+                                : "bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                            }`}
+                          >
+                            <span className="font-semibold">
+                              {obj.subjects.name}
+                            </span>
+                            {obj.subjects.code && (
+                              <span className="text-[10px] opacity-80">
+                                {obj.subjects.code}
+                              </span>
+                            )}
+                            {obj.subjects.grade && (
+                              <span className="text-[10px] opacity-70">
+                                · Grade {obj.subjects.grade}
+                              </span>
+                            )}
+                            {(obj.price || obj.duration) && (
+                              <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-90">
+                                {typeof obj.duration !== "undefined" && (
+                                  <>
+                                    <Clock className="w-3 h-3" />
+                                    <span>
+                                      {obj.duration === 1
+                                        ? "1h"
+                                        : obj.duration === 0.5
+                                        ? "30m"
+                                        : "1h 30m"}
+                                    </span>
+                                  </>
+                                )}
+                                {typeof obj.price !== "undefined" && (
+                                  <>
+                                    <span className="opacity-60">•</span>
+                                    <DollarSign className="w-3 h-3" />
+                                    <span>${obj.price}</span>
+                                  </>
+                                )}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                   {subjects.length === 0 && !loadingSubjects && (
                     <p className="text-sm text-gray-500 mt-1">
                       No subjects available. Please add subjects to your
                       profile.
                     </p>
                   )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" />
-                      Price
-                    </label>
-                    <span
-                      className="w-full block px-4 py-3 border border-gray-300 rounded-lg bg-white/30 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                    >{selectedSubject?.price || ""}</span>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      Duration
-                    </label>
-                    <span
-                      className="w-full block px-4 py-3 border border-gray-300 rounded-lg bg-white/30 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                    >{
-                        selectedSubject?.duration == 1
-                          ? "1 hour"
-                          : selectedSubject?.duration == 0.5
-                          ? "30 minutes"
-                          : "1:30 hours"
-                      }</span>
-                  </div>
                 </div>
 
                 {/* Date Range */}

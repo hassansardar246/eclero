@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { CheckCircle, XCircle, Clock, DollarSign } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import React, { useState } from "react";
+import { CheckCircle, Clock, DollarSign } from "lucide-react";
 
 interface Subject {
   id: number;
@@ -11,65 +10,17 @@ interface Subject {
 }
 
 
-function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
+function UpdateProfileTimeSlot({selectedSubjectsfromProfile, setSelectedSubjectsWithPrice }: any) {
   const [selectedSubjectId, setSelectedSubjectId] = useState<number>(1);
   const [selectedDuration, setSelectedDuration] = useState<string>("0.5");
-  const [selectedSubjects, setSelectedSubjects] = useState<Subject[]>([]);
-  const [email, setEmail] = useState<string>("");
+  const [selectedSubjects, setSelectedSubjects] = useState<Subject[]>(selectedSubjectsfromProfile.map((subject: any) => ({...subject, price: '', duration: '0.5'})));
   const [sessionPrice, setSessionPrice] = useState<string>('');
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const {
-          data: { user },
-          error: sessionError,
-        } = await supabase.auth.getUser();
-        const profileRes = await fetch(
-          `/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`
-        );
-
-        if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          setEmail(profileData.email);
-          let normalizedSubjects: any[] = [];
-          if (profileData.subjects && Array.isArray(profileData.subjects)) {
-            normalizedSubjects = profileData.subjects
-              .map((s: any) => {
-                // Check if s.subject exists and is an object
-                if (s && s.Subjects && typeof s.Subjects === "object") {
-                  // Return the subject object with added duration and price fields
-                  return {
-                    ...s.Subjects,
-                    duration: "0.5",
-                    price: 0,
-                  };
-                }
-                return undefined;
-              })
-              .filter(
-                (Subjects: any): Subjects is any => Subjects !== undefined
-              );
-          }
-          setSelectedSubjects(normalizedSubjects);
-        }
-      } catch (error) {}
-    };
-
-    fetchProfile();
-    setSelectedSubjectId(0);
-  }, []);
-  // Subjects data
-  const categoryName = "Mathematics";
-  const color = "from-blue-500 to-indigo-600";
-  const Icon = Clock;
 
   const durationOptions = [
     { value: "0.5", label: "30 min", color: "bg-blue-100 text-blue-800" },
     { value: "1", label: "1 hour", color: "bg-indigo-100 text-indigo-800" },
     { value: "1.5", label: "1.5 hour", color: "bg-purple-100 text-purple-800" },
   ];
-  console.log(selectedSubjects);
 
   const selectedSubject = selectedSubjects.find((s, index) => index === selectedSubjectId) || selectedSubjects[0];
 
@@ -256,4 +207,4 @@ function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
   );
 }
 
-export default WizardTimeSlot;
+export default UpdateProfileTimeSlot;

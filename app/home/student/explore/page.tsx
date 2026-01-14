@@ -43,52 +43,52 @@ const TutorSection = ({ title, tutors, loading, onBook }: { title: string; tutor
   
   return (
     <div className="mb-12">
-      <h2 className="text-2xl font-bold mb-6 text-white">{title}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {loading ? (
-          ghostTiles
-        ) : (
-          <>
-            {tutors.map(tutor => (
-              <div
-                key={tutor.id || 'unknown'}
-                className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 flex flex-col items-center border border-white/20 hover:shadow-2xl transition-all duration-200 hover:scale-105" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}
+    <h2 className="text-2xl font-bold mb-6 text-gray-900">{title}</h2>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      {loading ? (
+        ghostTiles
+      ) : (
+        <>
+          {tutors.map(tutor => (
+            <div
+              key={tutor.id || 'unknown'}
+              className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center border border-gray-200 hover:shadow-xl transition-all duration-200 hover:scale-105"
+            >
+              <img
+                src={tutor.avatar || "/default-avatar.png"}
+                alt={tutor.name}
+                className="w-20 h-20 rounded-full mb-4 object-cover border-2 border-gray-300"
+              />
+              <h3 className="text-lg font-bold mb-1 text-gray-900">{tutor.name}</h3>
+              <p className="text-gray-600 text-sm text-center">{tutor.bio || "Available for sessions"}</p>
+              {tutor.rating && (
+                <div className="flex items-center mt-2">
+                  <span className="text-yellow-500">★</span>
+                  <span className="text-sm text-gray-600 ml-1">{tutor.rating}</span>
+                </div>
+              )}
+              {(tutor as any).derivedActiveNow === true && (
+                <div className="flex items-center mt-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2 inline-block"></span>
+                  <span className="text-sm text-green-600">Available Now</span>
+                </div>
+              )}
+              <button
+                className="mt-3 px-6 py-2 rounded-full font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-105"
+                onClick={() => onBook(tutor)}
               >
-                <img
-                  src={tutor.avatar || "/default-avatar.png"}
-                  alt={tutor.name}
-                  className="w-20 h-20 rounded-full mb-4 object-cover border-2 border-white/30"
-                />
-                <h3 className="text-lg font-bold mb-1 text-white">{tutor.name}</h3>
-                <p className="text-gray-300 text-sm text-center">{tutor.bio || "Available for sessions"}</p>
-                {tutor.rating && (
-                  <div className="flex items-center mt-2">
-                    <span className="text-yellow-400">★</span>
-                    <span className="text-sm text-gray-300 ml-1">{tutor.rating}</span>
-                  </div>
-                )}
-                {(tutor as any).derivedActiveNow === true && (
-                  <div className="flex items-center mt-2">
-                    <span className="w-2 h-2 bg-green-400 rounded-full mr-2 inline-block"></span>
-                    <span className="text-sm text-green-400">Available Now</span>
-                  </div>
-                )}
-                <button
-                  className="mt-3 px-6 py-2 rounded-full font-medium transition-all duration-200 bg-gradient-to-r from-blue-400 to-purple-500 text-white hover:from-blue-500 hover:to-purple-600 hover:scale-105"
-                  onClick={() => onBook(tutor)}
-                >
-                  Book
-                </button>
-              </div>
-            ))}
-            {/* Fill remaining slots with ghost tiles */}
-            {Array.from({ length: Math.max(0, 3 - tutors.length) }, (_, i) => (
-              <GhostTile key={`ghost-${i}`} />
-            ))}
-          </>
-        )}
-      </div>
+                Book
+              </button>
+            </div>
+          ))}
+          {/* Fill remaining slots with ghost tiles */}
+          {Array.from({ length: Math.max(0, 3 - tutors.length) }, (_, i) => (
+            <GhostTile key={`ghost-${i}`} />
+          ))}
+        </>
+      )}
     </div>
+  </div>
   );
 };
 
@@ -264,205 +264,201 @@ export default function ExploreTutors() {
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
-      <h1 className="text-4xl font-bold mb-6 text-white">Find a Tutor</h1>
-      
-      {/* Filter & Active Now */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <button
-          onClick={() => setShowFilter(!showFilter)}
-          className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/30 rounded-full shadow-2xl hover:bg-white/20 transition-all duration-200 text-white" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          <span>Filter by:</span>
-          {studentSubjectIds.length > 0 && (
-            <span className="bg-gradient-to-r from-blue-400 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-              {studentSubjectIds.length} selected
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setOnlyActiveNow(v => !v)}
-          className={`px-6 py-3 rounded-full border text-sm font-medium transition-all duration-200 ${onlyActiveNow ? 'bg-gradient-to-r from-blue-400 to-purple-500 text-white border-transparent' : 'bg-white/10 text-white border-white/30 hover:bg-white/20'}`}
-        >
-          {onlyActiveNow ? 'Showing Active Now' : 'Show Only Active Now'}
-        </button>
-      </div>
+    <h1 className="text-4xl font-bold mb-6 text-gray-900">Find a Tutor</h1>
+    
+    {/* Filter & Active Now */}
+    <div className="mb-6 flex flex-wrap items-center gap-3">
+      <button
+        onClick={() => setShowFilter(!showFilter)}
+        className="flex items-center gap-2 px-6 py-3 bg-gray-100 border border-gray-300 rounded-full shadow-lg hover:bg-gray-200 transition-all duration-200 text-gray-800"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+        <span>Filter by:</span>
+        {studentSubjectIds.length > 0 && (
+          <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+            {studentSubjectIds.length} selected
+          </span>
+        )}
+      </button>
+      <button
+        onClick={() => setOnlyActiveNow(v => !v)}
+        className={`px-6 py-3 rounded-full border text-sm font-medium transition-all duration-200 ${onlyActiveNow ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-transparent' : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'}`}
+      >
+        {onlyActiveNow ? 'Showing Active Now' : 'Show Only Active Now'}
+      </button>
+    </div>
 
-      {/* Collapsible Filter Section */}
-      {showFilter && (
-        <div className="mb-8 p-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
-          <div className="w-full max-w-2xl mx-auto">
-            <h4 className="text-lg font-bold mb-4 text-white">Filter by subjects:</h4>
-            {subjectsError && <div className="text-red-400 mb-2">{subjectsError}</div>}
-            <div className="mb-4 flex flex-wrap gap-2">
-              {selectedSubjects.map((subject) => (
-                <span
-                  key={subject.id || 'unknown'}
-                  className="flex items-center bg-gradient-to-r from-blue-400/20 to-purple-500/20 text-white px-3 py-1 rounded-full text-sm font-medium mr-2 mb-2 border border-white/30"
-                >
-                  {subject.name} ({subject.code})
-                  <button
-                    type="button"
-                    className="ml-2 text-white hover:text-red-400 focus:outline-none transition-colors"
-                    onClick={() => removeSubject(subject.id)}
-                    aria-label={`Remove ${subject.name}`}
-                  >
-                    &times;
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center gap-4 mb-4">
-              <span className="font-medium text-white">Filter by grade:</span>
-              <div className="flex gap-2">
+    {/* Collapsible Filter Section */}
+    {showFilter && (
+      <div className="mb-8 p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
+        <div className="w-full max-w-2xl mx-auto">
+          <h4 className="text-lg font-bold mb-4 text-gray-900">Filter by subjects:</h4>
+          {subjectsError && <div className="text-red-500 mb-2">{subjectsError}</div>}
+          <div className="mb-4 flex flex-wrap gap-2">
+            {selectedSubjects.map((subject) => (
+              <span
+                key={subject.id || 'unknown'}
+                className="flex items-center bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-gray-800 px-3 py-1 rounded-full text-sm font-medium mr-2 mb-2 border border-gray-300"
+              >
+                {subject.name} ({subject.code})
                 <button
                   type="button"
-                  className={`px-3 py-1 rounded-full border text-sm transition-all duration-200 ${
-                    gradeFilter === null
-                      ? "bg-gradient-to-r from-blue-400 to-purple-500 text-white border-transparent"
-                      : "bg-white/10 text-white border-white/30 hover:bg-white/20"
-                  }`}
-                  onClick={() => setGradeFilter(null)}
+                  className="ml-2 text-gray-800 hover:text-red-500 focus:outline-none transition-colors"
+                  onClick={() => removeSubject(subject.id)}
+                  aria-label={`Remove ${subject.name}`}
                 >
-                  All
+                  &times;
                 </button>
-                {GRADES.map((grade) => (
+              </span>
+            ))}
+          </div>
+          <div className="flex items-center gap-4 mb-4">
+            <span className="font-medium text-gray-800">Filter by grade:</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className={`px-3 py-1 rounded-full border text-sm transition-all duration-200 ${
+                  gradeFilter === null
+                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-transparent"
+                    : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
+                }`}
+                onClick={() => setGradeFilter(null)}
+              >
+                All
+              </button>
+              {GRADES.map((grade) => (
+                <button
+                  key={grade}
+                  type="button"
+                  className={`px-3 py-1 rounded-full border text-sm transition-all duration-200 ${
+                    gradeFilter === grade
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-transparent"
+                      : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
+                  }`}
+                  onClick={() => setGradeFilter(grade)}
+                >
+                  {grade}
+                </button>
+              ))}
+            </div>
+          </div>
+          {subjectsLoading ? (
+            <div className="text-gray-600">Loading subjects...</div>
+          ) : (
+            <div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {categories.map((cat) => (
                   <button
-                    key={grade}
+                    key={cat.name || 'unknown'}
                     type="button"
-                    className={`px-3 py-1 rounded-full border text-sm transition-all duration-200 ${
-                      gradeFilter === grade
-                        ? "bg-gradient-to-r from-blue-400 to-purple-500 text-white border-transparent"
-                        : "bg-white/10 text-white border-white/30 hover:bg-white/20"
+                    onClick={() => setExpanded(expanded === cat.name ? null : cat.name)}
+                    className={`px-4 py-2 rounded-full border font-medium transition-all duration-200 ${
+                      expanded === cat.name
+                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-transparent"
+                        : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
                     }`}
-                    onClick={() => setGradeFilter(grade)}
                   >
-                    {grade}
+                    {cat.name}
                   </button>
                 ))}
               </div>
-            </div>
-            {subjectsLoading ? (
-              <div className="text-gray-300">Loading subjects...</div>
-            ) : (
-              <div>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.name || 'unknown'}
-                      type="button"
-                      onClick={() => setExpanded(expanded === cat.name ? null : cat.name)}
-                      className={`px-4 py-2 rounded-full border font-medium transition-all duration-200 ${
-                        expanded === cat.name
-                          ? "bg-gradient-to-r from-blue-400 to-purple-500 text-white border-transparent"
-                          : "bg-white/10 text-white border-white/30 hover:bg-white/20"
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
-                </div>
-                {categories.map(
-                  (cat) =>
-                    expanded === cat.name && (
-                      <div key={cat.name + "-subjects"} className="mb-6 ml-2">
-                        <div className="mb-2 font-bold text-white">
-                          {cat.name} Subjects:
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {cat.subjects
-                            .filter((subject) =>
-                              gradeFilter === null ? true : subject.grade === gradeFilter
-                            )
-                            .map((subject) => (
-                              <button
-                                key={subject.id || 'unknown'}
-                                type="button"
-                                onClick={() => toggleSubject(subject.id)}
-                                className={`px-3 py-1 rounded-full border text-sm transition-all duration-200 flex items-center gap-1 ${
-                                  typeof subject.id === 'string' && subject.id.length > 0 && validStudentSubjectIds.includes(subject.id)
-                                    ? "bg-gradient-to-r from-blue-400 to-purple-500 text-white border-transparent"
-                                    : "bg-white/10 text-white border-white/30 hover:bg-white/20"
-                                }`}
-                              >
-                                {subject.name} ({subject.code})
-                                <span className="ml-1 text-xs text-gray-300">G{subject.grade}</span>
-                                {typeof subject.id === 'string' && subject.id.length > 0 && validStudentSubjectIds.includes(subject.id) && (
-                                  <svg
-                                    className="w-4 h-4 ml-1 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      d="M5 13l4 4L19 7"
-                                    />
-                                  </svg>
-                                )}
-                              </button>
-                            ))}
-                        </div>
+              {categories.map(
+                (cat) =>
+                  expanded === cat.name && (
+                    <div key={cat.name + "-subjects"} className="mb-6 ml-2">
+                      <div className="mb-2 font-bold text-gray-900">
+                        {cat.name} Subjects:
                       </div>
-                    )
+                      <div className="flex flex-wrap gap-2">
+                        {cat.subjects
+                          .filter((subject) =>
+                            gradeFilter === null ? true : subject.grade === gradeFilter
+                          )
+                          .map((subject) => (
+                            <button
+                              key={subject.id || 'unknown'}
+                              type="button"
+                              onClick={() => toggleSubject(subject.id)}
+                              className={`px-3 py-1 rounded-full border text-sm transition-all duration-200 flex items-center gap-1 ${
+                                typeof subject.id === 'string' && subject.id.length > 0 && validStudentSubjectIds.includes(subject.id)
+                                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-transparent"
+                                  : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
+                              }`}
+                            >
+                              {subject.name} ({subject.code})
+                              <span className="ml-1 text-xs text-gray-600">G{subject.grade}</span>
+                              {typeof subject.id === 'string' && subject.id.length > 0 && validStudentSubjectIds.includes(subject.id) && (
+                                <svg
+                                  className="w-4 h-4 ml-1 text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+
+    {/* Dynamic sections based on student's subjects */}
+    {studentSubjectIds.length > 0 && subjects.length > 0 && (
+      <>
+        {studentSubjectIds
+          .filter((subjectId): subjectId is string => typeof subjectId === 'string' && subjectId.length > 0)
+          .map(subjectId => {
+            const subject = subjects.find(s => typeof s.id === 'string' && s.id === subjectId && s.id.length > 0);
+            if (!subject) return null;
+            const tutorsForSubject = getSubjectTutors(subjectId);
+            return (
+              <div key={`subject-row-${subjectId || 'unknown'}`}>
+                <TutorSection
+                  title={`Tutors who teach ${subject.name} [ ${subject.code} ]`}
+                  tutors={tutorsForSubject}
+                  loading={loading}
+                  onBook={openTutorProfileModal}
+                />
+                {(!loading && tutorsForSubject.length === 0) && (
+                  <div className="text-center text-gray-500 mb-8">No tutors available for this subject yet.</div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
-      )}
-      
+            );
+          })}
+      </>
+    )}
 
-
-      {/* Dynamic sections based on student's subjects */}
-      {studentSubjectIds.length > 0 && subjects.length > 0 && (
-        <>
-          {studentSubjectIds
-            .filter((subjectId): subjectId is string => typeof subjectId === 'string' && subjectId.length > 0)
-            .map(subjectId => {
-              const subject = subjects.find(s => typeof s.id === 'string' && s.id === subjectId && s.id.length > 0);
-              if (!subject) return null;
-              const tutorsForSubject = getSubjectTutors(subjectId);
-              return (
-                <div key={`subject-row-${subjectId || 'unknown'}`}>
-                  <TutorSection
-                    title={`Tutors who teach ${subject.name} [ ${subject.code} ]`}
-                    tutors={tutorsForSubject}
-                    loading={loading}
-                    onBook={openTutorProfileModal}
-                  />
-                  {(!loading && tutorsForSubject.length === 0) && (
-                    <div className="text-center text-gray-400 mb-8">No tutors available for this subject yet.</div>
-                  )}
-                </div>
-              );
-            })}
-        </>
-      )}
-
-      {/* Show message if no student subjects */}
-      {studentSubjectIds.length === 0 && !loading && (
-        <div className="mb-8 p-6 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-          <h3 className="text-yellow-400 font-bold mb-2">No Subjects Selected</h3>
-          <p className="text-yellow-300 text-sm">
-            You haven't selected any subjects yet. Use the "Filter by:" button above to select subjects you're interested in,
-            and we'll show you tutors who teach those subjects.
-          </p>
-        </div>
-      )}
-      
-      <TutorSection 
-        title="At Your Institution" 
-        tutors={atYourSchoolTutors} 
-        loading={loading} 
-        onBook={openTutorProfileModal}
-      />
-
-
-    </div>
+    {/* Show message if no student subjects */}
+    {studentSubjectIds.length === 0 && !loading && (
+      <div className="mb-8 p-6 bg-yellow-100 border border-yellow-300 rounded-lg">
+        <h3 className="text-yellow-800 font-bold mb-2">No Subjects Selected</h3>
+        <p className="text-yellow-700 text-sm">
+          You haven't selected any subjects yet. Use the "Filter by:" button above to select subjects you're interested in,
+          and we'll show you tutors who teach those subjects.
+        </p>
+      </div>
+    )}
+    
+    <TutorSection 
+      title="At Your Institution" 
+      tutors={atYourSchoolTutors} 
+      loading={loading} 
+      onBook={openTutorProfileModal}
+    />
+  </div>
   );
 }

@@ -77,12 +77,10 @@ export const EventModal: React.FC<EventModalProps> = ({
 
           if (profileRes.ok) {
             const profileData = await profileRes.json();
-            console.log("Profile data:", profileData);
 
             setSubjects(profileData);
           }
         } catch (error) {
-          console.error("Error fetching subjects:", error);
         } finally {
           setLoadingSubjects(false);
         }
@@ -143,7 +141,6 @@ export const EventModal: React.FC<EventModalProps> = ({
       (s: any) => s.id === formData.subject_id
     );
     const subjectName = selectedSubject?.subjects.name || "";
-console.log("formData selectedSubject", selectedSubject)
     onSubmit({
       ...formData,
       subject_id: formData.subject_id,
@@ -193,29 +190,70 @@ console.log("formData selectedSubject", selectedSubject)
               <BookOpen className="w-4 h-4" />
               Subject *
             </label>
-            <select
-              name="subject_id"
-              value={formData.subject_id}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              required
-              disabled={loadingSubjects}
-            >
-              <option value="">
-                {loadingSubjects ? "Loading subjects..." : "Select a subject"}
-              </option>
-              {subjects.map((obj: any) => (
-                <option
-                  key={obj.subjects.id}
-                  value={obj.id}
-                  data-name={obj.subjects.name}
-                >
-                  {obj.subjects.name}
-                  {obj.subjects.code ? ` (${obj.subjects.code})` : ""}
-                  {obj.subjects.grade ? ` - Grade ${obj.subjects.grade}` : ""}
-                </option>
-              ))}
-            </select>
+            {loadingSubjects ? (
+              <p className="text-sm text-gray-500">Loading subjects...</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {subjects.map((obj: any) => {
+                  const isSelected = formData.subject_id === obj.id;
+                  return (
+                    <button
+                      type="button"
+                      key={obj.id}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          subject_id: obj.id,
+                          subject: obj.subjects.name,
+                        }))
+                      }
+                      className={`inline-flex items-center gap-1 border rounded-lg text-xs px-3 py-1.5 shadow-sm transition-all duration-150 cursor-pointer ${
+                        isSelected
+                          ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-blue-700 ring-2 ring-blue-200"
+                          : "bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                      }`}
+                    >
+                      <span className="font-semibold">
+                        {obj.subjects.name}
+                      </span>
+                      {obj.subjects.code && (
+                        <span className="text-[10px] opacity-80">
+                          {obj.subjects.code}
+                        </span>
+                      )}
+                      {obj.subjects.grade && (
+                        <span className="text-[10px] opacity-70">
+                          · Grade {obj.subjects.grade}
+                        </span>
+                      )}
+                      {(obj.price || obj.duration) && (
+                        <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-90">
+                          {typeof obj.duration !== "undefined" && (
+                            <>
+                              <Clock className="w-3 h-3" />
+                              <span>
+                                {obj.duration === 1
+                                  ? "1h"
+                                  : obj.duration === 0.5
+                                  ? "30m"
+                                  : "1h 30m"}
+                              </span>
+                            </>
+                          )}
+                          {typeof obj.price !== "undefined" && (
+                            <>
+                              <span className="opacity-60">•</span>
+                              <DollarSign className="w-3 h-3" />
+                              <span>${obj.price}</span>
+                            </>
+                          )}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {subjects.length === 0 && !loadingSubjects && (
               <p className="text-sm text-gray-500 mt-1">
                 No subjects available. Please add subjects to your profile.
@@ -223,39 +261,6 @@ console.log("formData selectedSubject", selectedSubject)
             )}
           </div>
 
-          {/* Price */}
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              Price
-            </label>
-            <input
-            disabled
-              type="text"
-              name="price"
-              value={selectedSubject?.price || ""}
-              placeholder="Enter price"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              required
-            />
-          </div>
-           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Duration
-            </label>
-            <input
-            disabled
-              type="text"
-              name="price"
-              value={selectedSubject?.duration == 1 ? "1 hour": selectedSubject?.duration == 0.5 ? "30 minutes": '1:30 hours'}
-              placeholder="Enter price"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              required
-            />
-          </div>
-          </div>
           {/* Date Range */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

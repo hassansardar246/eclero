@@ -17,7 +17,6 @@ export async function GET(request: Request) {
       where: { profile_id: resolvedTutorId },
       select: { subject_id: true }
     })
-
 const availability = await prisma.tutorAvailability.findMany({
   where: { 
     tutor_id: resolvedTutorId, 
@@ -36,7 +35,7 @@ const availability = await prisma.tutorAvailability.findMany({
   },
   orderBy: [{ day_of_week: 'asc' }, { start_time: 'asc' }],
 });
-
+console.log(availability);
     if (!profile || !availability) {
       return new Response(JSON.stringify({ error: 'Profile not found' }), { status: 404 });
     }

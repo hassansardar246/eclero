@@ -73,7 +73,6 @@ export default function SubjectSelector({
   }, []);
 
   const toggleSubject = (id: string) => {
-    console.log("Toggling subject:", id);
     const ids = selectedSubjectIds ?? [];
     if (ids.includes(id)) {
       onSelectionChange(ids.filter((sid) => sid !== id));
@@ -101,7 +100,7 @@ export default function SubjectSelector({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <h4 className="text-lg font-semibold mb-2">What courses are you proficient in?</h4>
+      <h4 className="text-lg font-semibold mb-2 text-gray-900">What courses are you proficient in?</h4>
       {error && <div className="text-red-500 mb-2">{error}</div>}
       <div className="mb-4 flex flex-wrap gap-2">
         {selectedSubjects.map((subject) => (
@@ -123,7 +122,7 @@ export default function SubjectSelector({
         ))}
       </div>
       <div className="flex items-center gap-4 mb-4">
-        <span className="font-medium">Filter by grade:</span>
+        <span className="font-medium text-gray-700">Filter by grade:</span>
         <div className="flex gap-2">
           <button
             type="button"
@@ -166,8 +165,8 @@ export default function SubjectSelector({
                 onClick={() => setExpanded(expanded === cat.name ? null : cat.name)}
                 className={`px-4 py-2 rounded-full border font-medium transition-all duration-200 ${
                   expanded === cat.name
-                    ? "bg-gradient-to-r from-blue-400 to-purple-500 text-white border-transparent"
-                    : "bg-white/10 text-white border-white/30 hover:bg-white/20"
+                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-transparent"
+                    : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
                 }`}
                 disabled={disabled}
               >
@@ -179,7 +178,7 @@ export default function SubjectSelector({
             (cat) =>
               expanded === cat.name && (
                 <div key={(cat.name ? cat.name : 'unknown') + "-subjects"} className="mb-6 ml-2">
-                  <div className="mb-2 font-bold text-white">
+                  <div className="mb-2 font-bold text-gray-900">
                     {cat.name} Subjects:
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -194,13 +193,13 @@ export default function SubjectSelector({
                           onClick={() => toggleSubject(subject.id)}
                           className={`px-3 py-1 rounded-full border text-sm transition-all duration-200 flex items-center gap-1 ${
                             validSelectedSubjectIds.includes(subject.id)
-                              ? "bg-gradient-to-r from-blue-400 to-purple-500 text-white border-transparent"
-                              : "bg-white/10 text-white border-white/30 hover:bg-white/20"
+                              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-transparent"
+                              : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
                           }`}
                           disabled={disabled}
                         >
                           {subject.name} ({subject.code})
-                          <span className="ml-1 text-xs text-gray-300">G{subject.grade}</span>
+                          <span className="ml-1 text-xs text-gray-500">G{subject.grade}</span>
                           {validSelectedSubjectIds.includes(subject.id) && (
                             <svg
                               className="w-4 h-4 ml-1 text-white"

@@ -83,7 +83,6 @@ const SetupWizard = () => {
     name: "",
     email: "",
     phone: "",
-    hour_rate: "",
     grade: "",
     is_tutor: false,
     subjects: [],
@@ -95,7 +94,6 @@ const SetupWizard = () => {
   const [selectedSubjectsWithPrice, setSelectedSubjectsWithPrice] = useState<
     Subjects[]
   >([]);
-  console.log("Selected subjects after time:", selectedSubjectsWithPrice);
   const router = useRouter();
 
   useEffect(() => {
@@ -116,13 +114,11 @@ const SetupWizard = () => {
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           setProfile(profileData);
-          console.log("Profile data2222:", profileData);
           setFormData({
             bio: profileData.bio || "",
             name: profileData.name || "",
             email: profileData.email || "",
             phone: profileData.phone || "",
-            hour_rate: profileData.hourlyRate || "",
             grade: profileData.grade || "",
             is_tutor: profileData.is_tutor || false,
             subjects: profileData.subjects || [],
@@ -152,8 +148,6 @@ const SetupWizard = () => {
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          // setSelectedSubjects(data);
-          // Group by category
           const catMap = new Map<string, Subjects[]>();
           data.forEach((subject: Subjects) => {
             const cat = subject.category || "Uncategorized";
@@ -170,13 +164,11 @@ const SetupWizard = () => {
         }
       })
       .catch((err) => {
-        console.error("Subjects fetch error:", err);
         setSelectedSubjects([]);
         setCategories([]);
       });
   }, [router]);
   const handleInputChange = (e: any) => {
-    console.log("Input changed:", e.target.name, e.target.value);
     const { name, value } = e.target;
     let processedValue = value;
     if (name === "is_tutor") {
@@ -227,9 +219,10 @@ const SetupWizard = () => {
     if (activeStep === 4) {
       return 100;
     } else if (activeStep === 2) {
-      return 50;
+      return 25;
     } else if (activeStep === 3) {
       return 75;
+    }else{
       return 0;
     }
   };
@@ -242,12 +235,10 @@ const SetupWizard = () => {
         body: JSON.stringify({
           email: profile.email,
         }),
-      });
-      console.log("Response status:", response);
+      }); 
       if (response.ok) {
         router.push("/home/tutor/availability");
       } else {
-        console.error("Failed to update setup status");
       }
     } catch (e) {}
   };
@@ -261,11 +252,7 @@ const SetupWizard = () => {
       if (!profile?.email) return;
       if (!formData.phone) return;
       if (!formData.bio) return;
-      if (!formData.hour_rate) return;
       setLoading(true);
-      const hourlyRate = formData.hour_rate
-        ? parseFloat(formData.hour_rate)
-        : null;
       try {
         await fetch("/api/profiles/update-bio", {
           method: "PUT",
@@ -275,7 +262,6 @@ const SetupWizard = () => {
             name: profile.name,
             phone: formData.phone,
             bio: formData.bio,
-            hourlyRate: hourlyRate,
             is_tutor: formData.is_tutor,
           }),
         });
@@ -283,7 +269,6 @@ const SetupWizard = () => {
         setActiveStep(activeStep + 1);
       } catch (e) {
         setLoading(false);
-        console.log(e);
       }
     }
     if (activeStep === 2) {
@@ -303,7 +288,6 @@ const SetupWizard = () => {
         setActiveStep(activeStep + 1);
       } catch (e) {
         setLoading(false);
-        console.log(e);
       }
     }
     if (activeStep === 3) {
@@ -326,7 +310,6 @@ const SetupWizard = () => {
         }
       } catch (e) {
         setLoading(false);
-        console.log(e);
       }
     }
     if (activeStep === 4) {
@@ -619,43 +602,6 @@ const SetupWizard = () => {
                           </div>
                         </motion.div>
 
-                        {/* Hourly Rate Input */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.2 }}
-                          className="relative group"
-                        >
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Hourly Rate
-                          </label>
-
-                          <div className="relative">
-                            <div className="absolute -top-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
-
-                            <motion.div
-                              whileHover={{ scale: 1.005 }}
-                              transition={{ duration: 0.2 }}
-                              className="relative bg-white rounded-2xl border-2 border-gray-200 p-[2px] transition-all duration-300 hover:border-blue-300 group-focus-within:border-blue-400 group-focus-within:shadow-lg group-focus-within:shadow-blue-100"
-                            >
-                              <div className="flex items-center">
-                                <div className="flex-1 px-4">
-                                  <input
-                                    type="text"
-                                    name="hour_rate"
-                                    value={formData.hour_rate}
-                                    onChange={(e) => handleInputChange(e)}
-                                    placeholder="Enter your hourly rate"
-                                    className="w-full py-3 px-0 border-0 focus:ring-0 focus:outline-none text-lg placeholder:text-gray-400 bg-transparent"
-                                  />
-                                </div>
-                              </div>
-                            </motion.div>
-
-                            <div className="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent opacity-50" />
-                          </div>
-                        </motion.div>
-
                         {/* Helper text */}
                         <motion.p
                           initial={{ opacity: 0 }}
@@ -727,8 +673,6 @@ const SetupWizard = () => {
                             delay: 0.2,
                           }}
                           onClick={() => {
-                            // trigger stripe onboarding here
-                            console.log("Connect Stripe");
                           }}
                           className="mx-auto group relative flex items-center gap-4 px-6 py-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-lg shadow-lg hover:shadow-2xl transition-all duration-300 focus:outline-none"
                         >

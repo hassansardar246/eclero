@@ -10,20 +10,22 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Remove the availability slot
-    const deleted = await prisma.tutorAvailability.delete({
+    const found = await prisma.tutorAvailability.findFirst({
       where: { id: eventId },
     });
 
-    return NextResponse.json({ success: true, deleted });
-  } catch (error: any) {
-    console.error("[TA_DELETE] Error:", error);
-    // Prisma throws if not found; surface as 404
-    if (error?.code === "P2025") {
+    if (!found) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
-    return NextResponse.json(
-      { error: "Internal Server Error", details: error?.message || error },
-      { status: 500 }
-    );
+
+  await prisma.tutorAvailability.update({
+    where: { id: found.id },
+    data: { start_date: null, end_date: null, start_time: null, end_time: null },
+  });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("[TA_DELETE] Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

@@ -30,8 +30,7 @@ export default function TutorHome() {
   const [isToggling, setIsToggling] = useState(false);
 
   const router = useRouter();
-
-  // Fetch current availability status
+// 
   useEffect(() => {
     const fetchAvailability = async () => {
       try {
@@ -40,21 +39,17 @@ export default function TutorHome() {
           data: { user },
         } = await supabase.auth.getUser();
         if (!user) return;
-console.log("Fetched user:", user);
         const profileRes = await fetch(
           `/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`
         );
         if (profileRes.ok) {
           const profile = await profileRes.json();
-          console.log("Fetched profile availability:", profile);
           setIsAvailableNow(profile.isAvailableNow || false);
           setFreshAvailability(profile.profile_setup || false);
           setIsLoading(false);
         } else {
-          console.error("Failed to fetch profile:", await profileRes.text());
         }
       } catch (error) {
-        console.error("Error fetching availability:", error);
       } finally {
         setIsLoading(false);
       }
@@ -75,11 +70,6 @@ console.log("Fetched user:", user);
         return;
       }
 
-      console.log("Sending availability update:", {
-        isAvailableNow: !isAvailableNow,
-        userEmail: session.user.email,
-      });
-
       const response = await fetch("/api/profiles/update-availability", {
         method: "PATCH",
         headers: {
@@ -91,12 +81,9 @@ console.log("Fetched user:", user);
         }),
       });
 
-      console.log("Response status:", response.status);
-
       if (response.ok) {
         const updatedProfile = await response.json();
         setIsAvailableNow(updatedProfile.isAvailableNow);
-        console.log("Availability updated to:", updatedProfile.isAvailableNow);
       } else {
         const errorText = await response.text();
         let message = "Failed to update availability";
@@ -104,15 +91,9 @@ console.log("Fetched user:", user);
           const parsed = JSON.parse(errorText);
           message = parsed.error || message;
         } catch {}
-        console.error(
-          "Failed to update availability:",
-          response.status,
-          errorText
-        );
         alert(message);
       }
     } catch (error) {
-      console.error("Error updating availability:", error);
     } finally {
       setIsToggling(false);
     }

@@ -45,7 +45,6 @@ export async function PUT(request: NextRequest) {
     if (!existingEvent) {
       return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404 });
     }
-    const resolvedTutorId = tutorId || existingEvent.tutor_id;
 
     // Build start/end with time preserved
     let startDate: Date | null = null;
@@ -61,8 +60,8 @@ export async function PUT(request: NextRequest) {
     const updateData: any = {
       start_time: convertTimeStringToDate(startTimeStr),
       end_time: convertTimeStringToDate(endTimeStr),
-      start_date: startDate, // includes user-selected time
-      end_date: endDate,     // includes user-selected time
+      start_date: startDate,
+      end_date: endDate, 
       updated_at: new Date(),
     };
 

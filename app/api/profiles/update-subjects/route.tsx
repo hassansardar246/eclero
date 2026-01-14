@@ -41,11 +41,8 @@ export async function PUT(request: NextRequest) {
       return profile;
     });
 
-    console.log('[PROFILE_UPDATE] Profile updated successfully:', result);
-
     return new Response(JSON.stringify(result), { status: 200 });
   } catch (error: any) {
-    console.error('[PROFILE_UPDATE] Error:', error);
     return new Response(JSON.stringify({
       error: 'Internal Server Error',
       details: error?.message || error

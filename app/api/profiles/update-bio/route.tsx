@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, firstName, lastName, name, phone, bio, subjects, hourlyRate, education, experience, is_tutor } = body;
+    const { email, firstName, lastName, name, phone, bio, subjects, education, experience, is_tutor } = body;
 
     if (!email) {
       return new Response(JSON.stringify({ error: 'Email is required' }), { status: 400 });
@@ -22,7 +22,7 @@ export async function PUT(request: NextRequest) {
           name: fullName,
           phone: phone || null,
           bio: bio || null,
-          hourlyRate: hourlyRate !== null && hourlyRate !== undefined ? parseFloat(hourlyRate) : null,
+          hourlyRate: null,
           is_tutor: is_tutor,
           education: education || null,
           experience: experience || null,

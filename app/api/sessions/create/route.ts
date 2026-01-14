@@ -32,17 +32,14 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('❌ Session creation error:', error);
       return NextResponse.json({ error: 'Failed to create session', details: error.message }, { status: 500 });
     }
 
-    console.log('✅ Session created successfully:', data);
     return NextResponse.json({ 
       success: true, 
       session: data
     });
   } catch (err) {
-    console.error('❌ Server error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

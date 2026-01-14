@@ -181,15 +181,12 @@ export default function InboxPage() {
           req.id === request.id ? { ...req, status: 'in_progress' } : req
         )
       );
-      
-      console.log('Session started successfully:', roomName);
     } catch (error) {
       console.error('Error starting session:', error);
     }
   };
 
   const handleEndSession = async (forceComplete = false) => {
-    console.log('handleEndSession called, forceComplete:', forceComplete);
     
     if (currentSessionData && forceComplete) {
       try {
@@ -221,15 +218,12 @@ export default function InboxPage() {
               req.id === currentRequest.id ? { ...req, status: 'completed' } : req
             )
           );
-          console.log('Session marked as completed');
         }
       } catch (error) {
-        console.error('Error ending session:', error);
         alert('Failed to end the session. Please check your internet connection and try again.');
       }
     } else if (currentSessionData && !forceComplete) {
       // If it's just a disconnect (not intentional end), keep session as in_progress
-      console.log('Session disconnected but keeping as in_progress');
     }
     
     setIsSessionOpen(false);

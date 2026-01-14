@@ -35,6 +35,15 @@ export async function PUT(request: NextRequest) {
               }
             });
           }
+          await prisma.tutorAvailability.create({
+            data: {
+              tutor_id: profile.id,
+              subject: s.name,
+              subject_id: s.id.trim(),
+              price: s.price * 1,
+              duration: s.duration * 1
+            }
+          });
         }
       }
 

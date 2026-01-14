@@ -26,8 +26,6 @@ interface CalendarEvent {
   endTime: any;
   timezone: any;
   duration: any;
-
-
 }
 
 interface SelectableProps {
@@ -57,14 +55,14 @@ const CustomEvent: React.FC<CustomEventProps> = ({ event, view }) => {
   const startTime = moment(event.start_time).format("h:mm A");
   const endTime = moment(event.end_time).format("h:mm A");
   const dateStr = moment(event.start_date).format("MMM D, YYYY");
-  console.log('event',event);
 
   if (view === Views.MONTH) {
     return (
       <div className={` text-white p-1 rounded text-xs overflow-hidden`}>
         <div className="flex items-center gap-1 mb-0.5">
-          <div className="font-bold truncate">{event.originalData.subject}</div>
-          
+          <div className="font-bold truncate">
+            {event?.originalData?.subject || event?.title}
+          </div>
         </div>
       </div>
     );
@@ -75,7 +73,9 @@ const CustomEvent: React.FC<CustomEventProps> = ({ event, view }) => {
       <div className="bg-gray-50 p-3 rounded-lg border-l-4 border-blue-500 mb-2">
         <div className="flex items-center gap-3">
           <div>
-            <div className="font-bold text-gray-800">{event.originalData.subject}</div>
+            <div className="font-bold text-gray-800">
+              {event?.originalData?.subject || event?.title}
+            </div>
           </div>
         </div>
         <div className="mt-2 text-sm text-gray-700">
@@ -92,7 +92,9 @@ const CustomEvent: React.FC<CustomEventProps> = ({ event, view }) => {
 
   return (
     <div className={` text-white p-2 rounded-md h-full overflow-hidden`}>
-      <div className="font-bold text-sm mb-1 truncate">{event.originalData.subject}</div>
+      <div className="font-bold text-sm mb-1 truncate">
+        {event?.originalData?.subject || event?.title}
+      </div>
       <div className="text-xs opacity-90 mb-0.5 flex items-center gap-1">
         <span className="text-[10px]">🕐</span> {startTime} - {endTime}
       </div>
@@ -108,29 +110,27 @@ export default function Selectable({
   data,
 }: SelectableProps) {
   const transformEvents = (eventsData: any[]): any[] => {
- return eventsData.map((event) => {
-    if (event.start_date && event.end_date) {
-      const start = moment.utc(event.start_date).local();
-      const end = moment.utc(event.end_date).local();
+    return eventsData.map((event) => {
+      if (event.start_date && event.end_date) {
+        const start = moment.utc(event.start_date).local();
+        const end = moment.utc(event.end_date).local();
 
         return {
-        id: event.id,
-        title: event.subject || "Available Slot",
-        price: event.price?.toString() || "0",
-        start: start.toDate(), // Convert to Date object
-        end: end.toDate(),
-        start_time: start, // Optional: store formatted time
-        end_time: end,
-        allDay: false,
-        originalData: event,
-      };
+          id: event.id,
+          title: event.subject || "Available Slot",
+          price: event.price?.toString() || "0",
+          start: start.toDate(), // Convert to Date object
+          end: end.toDate(),
+          start_time: start, // Optional: store formatted time
+          end_time: end,
+          allDay: false,
+          originalData: event,
+        };
       }
     });
   };
 
-  const [myEvents, setEvents] = useState<any[]>(
-    transformEvents(data || [])
-  );
+  const [myEvents, setEvents] = useState<any[]>(transformEvents(data || []));
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{
@@ -159,6 +159,8 @@ export default function Selectable({
       startDate: formData.startDate,
       endDate: formData.endDate,
       timezone: formData.timezone,
+      start: new Date(formData.startDate + "T" + formData.startTime),
+      end: new Date(formData.endDate + "T" + formData.endTime),
     };
 
     setEvents((prev) => [...prev, newEvent]);
@@ -197,19 +199,16 @@ export default function Selectable({
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const handleEventSelect = (event: any) => {
-    console.log('event selected in main',event);
     setSelectedEvent(event);
     setIsDetailModalOpen(true);
   };
 
   const handleEventUpdate = async (eventId: string, updatedData: any) => {
-    console.log(updatedData);
     setEvents((prev) => prev.map((e) => (e.id === eventId ? updatedData : e)));
   };
 
   const handleEventDelete = (eventId: string) => {
     // Remove event from state
-    console.log("eventId", eventId);
     setEvents((prev) => prev.filter((e) => e.id !== eventId));
   };
 

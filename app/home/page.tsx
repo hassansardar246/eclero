@@ -11,7 +11,6 @@ export default function HomeRedirect() {
     const redirect = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return router.push("/auth/login");
-console.log('session for role',session)
       const { data: userData } = await supabase
         .from("Profiles")
         .select("role")
