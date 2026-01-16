@@ -8,6 +8,7 @@ import { BookOpen, CalendarIcon, Clock, DollarSign, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 export interface EventFormData {
+  id: string;
   startTime: string;
   endTime: string;
   startDate: string;
@@ -40,6 +41,7 @@ export const EventModal: React.FC<EventModalProps> = ({
   defaultEnd,
 }) => {
   const [formData, setFormData] = useState<EventFormData>({
+    id: "",
     subject_id: "",
     startTime: moment(defaultStart).format("HH:mm"),
     endTime: moment(defaultEnd).format("HH:mm"),
@@ -70,7 +72,7 @@ export const EventModal: React.FC<EventModalProps> = ({
           }
 
           const profileRes = await fetch(
-            `/api/tutor-availability/get-full?email=${encodeURIComponent(
+            `/api/subjects/tutor-subjects?email=${encodeURIComponent(
               user.email
             )}`
           );
@@ -79,6 +81,7 @@ export const EventModal: React.FC<EventModalProps> = ({
             const profileData = await profileRes.json();
 
             setSubjects(profileData);
+            console.log('profileData', profileData);
           }
         } catch (error) {
         } finally {
@@ -135,34 +138,14 @@ export const EventModal: React.FC<EventModalProps> = ({
       alert("Please select a subject");
       return;
     }
-
-    // Map subject_id to subject name
-    const selectedSubject: any = subjects.find(
-      (s: any) => s.id === formData.subject_id
-    );
-    const subjectName = selectedSubject?.subjects.name || "";
     onSubmit({
       ...formData,
-      subject_id: formData.subject_id,
-      subject: subjectName,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
     });
     onClose();
   };
-  const selectedSubject: any = subjects.find(
-      (s: any) => s.id === formData.subject_id
-    );
   const handleChange = (e: any) => {
     const { name, value } = e.target;
-    if (name === "subject_id") {
-      const selectedOption = e.target.options[e.target.selectedIndex];
-      const subjectName = selectedOption.getAttribute("data-name");
-      setFormData((prev) => ({
-        ...prev,
-        ["subject"]: subjectName,
-      }));
-    }
-
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -195,16 +178,16 @@ export const EventModal: React.FC<EventModalProps> = ({
             ) : (
               <div className="flex flex-wrap gap-2">
                 {subjects.map((obj: any) => {
-                  const isSelected = formData.subject_id === obj.id;
+                  const isSelected = formData.subject_id === obj?.subject_id;
                   return (
                     <button
                       type="button"
-                      key={obj.id}
+                      key={obj?.subject_id}
                       onClick={() =>
                         setFormData((prev) => ({
                           ...prev,
-                          subject_id: obj.id,
-                          subject: obj.subjects.name,
+                          subject_id: obj?.subject_id,
+                          subject: obj.Subjects.name,
                         }))
                       }
                       className={`inline-flex items-center gap-1 border rounded-lg text-xs px-3 py-1.5 shadow-sm transition-all duration-150 cursor-pointer ${
@@ -214,37 +197,37 @@ export const EventModal: React.FC<EventModalProps> = ({
                       }`}
                     >
                       <span className="font-semibold">
-                        {obj.subjects.name}
+                        {obj?.Subjects.name}
                       </span>
-                      {obj.subjects.code && (
+                      {obj.Subjects.code && (
                         <span className="text-[10px] opacity-80">
-                          {obj.subjects.code}
+                          {obj?.Subjects.code}
                         </span>
                       )}
-                      {obj.subjects.grade && (
+                      {obj?.Subjects.grade && (
                         <span className="text-[10px] opacity-70">
-                          · Grade {obj.subjects.grade}
+                          · Grade {obj?.Subjects.grade}
                         </span>
                       )}
-                      {(obj.price || obj.duration) && (
+                      {(obj?.price || obj?.duration) && (
                         <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-90">
-                          {typeof obj.duration !== "undefined" && (
+                          {typeof obj?.duration !== "undefined" && (
                             <>
                               <Clock className="w-3 h-3" />
                               <span>
-                                {obj.duration === 1
+                                {obj?.duration === 1
                                   ? "1h"
-                                  : obj.duration === 0.5
+                                  : obj?.duration === 0.5
                                   ? "30m"
                                   : "1h 30m"}
                               </span>
                             </>
                           )}
-                          {typeof obj.price !== "undefined" && (
+                          {typeof obj?.price !== "undefined" && (
                             <>
                               <span className="opacity-60">•</span>
                               <DollarSign className="w-3 h-3" />
-                              <span>${obj.price}</span>
+                              <span>${obj?.price}</span>
                             </>
                           )}
                         </span>

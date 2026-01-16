@@ -3617,12 +3617,10 @@ export namespace Prisma {
 
   export type SubjectsCountOutputType = {
     ProfilesOnSubjects: number
-    availabilities: number
   }
 
   export type SubjectsCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ProfilesOnSubjects?: boolean | SubjectsCountOutputTypeCountProfilesOnSubjectsArgs
-    availabilities?: boolean | SubjectsCountOutputTypeCountAvailabilitiesArgs
   }
 
   // Custom InputTypes
@@ -3641,13 +3639,6 @@ export namespace Prisma {
    */
   export type SubjectsCountOutputTypeCountProfilesOnSubjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProfilesOnSubjectsWhereInput
-  }
-
-  /**
-   * SubjectsCountOutputType without action
-   */
-  export type SubjectsCountOutputTypeCountAvailabilitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TutorAvailabilityWhereInput
   }
 
 
@@ -26923,8 +26914,20 @@ export namespace Prisma {
 
   export type AggregateProfilesOnSubjects = {
     _count: ProfilesOnSubjectsCountAggregateOutputType | null
+    _avg: ProfilesOnSubjectsAvgAggregateOutputType | null
+    _sum: ProfilesOnSubjectsSumAggregateOutputType | null
     _min: ProfilesOnSubjectsMinAggregateOutputType | null
     _max: ProfilesOnSubjectsMaxAggregateOutputType | null
+  }
+
+  export type ProfilesOnSubjectsAvgAggregateOutputType = {
+    price: number | null
+    duration: number | null
+  }
+
+  export type ProfilesOnSubjectsSumAggregateOutputType = {
+    price: number | null
+    duration: number | null
   }
 
   export type ProfilesOnSubjectsMinAggregateOutputType = {
@@ -26932,6 +26935,8 @@ export namespace Prisma {
     subject_id: string | null
     created_at: Date | null
     updated_at: Date | null
+    price: number | null
+    duration: number | null
   }
 
   export type ProfilesOnSubjectsMaxAggregateOutputType = {
@@ -26939,6 +26944,8 @@ export namespace Prisma {
     subject_id: string | null
     created_at: Date | null
     updated_at: Date | null
+    price: number | null
+    duration: number | null
   }
 
   export type ProfilesOnSubjectsCountAggregateOutputType = {
@@ -26946,15 +26953,29 @@ export namespace Prisma {
     subject_id: number
     created_at: number
     updated_at: number
+    price: number
+    duration: number
     _all: number
   }
 
+
+  export type ProfilesOnSubjectsAvgAggregateInputType = {
+    price?: true
+    duration?: true
+  }
+
+  export type ProfilesOnSubjectsSumAggregateInputType = {
+    price?: true
+    duration?: true
+  }
 
   export type ProfilesOnSubjectsMinAggregateInputType = {
     profile_id?: true
     subject_id?: true
     created_at?: true
     updated_at?: true
+    price?: true
+    duration?: true
   }
 
   export type ProfilesOnSubjectsMaxAggregateInputType = {
@@ -26962,6 +26983,8 @@ export namespace Prisma {
     subject_id?: true
     created_at?: true
     updated_at?: true
+    price?: true
+    duration?: true
   }
 
   export type ProfilesOnSubjectsCountAggregateInputType = {
@@ -26969,6 +26992,8 @@ export namespace Prisma {
     subject_id?: true
     created_at?: true
     updated_at?: true
+    price?: true
+    duration?: true
     _all?: true
   }
 
@@ -27010,6 +27035,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ProfilesOnSubjectsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ProfilesOnSubjectsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ProfilesOnSubjectsMinAggregateInputType
@@ -27040,6 +27077,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ProfilesOnSubjectsCountAggregateInputType | true
+    _avg?: ProfilesOnSubjectsAvgAggregateInputType
+    _sum?: ProfilesOnSubjectsSumAggregateInputType
     _min?: ProfilesOnSubjectsMinAggregateInputType
     _max?: ProfilesOnSubjectsMaxAggregateInputType
   }
@@ -27049,7 +27088,11 @@ export namespace Prisma {
     subject_id: string
     created_at: Date | null
     updated_at: Date | null
+    price: number | null
+    duration: number | null
     _count: ProfilesOnSubjectsCountAggregateOutputType | null
+    _avg: ProfilesOnSubjectsAvgAggregateOutputType | null
+    _sum: ProfilesOnSubjectsSumAggregateOutputType | null
     _min: ProfilesOnSubjectsMinAggregateOutputType | null
     _max: ProfilesOnSubjectsMaxAggregateOutputType | null
   }
@@ -27073,6 +27116,8 @@ export namespace Prisma {
     subject_id?: boolean
     created_at?: boolean
     updated_at?: boolean
+    price?: boolean
+    duration?: boolean
     Profiles?: boolean | ProfilesDefaultArgs<ExtArgs>
     Subjects?: boolean | SubjectsDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["profilesOnSubjects"]>
@@ -27082,6 +27127,8 @@ export namespace Prisma {
     subject_id?: boolean
     created_at?: boolean
     updated_at?: boolean
+    price?: boolean
+    duration?: boolean
     Profiles?: boolean | ProfilesDefaultArgs<ExtArgs>
     Subjects?: boolean | SubjectsDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["profilesOnSubjects"]>
@@ -27091,6 +27138,8 @@ export namespace Prisma {
     subject_id?: boolean
     created_at?: boolean
     updated_at?: boolean
+    price?: boolean
+    duration?: boolean
   }
 
   export type ProfilesOnSubjectsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -27113,6 +27162,8 @@ export namespace Prisma {
       subject_id: string
       created_at: Date | null
       updated_at: Date | null
+      price: number | null
+      duration: number | null
     }, ExtArgs["result"]["profilesOnSubjects"]>
     composites: {}
   }
@@ -27512,6 +27563,8 @@ export namespace Prisma {
     readonly subject_id: FieldRef<"ProfilesOnSubjects", 'String'>
     readonly created_at: FieldRef<"ProfilesOnSubjects", 'DateTime'>
     readonly updated_at: FieldRef<"ProfilesOnSubjects", 'DateTime'>
+    readonly price: FieldRef<"ProfilesOnSubjects", 'Float'>
+    readonly duration: FieldRef<"ProfilesOnSubjects", 'Float'>
   }
     
 
@@ -28116,6 +28169,8 @@ export namespace Prisma {
     ended_at?: boolean
     topic?: boolean
     notes?: boolean
+    start_time?: boolean
+    duration?: boolean
     Profiles_Sessions_student_idToProfiles?: boolean | ProfilesDefaultArgs<ExtArgs>
     Profiles_Sessions_tutor_idToProfiles?: boolean | ProfilesDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["sessions"]>
@@ -28130,6 +28185,8 @@ export namespace Prisma {
     ended_at?: boolean
     topic?: boolean
     notes?: boolean
+    start_time?: boolean
+    duration?: boolean
     Profiles_Sessions_student_idToProfiles?: boolean | ProfilesDefaultArgs<ExtArgs>
     Profiles_Sessions_tutor_idToProfiles?: boolean | ProfilesDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["sessions"]>
@@ -28144,6 +28201,8 @@ export namespace Prisma {
     ended_at?: boolean
     topic?: boolean
     notes?: boolean
+    start_time?: boolean
+    duration?: boolean
   }
 
   export type SessionsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -28171,6 +28230,8 @@ export namespace Prisma {
       ended_at: Date | null
       topic: string | null
       notes: string | null
+      start_time: Date | null
+      duration: number | null
     }, ExtArgs["result"]["sessions"]>
     composites: {}
   }
@@ -28575,6 +28636,8 @@ export namespace Prisma {
     readonly ended_at: FieldRef<"Sessions", 'DateTime'>
     readonly topic: FieldRef<"Sessions", 'String'>
     readonly notes: FieldRef<"Sessions", 'String'>
+    readonly start_time: FieldRef<"Sessions", 'DateTime'>
+    readonly duration: FieldRef<"Sessions", 'Float'>
   }
     
 
@@ -29122,7 +29185,6 @@ export namespace Prisma {
     created_at?: boolean
     updated_at?: boolean
     ProfilesOnSubjects?: boolean | Subjects$ProfilesOnSubjectsArgs<ExtArgs>
-    availabilities?: boolean | Subjects$availabilitiesArgs<ExtArgs>
     _count?: boolean | SubjectsCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["subjects"]>
 
@@ -29148,7 +29210,6 @@ export namespace Prisma {
 
   export type SubjectsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     ProfilesOnSubjects?: boolean | Subjects$ProfilesOnSubjectsArgs<ExtArgs>
-    availabilities?: boolean | Subjects$availabilitiesArgs<ExtArgs>
     _count?: boolean | SubjectsCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SubjectsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -29157,7 +29218,6 @@ export namespace Prisma {
     name: "Subjects"
     objects: {
       ProfilesOnSubjects: Prisma.$ProfilesOnSubjectsPayload<ExtArgs>[]
-      availabilities: Prisma.$TutorAvailabilityPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -29532,7 +29592,6 @@ export namespace Prisma {
   export interface Prisma__SubjectsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     ProfilesOnSubjects<T extends Subjects$ProfilesOnSubjectsArgs<ExtArgs> = {}>(args?: Subset<T, Subjects$ProfilesOnSubjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProfilesOnSubjectsPayload<ExtArgs>, T, "findMany"> | Null>
-    availabilities<T extends Subjects$availabilitiesArgs<ExtArgs> = {}>(args?: Subset<T, Subjects$availabilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -29903,26 +29962,6 @@ export namespace Prisma {
   }
 
   /**
-   * Subjects.availabilities
-   */
-  export type Subjects$availabilitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TutorAvailability
-     */
-    select?: TutorAvailabilitySelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TutorAvailabilityInclude<ExtArgs> | null
-    where?: TutorAvailabilityWhereInput
-    orderBy?: TutorAvailabilityOrderByWithRelationInput | TutorAvailabilityOrderByWithRelationInput[]
-    cursor?: TutorAvailabilityWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: TutorAvailabilityScalarFieldEnum | TutorAvailabilityScalarFieldEnum[]
-  }
-
-  /**
    * Subjects without action
    */
   export type SubjectsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -29971,11 +30010,11 @@ export namespace Prisma {
     is_active: boolean | null
     created_at: Date | null
     updated_at: Date | null
-    price: number | null
     subject_id: string | null
     start_date: Date | null
     end_date: Date | null
     subject: string | null
+    price: number | null
     duration: number | null
   }
 
@@ -29989,11 +30028,11 @@ export namespace Prisma {
     is_active: boolean | null
     created_at: Date | null
     updated_at: Date | null
-    price: number | null
     subject_id: string | null
     start_date: Date | null
     end_date: Date | null
     subject: string | null
+    price: number | null
     duration: number | null
   }
 
@@ -30007,11 +30046,11 @@ export namespace Prisma {
     is_active: number
     created_at: number
     updated_at: number
-    price: number
     subject_id: number
     start_date: number
     end_date: number
     subject: number
+    price: number
     duration: number
     _all: number
   }
@@ -30039,11 +30078,11 @@ export namespace Prisma {
     is_active?: true
     created_at?: true
     updated_at?: true
-    price?: true
     subject_id?: true
     start_date?: true
     end_date?: true
     subject?: true
+    price?: true
     duration?: true
   }
 
@@ -30057,11 +30096,11 @@ export namespace Prisma {
     is_active?: true
     created_at?: true
     updated_at?: true
-    price?: true
     subject_id?: true
     start_date?: true
     end_date?: true
     subject?: true
+    price?: true
     duration?: true
   }
 
@@ -30075,11 +30114,11 @@ export namespace Prisma {
     is_active?: true
     created_at?: true
     updated_at?: true
-    price?: true
     subject_id?: true
     start_date?: true
     end_date?: true
     subject?: true
+    price?: true
     duration?: true
     _all?: true
   }
@@ -30180,11 +30219,11 @@ export namespace Prisma {
     is_active: boolean
     created_at: Date
     updated_at: Date
-    price: number | null
     subject_id: string | null
     start_date: Date | null
     end_date: Date | null
     subject: string | null
+    price: number | null
     duration: number | null
     _count: TutorAvailabilityCountAggregateOutputType | null
     _avg: TutorAvailabilityAvgAggregateOutputType | null
@@ -30217,14 +30256,13 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: boolean
     updated_at?: boolean
-    price?: boolean
     subject_id?: boolean
     start_date?: boolean
     end_date?: boolean
     subject?: boolean
+    price?: boolean
     duration?: boolean
     tutor?: boolean | ProfilesDefaultArgs<ExtArgs>
-    subjects?: boolean | TutorAvailability$subjectsArgs<ExtArgs>
   }, ExtArgs["result"]["tutorAvailability"]>
 
   export type TutorAvailabilitySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -30237,14 +30275,13 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: boolean
     updated_at?: boolean
-    price?: boolean
     subject_id?: boolean
     start_date?: boolean
     end_date?: boolean
     subject?: boolean
+    price?: boolean
     duration?: boolean
     tutor?: boolean | ProfilesDefaultArgs<ExtArgs>
-    subjects?: boolean | TutorAvailability$subjectsArgs<ExtArgs>
   }, ExtArgs["result"]["tutorAvailability"]>
 
   export type TutorAvailabilitySelectScalar = {
@@ -30257,28 +30294,25 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: boolean
     updated_at?: boolean
-    price?: boolean
     subject_id?: boolean
     start_date?: boolean
     end_date?: boolean
     subject?: boolean
+    price?: boolean
     duration?: boolean
   }
 
   export type TutorAvailabilityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tutor?: boolean | ProfilesDefaultArgs<ExtArgs>
-    subjects?: boolean | TutorAvailability$subjectsArgs<ExtArgs>
   }
   export type TutorAvailabilityIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tutor?: boolean | ProfilesDefaultArgs<ExtArgs>
-    subjects?: boolean | TutorAvailability$subjectsArgs<ExtArgs>
   }
 
   export type $TutorAvailabilityPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "TutorAvailability"
     objects: {
       tutor: Prisma.$ProfilesPayload<ExtArgs>
-      subjects: Prisma.$SubjectsPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -30290,11 +30324,11 @@ export namespace Prisma {
       is_active: boolean
       created_at: Date
       updated_at: Date
-      price: number | null
       subject_id: string | null
       start_date: Date | null
       end_date: Date | null
       subject: string | null
+      price: number | null
       duration: number | null
     }, ExtArgs["result"]["tutorAvailability"]>
     composites: {}
@@ -30661,7 +30695,6 @@ export namespace Prisma {
   export interface Prisma__TutorAvailabilityClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tutor<T extends ProfilesDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProfilesDefaultArgs<ExtArgs>>): Prisma__ProfilesClient<$Result.GetResult<Prisma.$ProfilesPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    subjects<T extends TutorAvailability$subjectsArgs<ExtArgs> = {}>(args?: Subset<T, TutorAvailability$subjectsArgs<ExtArgs>>): Prisma__SubjectsClient<$Result.GetResult<Prisma.$SubjectsPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -30700,11 +30733,11 @@ export namespace Prisma {
     readonly is_active: FieldRef<"TutorAvailability", 'Boolean'>
     readonly created_at: FieldRef<"TutorAvailability", 'DateTime'>
     readonly updated_at: FieldRef<"TutorAvailability", 'DateTime'>
-    readonly price: FieldRef<"TutorAvailability", 'Float'>
     readonly subject_id: FieldRef<"TutorAvailability", 'String'>
     readonly start_date: FieldRef<"TutorAvailability", 'DateTime'>
     readonly end_date: FieldRef<"TutorAvailability", 'DateTime'>
     readonly subject: FieldRef<"TutorAvailability", 'String'>
+    readonly price: FieldRef<"TutorAvailability", 'Float'>
     readonly duration: FieldRef<"TutorAvailability", 'Float'>
   }
     
@@ -31021,21 +31054,6 @@ export namespace Prisma {
      * Filter which TutorAvailabilities to delete
      */
     where?: TutorAvailabilityWhereInput
-  }
-
-  /**
-   * TutorAvailability.subjects
-   */
-  export type TutorAvailability$subjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Subjects
-     */
-    select?: SubjectsSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SubjectsInclude<ExtArgs> | null
-    where?: SubjectsWhereInput
   }
 
   /**
@@ -31429,7 +31447,9 @@ export namespace Prisma {
     profile_id: 'profile_id',
     subject_id: 'subject_id',
     created_at: 'created_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    price: 'price',
+    duration: 'duration'
   };
 
   export type ProfilesOnSubjectsScalarFieldEnum = (typeof ProfilesOnSubjectsScalarFieldEnum)[keyof typeof ProfilesOnSubjectsScalarFieldEnum]
@@ -31444,7 +31464,9 @@ export namespace Prisma {
     started_at: 'started_at',
     ended_at: 'ended_at',
     topic: 'topic',
-    notes: 'notes'
+    notes: 'notes',
+    start_time: 'start_time',
+    duration: 'duration'
   };
 
   export type SessionsScalarFieldEnum = (typeof SessionsScalarFieldEnum)[keyof typeof SessionsScalarFieldEnum]
@@ -31473,11 +31495,11 @@ export namespace Prisma {
     is_active: 'is_active',
     created_at: 'created_at',
     updated_at: 'updated_at',
-    price: 'price',
     subject_id: 'subject_id',
     start_date: 'start_date',
     end_date: 'end_date',
     subject: 'subject',
+    price: 'price',
     duration: 'duration'
   };
 
@@ -33631,6 +33653,8 @@ export namespace Prisma {
     subject_id?: UuidFilter<"ProfilesOnSubjects"> | string
     created_at?: DateTimeNullableFilter<"ProfilesOnSubjects"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"ProfilesOnSubjects"> | Date | string | null
+    price?: FloatNullableFilter<"ProfilesOnSubjects"> | number | null
+    duration?: FloatNullableFilter<"ProfilesOnSubjects"> | number | null
     Profiles?: XOR<ProfilesRelationFilter, ProfilesWhereInput>
     Subjects?: XOR<SubjectsRelationFilter, SubjectsWhereInput>
   }
@@ -33640,6 +33664,8 @@ export namespace Prisma {
     subject_id?: SortOrder
     created_at?: SortOrderInput | SortOrder
     updated_at?: SortOrderInput | SortOrder
+    price?: SortOrderInput | SortOrder
+    duration?: SortOrderInput | SortOrder
     Profiles?: ProfilesOrderByWithRelationInput
     Subjects?: SubjectsOrderByWithRelationInput
   }
@@ -33653,6 +33679,8 @@ export namespace Prisma {
     subject_id?: UuidFilter<"ProfilesOnSubjects"> | string
     created_at?: DateTimeNullableFilter<"ProfilesOnSubjects"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"ProfilesOnSubjects"> | Date | string | null
+    price?: FloatNullableFilter<"ProfilesOnSubjects"> | number | null
+    duration?: FloatNullableFilter<"ProfilesOnSubjects"> | number | null
     Profiles?: XOR<ProfilesRelationFilter, ProfilesWhereInput>
     Subjects?: XOR<SubjectsRelationFilter, SubjectsWhereInput>
   }, "profile_id_subject_id">
@@ -33662,9 +33690,13 @@ export namespace Prisma {
     subject_id?: SortOrder
     created_at?: SortOrderInput | SortOrder
     updated_at?: SortOrderInput | SortOrder
+    price?: SortOrderInput | SortOrder
+    duration?: SortOrderInput | SortOrder
     _count?: ProfilesOnSubjectsCountOrderByAggregateInput
+    _avg?: ProfilesOnSubjectsAvgOrderByAggregateInput
     _max?: ProfilesOnSubjectsMaxOrderByAggregateInput
     _min?: ProfilesOnSubjectsMinOrderByAggregateInput
+    _sum?: ProfilesOnSubjectsSumOrderByAggregateInput
   }
 
   export type ProfilesOnSubjectsScalarWhereWithAggregatesInput = {
@@ -33675,6 +33707,8 @@ export namespace Prisma {
     subject_id?: UuidWithAggregatesFilter<"ProfilesOnSubjects"> | string
     created_at?: DateTimeNullableWithAggregatesFilter<"ProfilesOnSubjects"> | Date | string | null
     updated_at?: DateTimeNullableWithAggregatesFilter<"ProfilesOnSubjects"> | Date | string | null
+    price?: FloatNullableWithAggregatesFilter<"ProfilesOnSubjects"> | number | null
+    duration?: FloatNullableWithAggregatesFilter<"ProfilesOnSubjects"> | number | null
   }
 
   export type SessionsWhereInput = {
@@ -33690,6 +33724,8 @@ export namespace Prisma {
     ended_at?: DateTimeNullableFilter<"Sessions"> | Date | string | null
     topic?: StringNullableFilter<"Sessions"> | string | null
     notes?: StringNullableFilter<"Sessions"> | string | null
+    start_time?: DateTimeNullableFilter<"Sessions"> | Date | string | null
+    duration?: FloatNullableFilter<"Sessions"> | number | null
     Profiles_Sessions_student_idToProfiles?: XOR<ProfilesRelationFilter, ProfilesWhereInput>
     Profiles_Sessions_tutor_idToProfiles?: XOR<ProfilesRelationFilter, ProfilesWhereInput>
   }
@@ -33704,6 +33740,8 @@ export namespace Prisma {
     ended_at?: SortOrderInput | SortOrder
     topic?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    start_time?: SortOrderInput | SortOrder
+    duration?: SortOrderInput | SortOrder
     Profiles_Sessions_student_idToProfiles?: ProfilesOrderByWithRelationInput
     Profiles_Sessions_tutor_idToProfiles?: ProfilesOrderByWithRelationInput
   }
@@ -33721,6 +33759,8 @@ export namespace Prisma {
     ended_at?: DateTimeNullableFilter<"Sessions"> | Date | string | null
     topic?: StringNullableFilter<"Sessions"> | string | null
     notes?: StringNullableFilter<"Sessions"> | string | null
+    start_time?: DateTimeNullableFilter<"Sessions"> | Date | string | null
+    duration?: FloatNullableFilter<"Sessions"> | number | null
     Profiles_Sessions_student_idToProfiles?: XOR<ProfilesRelationFilter, ProfilesWhereInput>
     Profiles_Sessions_tutor_idToProfiles?: XOR<ProfilesRelationFilter, ProfilesWhereInput>
   }, "id">
@@ -33735,9 +33775,13 @@ export namespace Prisma {
     ended_at?: SortOrderInput | SortOrder
     topic?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    start_time?: SortOrderInput | SortOrder
+    duration?: SortOrderInput | SortOrder
     _count?: SessionsCountOrderByAggregateInput
+    _avg?: SessionsAvgOrderByAggregateInput
     _max?: SessionsMaxOrderByAggregateInput
     _min?: SessionsMinOrderByAggregateInput
+    _sum?: SessionsSumOrderByAggregateInput
   }
 
   export type SessionsScalarWhereWithAggregatesInput = {
@@ -33753,6 +33797,8 @@ export namespace Prisma {
     ended_at?: DateTimeNullableWithAggregatesFilter<"Sessions"> | Date | string | null
     topic?: StringNullableWithAggregatesFilter<"Sessions"> | string | null
     notes?: StringNullableWithAggregatesFilter<"Sessions"> | string | null
+    start_time?: DateTimeNullableWithAggregatesFilter<"Sessions"> | Date | string | null
+    duration?: FloatNullableWithAggregatesFilter<"Sessions"> | number | null
   }
 
   export type SubjectsWhereInput = {
@@ -33767,7 +33813,6 @@ export namespace Prisma {
     created_at?: DateTimeNullableFilter<"Subjects"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"Subjects"> | Date | string | null
     ProfilesOnSubjects?: ProfilesOnSubjectsListRelationFilter
-    availabilities?: TutorAvailabilityListRelationFilter
   }
 
   export type SubjectsOrderByWithRelationInput = {
@@ -33779,7 +33824,6 @@ export namespace Prisma {
     created_at?: SortOrderInput | SortOrder
     updated_at?: SortOrderInput | SortOrder
     ProfilesOnSubjects?: ProfilesOnSubjectsOrderByRelationAggregateInput
-    availabilities?: TutorAvailabilityOrderByRelationAggregateInput
   }
 
   export type SubjectsWhereUniqueInput = Prisma.AtLeast<{
@@ -33794,7 +33838,6 @@ export namespace Prisma {
     created_at?: DateTimeNullableFilter<"Subjects"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"Subjects"> | Date | string | null
     ProfilesOnSubjects?: ProfilesOnSubjectsListRelationFilter
-    availabilities?: TutorAvailabilityListRelationFilter
   }, "id">
 
   export type SubjectsOrderByWithAggregationInput = {
@@ -33838,14 +33881,13 @@ export namespace Prisma {
     is_active?: BoolFilter<"TutorAvailability"> | boolean
     created_at?: DateTimeFilter<"TutorAvailability"> | Date | string
     updated_at?: DateTimeFilter<"TutorAvailability"> | Date | string
-    price?: FloatNullableFilter<"TutorAvailability"> | number | null
     subject_id?: UuidNullableFilter<"TutorAvailability"> | string | null
     start_date?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
     end_date?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
     subject?: StringNullableFilter<"TutorAvailability"> | string | null
+    price?: FloatNullableFilter<"TutorAvailability"> | number | null
     duration?: FloatNullableFilter<"TutorAvailability"> | number | null
     tutor?: XOR<ProfilesRelationFilter, ProfilesWhereInput>
-    subjects?: XOR<SubjectsNullableRelationFilter, SubjectsWhereInput> | null
   }
 
   export type TutorAvailabilityOrderByWithRelationInput = {
@@ -33858,14 +33900,13 @@ export namespace Prisma {
     is_active?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-    price?: SortOrderInput | SortOrder
     subject_id?: SortOrderInput | SortOrder
     start_date?: SortOrderInput | SortOrder
     end_date?: SortOrderInput | SortOrder
     subject?: SortOrderInput | SortOrder
+    price?: SortOrderInput | SortOrder
     duration?: SortOrderInput | SortOrder
     tutor?: ProfilesOrderByWithRelationInput
-    subjects?: SubjectsOrderByWithRelationInput
   }
 
   export type TutorAvailabilityWhereUniqueInput = Prisma.AtLeast<{
@@ -33881,14 +33922,13 @@ export namespace Prisma {
     is_active?: BoolFilter<"TutorAvailability"> | boolean
     created_at?: DateTimeFilter<"TutorAvailability"> | Date | string
     updated_at?: DateTimeFilter<"TutorAvailability"> | Date | string
-    price?: FloatNullableFilter<"TutorAvailability"> | number | null
     subject_id?: UuidNullableFilter<"TutorAvailability"> | string | null
     start_date?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
     end_date?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
     subject?: StringNullableFilter<"TutorAvailability"> | string | null
+    price?: FloatNullableFilter<"TutorAvailability"> | number | null
     duration?: FloatNullableFilter<"TutorAvailability"> | number | null
     tutor?: XOR<ProfilesRelationFilter, ProfilesWhereInput>
-    subjects?: XOR<SubjectsNullableRelationFilter, SubjectsWhereInput> | null
   }, "id">
 
   export type TutorAvailabilityOrderByWithAggregationInput = {
@@ -33901,11 +33941,11 @@ export namespace Prisma {
     is_active?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-    price?: SortOrderInput | SortOrder
     subject_id?: SortOrderInput | SortOrder
     start_date?: SortOrderInput | SortOrder
     end_date?: SortOrderInput | SortOrder
     subject?: SortOrderInput | SortOrder
+    price?: SortOrderInput | SortOrder
     duration?: SortOrderInput | SortOrder
     _count?: TutorAvailabilityCountOrderByAggregateInput
     _avg?: TutorAvailabilityAvgOrderByAggregateInput
@@ -33927,11 +33967,11 @@ export namespace Prisma {
     is_active?: BoolWithAggregatesFilter<"TutorAvailability"> | boolean
     created_at?: DateTimeWithAggregatesFilter<"TutorAvailability"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"TutorAvailability"> | Date | string
-    price?: FloatNullableWithAggregatesFilter<"TutorAvailability"> | number | null
     subject_id?: UuidNullableWithAggregatesFilter<"TutorAvailability"> | string | null
     start_date?: DateTimeNullableWithAggregatesFilter<"TutorAvailability"> | Date | string | null
     end_date?: DateTimeNullableWithAggregatesFilter<"TutorAvailability"> | Date | string | null
     subject?: StringNullableWithAggregatesFilter<"TutorAvailability"> | string | null
+    price?: FloatNullableWithAggregatesFilter<"TutorAvailability"> | number | null
     duration?: FloatNullableWithAggregatesFilter<"TutorAvailability"> | number | null
   }
 
@@ -36040,6 +36080,8 @@ export namespace Prisma {
   export type ProfilesOnSubjectsCreateInput = {
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    price?: number | null
+    duration?: number | null
     Profiles: ProfilesCreateNestedOneWithoutSubjectsInput
     Subjects: SubjectsCreateNestedOneWithoutProfilesOnSubjectsInput
   }
@@ -36049,11 +36091,15 @@ export namespace Prisma {
     subject_id: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    price?: number | null
+    duration?: number | null
   }
 
   export type ProfilesOnSubjectsUpdateInput = {
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
     Profiles?: ProfilesUpdateOneRequiredWithoutSubjectsNestedInput
     Subjects?: SubjectsUpdateOneRequiredWithoutProfilesOnSubjectsNestedInput
   }
@@ -36063,6 +36109,8 @@ export namespace Prisma {
     subject_id?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type ProfilesOnSubjectsCreateManyInput = {
@@ -36070,11 +36118,15 @@ export namespace Prisma {
     subject_id: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    price?: number | null
+    duration?: number | null
   }
 
   export type ProfilesOnSubjectsUpdateManyMutationInput = {
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type ProfilesOnSubjectsUncheckedUpdateManyInput = {
@@ -36082,6 +36134,8 @@ export namespace Prisma {
     subject_id?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type SessionsCreateInput = {
@@ -36092,6 +36146,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
     Profiles_Sessions_student_idToProfiles: ProfilesCreateNestedOneWithoutSessions_Sessions_student_idToProfilesInput
     Profiles_Sessions_tutor_idToProfiles: ProfilesCreateNestedOneWithoutSessions_Sessions_tutor_idToProfilesInput
   }
@@ -36106,6 +36162,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
   }
 
   export type SessionsUpdateInput = {
@@ -36116,6 +36174,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
     Profiles_Sessions_student_idToProfiles?: ProfilesUpdateOneRequiredWithoutSessions_Sessions_student_idToProfilesNestedInput
     Profiles_Sessions_tutor_idToProfiles?: ProfilesUpdateOneRequiredWithoutSessions_Sessions_tutor_idToProfilesNestedInput
   }
@@ -36130,6 +36190,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type SessionsCreateManyInput = {
@@ -36142,6 +36204,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
   }
 
   export type SessionsUpdateManyMutationInput = {
@@ -36152,6 +36216,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type SessionsUncheckedUpdateManyInput = {
@@ -36164,6 +36230,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type SubjectsCreateInput = {
@@ -36175,7 +36243,6 @@ export namespace Prisma {
     created_at?: Date | string | null
     updated_at?: Date | string | null
     ProfilesOnSubjects?: ProfilesOnSubjectsCreateNestedManyWithoutSubjectsInput
-    availabilities?: TutorAvailabilityCreateNestedManyWithoutSubjectsInput
   }
 
   export type SubjectsUncheckedCreateInput = {
@@ -36187,7 +36254,6 @@ export namespace Prisma {
     created_at?: Date | string | null
     updated_at?: Date | string | null
     ProfilesOnSubjects?: ProfilesOnSubjectsUncheckedCreateNestedManyWithoutSubjectsInput
-    availabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutSubjectsInput
   }
 
   export type SubjectsUpdateInput = {
@@ -36199,7 +36265,6 @@ export namespace Prisma {
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ProfilesOnSubjects?: ProfilesOnSubjectsUpdateManyWithoutSubjectsNestedInput
-    availabilities?: TutorAvailabilityUpdateManyWithoutSubjectsNestedInput
   }
 
   export type SubjectsUncheckedUpdateInput = {
@@ -36211,7 +36276,6 @@ export namespace Prisma {
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ProfilesOnSubjects?: ProfilesOnSubjectsUncheckedUpdateManyWithoutSubjectsNestedInput
-    availabilities?: TutorAvailabilityUncheckedUpdateManyWithoutSubjectsNestedInput
   }
 
   export type SubjectsCreateManyInput = {
@@ -36253,13 +36317,13 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: Date | string
     updated_at?: Date | string
-    price?: number | null
+    subject_id?: string | null
     start_date?: Date | string | null
     end_date?: Date | string | null
     subject?: string | null
+    price?: number | null
     duration?: number | null
     tutor: ProfilesCreateNestedOneWithoutTutorAvailabilityInput
-    subjects?: SubjectsCreateNestedOneWithoutAvailabilitiesInput
   }
 
   export type TutorAvailabilityUncheckedCreateInput = {
@@ -36272,11 +36336,11 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: Date | string
     updated_at?: Date | string
-    price?: number | null
     subject_id?: string | null
     start_date?: Date | string | null
     end_date?: Date | string | null
     subject?: string | null
+    price?: number | null
     duration?: number | null
   }
 
@@ -36289,13 +36353,13 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    subject_id?: NullableStringFieldUpdateOperationsInput | string | null
     start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     duration?: NullableFloatFieldUpdateOperationsInput | number | null
     tutor?: ProfilesUpdateOneRequiredWithoutTutorAvailabilityNestedInput
-    subjects?: SubjectsUpdateOneWithoutAvailabilitiesNestedInput
   }
 
   export type TutorAvailabilityUncheckedUpdateInput = {
@@ -36308,11 +36372,11 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
     subject_id?: NullableStringFieldUpdateOperationsInput | string | null
     start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
@@ -36326,11 +36390,11 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: Date | string
     updated_at?: Date | string
-    price?: number | null
     subject_id?: string | null
     start_date?: Date | string | null
     end_date?: Date | string | null
     subject?: string | null
+    price?: number | null
     duration?: number | null
   }
 
@@ -36343,10 +36407,11 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    subject_id?: NullableStringFieldUpdateOperationsInput | string | null
     start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
@@ -36360,11 +36425,11 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
     subject_id?: NullableStringFieldUpdateOperationsInput | string | null
     start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
@@ -38097,6 +38162,13 @@ export namespace Prisma {
     subject_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    price?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type ProfilesOnSubjectsAvgOrderByAggregateInput = {
+    price?: SortOrder
+    duration?: SortOrder
   }
 
   export type ProfilesOnSubjectsMaxOrderByAggregateInput = {
@@ -38104,6 +38176,8 @@ export namespace Prisma {
     subject_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    price?: SortOrder
+    duration?: SortOrder
   }
 
   export type ProfilesOnSubjectsMinOrderByAggregateInput = {
@@ -38111,6 +38185,13 @@ export namespace Prisma {
     subject_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    price?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type ProfilesOnSubjectsSumOrderByAggregateInput = {
+    price?: SortOrder
+    duration?: SortOrder
   }
 
   export type SessionsCountOrderByAggregateInput = {
@@ -38123,6 +38204,12 @@ export namespace Prisma {
     ended_at?: SortOrder
     topic?: SortOrder
     notes?: SortOrder
+    start_time?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type SessionsAvgOrderByAggregateInput = {
+    duration?: SortOrder
   }
 
   export type SessionsMaxOrderByAggregateInput = {
@@ -38135,6 +38222,8 @@ export namespace Prisma {
     ended_at?: SortOrder
     topic?: SortOrder
     notes?: SortOrder
+    start_time?: SortOrder
+    duration?: SortOrder
   }
 
   export type SessionsMinOrderByAggregateInput = {
@@ -38147,6 +38236,12 @@ export namespace Prisma {
     ended_at?: SortOrder
     topic?: SortOrder
     notes?: SortOrder
+    start_time?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type SessionsSumOrderByAggregateInput = {
+    duration?: SortOrder
   }
 
   export type SubjectsCountOrderByAggregateInput = {
@@ -38187,11 +38282,6 @@ export namespace Prisma {
     grade?: SortOrder
   }
 
-  export type SubjectsNullableRelationFilter = {
-    is?: SubjectsWhereInput | null
-    isNot?: SubjectsWhereInput | null
-  }
-
   export type TutorAvailabilityCountOrderByAggregateInput = {
     id?: SortOrder
     tutor_id?: SortOrder
@@ -38202,11 +38292,11 @@ export namespace Prisma {
     is_active?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-    price?: SortOrder
     subject_id?: SortOrder
     start_date?: SortOrder
     end_date?: SortOrder
     subject?: SortOrder
+    price?: SortOrder
     duration?: SortOrder
   }
 
@@ -38226,11 +38316,11 @@ export namespace Prisma {
     is_active?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-    price?: SortOrder
     subject_id?: SortOrder
     start_date?: SortOrder
     end_date?: SortOrder
     subject?: SortOrder
+    price?: SortOrder
     duration?: SortOrder
   }
 
@@ -38244,11 +38334,11 @@ export namespace Prisma {
     is_active?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-    price?: SortOrder
     subject_id?: SortOrder
     start_date?: SortOrder
     end_date?: SortOrder
     subject?: SortOrder
+    price?: SortOrder
     duration?: SortOrder
   }
 
@@ -39759,25 +39849,11 @@ export namespace Prisma {
     connect?: ProfilesOnSubjectsWhereUniqueInput | ProfilesOnSubjectsWhereUniqueInput[]
   }
 
-  export type TutorAvailabilityCreateNestedManyWithoutSubjectsInput = {
-    create?: XOR<TutorAvailabilityCreateWithoutSubjectsInput, TutorAvailabilityUncheckedCreateWithoutSubjectsInput> | TutorAvailabilityCreateWithoutSubjectsInput[] | TutorAvailabilityUncheckedCreateWithoutSubjectsInput[]
-    connectOrCreate?: TutorAvailabilityCreateOrConnectWithoutSubjectsInput | TutorAvailabilityCreateOrConnectWithoutSubjectsInput[]
-    createMany?: TutorAvailabilityCreateManySubjectsInputEnvelope
-    connect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-  }
-
   export type ProfilesOnSubjectsUncheckedCreateNestedManyWithoutSubjectsInput = {
     create?: XOR<ProfilesOnSubjectsCreateWithoutSubjectsInput, ProfilesOnSubjectsUncheckedCreateWithoutSubjectsInput> | ProfilesOnSubjectsCreateWithoutSubjectsInput[] | ProfilesOnSubjectsUncheckedCreateWithoutSubjectsInput[]
     connectOrCreate?: ProfilesOnSubjectsCreateOrConnectWithoutSubjectsInput | ProfilesOnSubjectsCreateOrConnectWithoutSubjectsInput[]
     createMany?: ProfilesOnSubjectsCreateManySubjectsInputEnvelope
     connect?: ProfilesOnSubjectsWhereUniqueInput | ProfilesOnSubjectsWhereUniqueInput[]
-  }
-
-  export type TutorAvailabilityUncheckedCreateNestedManyWithoutSubjectsInput = {
-    create?: XOR<TutorAvailabilityCreateWithoutSubjectsInput, TutorAvailabilityUncheckedCreateWithoutSubjectsInput> | TutorAvailabilityCreateWithoutSubjectsInput[] | TutorAvailabilityUncheckedCreateWithoutSubjectsInput[]
-    connectOrCreate?: TutorAvailabilityCreateOrConnectWithoutSubjectsInput | TutorAvailabilityCreateOrConnectWithoutSubjectsInput[]
-    createMany?: TutorAvailabilityCreateManySubjectsInputEnvelope
-    connect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
   }
 
   export type ProfilesOnSubjectsUpdateManyWithoutSubjectsNestedInput = {
@@ -39794,20 +39870,6 @@ export namespace Prisma {
     deleteMany?: ProfilesOnSubjectsScalarWhereInput | ProfilesOnSubjectsScalarWhereInput[]
   }
 
-  export type TutorAvailabilityUpdateManyWithoutSubjectsNestedInput = {
-    create?: XOR<TutorAvailabilityCreateWithoutSubjectsInput, TutorAvailabilityUncheckedCreateWithoutSubjectsInput> | TutorAvailabilityCreateWithoutSubjectsInput[] | TutorAvailabilityUncheckedCreateWithoutSubjectsInput[]
-    connectOrCreate?: TutorAvailabilityCreateOrConnectWithoutSubjectsInput | TutorAvailabilityCreateOrConnectWithoutSubjectsInput[]
-    upsert?: TutorAvailabilityUpsertWithWhereUniqueWithoutSubjectsInput | TutorAvailabilityUpsertWithWhereUniqueWithoutSubjectsInput[]
-    createMany?: TutorAvailabilityCreateManySubjectsInputEnvelope
-    set?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-    disconnect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-    delete?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-    connect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-    update?: TutorAvailabilityUpdateWithWhereUniqueWithoutSubjectsInput | TutorAvailabilityUpdateWithWhereUniqueWithoutSubjectsInput[]
-    updateMany?: TutorAvailabilityUpdateManyWithWhereWithoutSubjectsInput | TutorAvailabilityUpdateManyWithWhereWithoutSubjectsInput[]
-    deleteMany?: TutorAvailabilityScalarWhereInput | TutorAvailabilityScalarWhereInput[]
-  }
-
   export type ProfilesOnSubjectsUncheckedUpdateManyWithoutSubjectsNestedInput = {
     create?: XOR<ProfilesOnSubjectsCreateWithoutSubjectsInput, ProfilesOnSubjectsUncheckedCreateWithoutSubjectsInput> | ProfilesOnSubjectsCreateWithoutSubjectsInput[] | ProfilesOnSubjectsUncheckedCreateWithoutSubjectsInput[]
     connectOrCreate?: ProfilesOnSubjectsCreateOrConnectWithoutSubjectsInput | ProfilesOnSubjectsCreateOrConnectWithoutSubjectsInput[]
@@ -39822,30 +39884,10 @@ export namespace Prisma {
     deleteMany?: ProfilesOnSubjectsScalarWhereInput | ProfilesOnSubjectsScalarWhereInput[]
   }
 
-  export type TutorAvailabilityUncheckedUpdateManyWithoutSubjectsNestedInput = {
-    create?: XOR<TutorAvailabilityCreateWithoutSubjectsInput, TutorAvailabilityUncheckedCreateWithoutSubjectsInput> | TutorAvailabilityCreateWithoutSubjectsInput[] | TutorAvailabilityUncheckedCreateWithoutSubjectsInput[]
-    connectOrCreate?: TutorAvailabilityCreateOrConnectWithoutSubjectsInput | TutorAvailabilityCreateOrConnectWithoutSubjectsInput[]
-    upsert?: TutorAvailabilityUpsertWithWhereUniqueWithoutSubjectsInput | TutorAvailabilityUpsertWithWhereUniqueWithoutSubjectsInput[]
-    createMany?: TutorAvailabilityCreateManySubjectsInputEnvelope
-    set?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-    disconnect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-    delete?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-    connect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
-    update?: TutorAvailabilityUpdateWithWhereUniqueWithoutSubjectsInput | TutorAvailabilityUpdateWithWhereUniqueWithoutSubjectsInput[]
-    updateMany?: TutorAvailabilityUpdateManyWithWhereWithoutSubjectsInput | TutorAvailabilityUpdateManyWithWhereWithoutSubjectsInput[]
-    deleteMany?: TutorAvailabilityScalarWhereInput | TutorAvailabilityScalarWhereInput[]
-  }
-
   export type ProfilesCreateNestedOneWithoutTutorAvailabilityInput = {
     create?: XOR<ProfilesCreateWithoutTutorAvailabilityInput, ProfilesUncheckedCreateWithoutTutorAvailabilityInput>
     connectOrCreate?: ProfilesCreateOrConnectWithoutTutorAvailabilityInput
     connect?: ProfilesWhereUniqueInput
-  }
-
-  export type SubjectsCreateNestedOneWithoutAvailabilitiesInput = {
-    create?: XOR<SubjectsCreateWithoutAvailabilitiesInput, SubjectsUncheckedCreateWithoutAvailabilitiesInput>
-    connectOrCreate?: SubjectsCreateOrConnectWithoutAvailabilitiesInput
-    connect?: SubjectsWhereUniqueInput
   }
 
   export type ProfilesUpdateOneRequiredWithoutTutorAvailabilityNestedInput = {
@@ -39854,16 +39896,6 @@ export namespace Prisma {
     upsert?: ProfilesUpsertWithoutTutorAvailabilityInput
     connect?: ProfilesWhereUniqueInput
     update?: XOR<XOR<ProfilesUpdateToOneWithWhereWithoutTutorAvailabilityInput, ProfilesUpdateWithoutTutorAvailabilityInput>, ProfilesUncheckedUpdateWithoutTutorAvailabilityInput>
-  }
-
-  export type SubjectsUpdateOneWithoutAvailabilitiesNestedInput = {
-    create?: XOR<SubjectsCreateWithoutAvailabilitiesInput, SubjectsUncheckedCreateWithoutAvailabilitiesInput>
-    connectOrCreate?: SubjectsCreateOrConnectWithoutAvailabilitiesInput
-    upsert?: SubjectsUpsertWithoutAvailabilitiesInput
-    disconnect?: SubjectsWhereInput | boolean
-    delete?: SubjectsWhereInput | boolean
-    connect?: SubjectsWhereUniqueInput
-    update?: XOR<XOR<SubjectsUpdateToOneWithWhereWithoutAvailabilitiesInput, SubjectsUpdateWithoutAvailabilitiesInput>, SubjectsUncheckedUpdateWithoutAvailabilitiesInput>
   }
 
   export type NestedUuidNullableFilter<$PrismaModel = never> = {
@@ -44071,6 +44103,8 @@ export namespace Prisma {
   export type ProfilesOnSubjectsCreateWithoutProfilesInput = {
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    price?: number | null
+    duration?: number | null
     Subjects: SubjectsCreateNestedOneWithoutProfilesOnSubjectsInput
   }
 
@@ -44078,6 +44112,8 @@ export namespace Prisma {
     subject_id: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    price?: number | null
+    duration?: number | null
   }
 
   export type ProfilesOnSubjectsCreateOrConnectWithoutProfilesInput = {
@@ -44098,6 +44134,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
     Profiles_Sessions_tutor_idToProfiles: ProfilesCreateNestedOneWithoutSessions_Sessions_tutor_idToProfilesInput
   }
 
@@ -44110,6 +44148,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
   }
 
   export type SessionsCreateOrConnectWithoutProfiles_Sessions_student_idToProfilesInput = {
@@ -44130,6 +44170,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
     Profiles_Sessions_student_idToProfiles: ProfilesCreateNestedOneWithoutSessions_Sessions_student_idToProfilesInput
   }
 
@@ -44142,6 +44184,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
   }
 
   export type SessionsCreateOrConnectWithoutProfiles_Sessions_tutor_idToProfilesInput = {
@@ -44163,12 +44207,12 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: Date | string
     updated_at?: Date | string
-    price?: number | null
+    subject_id?: string | null
     start_date?: Date | string | null
     end_date?: Date | string | null
     subject?: string | null
+    price?: number | null
     duration?: number | null
-    subjects?: SubjectsCreateNestedOneWithoutAvailabilitiesInput
   }
 
   export type TutorAvailabilityUncheckedCreateWithoutTutorInput = {
@@ -44180,11 +44224,11 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: Date | string
     updated_at?: Date | string
-    price?: number | null
     subject_id?: string | null
     start_date?: Date | string | null
     end_date?: Date | string | null
     subject?: string | null
+    price?: number | null
     duration?: number | null
   }
 
@@ -44382,6 +44426,8 @@ export namespace Prisma {
     subject_id?: UuidFilter<"ProfilesOnSubjects"> | string
     created_at?: DateTimeNullableFilter<"ProfilesOnSubjects"> | Date | string | null
     updated_at?: DateTimeNullableFilter<"ProfilesOnSubjects"> | Date | string | null
+    price?: FloatNullableFilter<"ProfilesOnSubjects"> | number | null
+    duration?: FloatNullableFilter<"ProfilesOnSubjects"> | number | null
   }
 
   export type SessionsUpsertWithWhereUniqueWithoutProfiles_Sessions_student_idToProfilesInput = {
@@ -44413,6 +44459,8 @@ export namespace Prisma {
     ended_at?: DateTimeNullableFilter<"Sessions"> | Date | string | null
     topic?: StringNullableFilter<"Sessions"> | string | null
     notes?: StringNullableFilter<"Sessions"> | string | null
+    start_time?: DateTimeNullableFilter<"Sessions"> | Date | string | null
+    duration?: FloatNullableFilter<"Sessions"> | number | null
   }
 
   export type SessionsUpsertWithWhereUniqueWithoutProfiles_Sessions_tutor_idToProfilesInput = {
@@ -44460,11 +44508,11 @@ export namespace Prisma {
     is_active?: BoolFilter<"TutorAvailability"> | boolean
     created_at?: DateTimeFilter<"TutorAvailability"> | Date | string
     updated_at?: DateTimeFilter<"TutorAvailability"> | Date | string
-    price?: FloatNullableFilter<"TutorAvailability"> | number | null
     subject_id?: UuidNullableFilter<"TutorAvailability"> | string | null
     start_date?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
     end_date?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
     subject?: StringNullableFilter<"TutorAvailability"> | string | null
+    price?: FloatNullableFilter<"TutorAvailability"> | number | null
     duration?: FloatNullableFilter<"TutorAvailability"> | number | null
   }
 
@@ -44533,7 +44581,6 @@ export namespace Prisma {
     category?: string | null
     created_at?: Date | string | null
     updated_at?: Date | string | null
-    availabilities?: TutorAvailabilityCreateNestedManyWithoutSubjectsInput
   }
 
   export type SubjectsUncheckedCreateWithoutProfilesOnSubjectsInput = {
@@ -44544,7 +44591,6 @@ export namespace Prisma {
     category?: string | null
     created_at?: Date | string | null
     updated_at?: Date | string | null
-    availabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutSubjectsInput
   }
 
   export type SubjectsCreateOrConnectWithoutProfilesOnSubjectsInput = {
@@ -44634,7 +44680,6 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    availabilities?: TutorAvailabilityUpdateManyWithoutSubjectsNestedInput
   }
 
   export type SubjectsUncheckedUpdateWithoutProfilesOnSubjectsInput = {
@@ -44645,7 +44690,6 @@ export namespace Prisma {
     category?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    availabilities?: TutorAvailabilityUncheckedUpdateManyWithoutSubjectsNestedInput
   }
 
   export type ProfilesCreateWithoutSessions_Sessions_student_idToProfilesInput = {
@@ -44891,6 +44935,8 @@ export namespace Prisma {
   export type ProfilesOnSubjectsCreateWithoutSubjectsInput = {
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    price?: number | null
+    duration?: number | null
     Profiles: ProfilesCreateNestedOneWithoutSubjectsInput
   }
 
@@ -44898,6 +44944,8 @@ export namespace Prisma {
     profile_id: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    price?: number | null
+    duration?: number | null
   }
 
   export type ProfilesOnSubjectsCreateOrConnectWithoutSubjectsInput = {
@@ -44907,50 +44955,6 @@ export namespace Prisma {
 
   export type ProfilesOnSubjectsCreateManySubjectsInputEnvelope = {
     data: ProfilesOnSubjectsCreateManySubjectsInput | ProfilesOnSubjectsCreateManySubjectsInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type TutorAvailabilityCreateWithoutSubjectsInput = {
-    id?: string
-    day_of_week?: number | null
-    start_time?: Date | string | null
-    end_time?: Date | string | null
-    timezone?: string | null
-    is_active?: boolean
-    created_at?: Date | string
-    updated_at?: Date | string
-    price?: number | null
-    start_date?: Date | string | null
-    end_date?: Date | string | null
-    subject?: string | null
-    duration?: number | null
-    tutor: ProfilesCreateNestedOneWithoutTutorAvailabilityInput
-  }
-
-  export type TutorAvailabilityUncheckedCreateWithoutSubjectsInput = {
-    id?: string
-    tutor_id: string
-    day_of_week?: number | null
-    start_time?: Date | string | null
-    end_time?: Date | string | null
-    timezone?: string | null
-    is_active?: boolean
-    created_at?: Date | string
-    updated_at?: Date | string
-    price?: number | null
-    start_date?: Date | string | null
-    end_date?: Date | string | null
-    subject?: string | null
-    duration?: number | null
-  }
-
-  export type TutorAvailabilityCreateOrConnectWithoutSubjectsInput = {
-    where: TutorAvailabilityWhereUniqueInput
-    create: XOR<TutorAvailabilityCreateWithoutSubjectsInput, TutorAvailabilityUncheckedCreateWithoutSubjectsInput>
-  }
-
-  export type TutorAvailabilityCreateManySubjectsInputEnvelope = {
-    data: TutorAvailabilityCreateManySubjectsInput | TutorAvailabilityCreateManySubjectsInput[]
     skipDuplicates?: boolean
   }
 
@@ -44968,22 +44972,6 @@ export namespace Prisma {
   export type ProfilesOnSubjectsUpdateManyWithWhereWithoutSubjectsInput = {
     where: ProfilesOnSubjectsScalarWhereInput
     data: XOR<ProfilesOnSubjectsUpdateManyMutationInput, ProfilesOnSubjectsUncheckedUpdateManyWithoutSubjectsInput>
-  }
-
-  export type TutorAvailabilityUpsertWithWhereUniqueWithoutSubjectsInput = {
-    where: TutorAvailabilityWhereUniqueInput
-    update: XOR<TutorAvailabilityUpdateWithoutSubjectsInput, TutorAvailabilityUncheckedUpdateWithoutSubjectsInput>
-    create: XOR<TutorAvailabilityCreateWithoutSubjectsInput, TutorAvailabilityUncheckedCreateWithoutSubjectsInput>
-  }
-
-  export type TutorAvailabilityUpdateWithWhereUniqueWithoutSubjectsInput = {
-    where: TutorAvailabilityWhereUniqueInput
-    data: XOR<TutorAvailabilityUpdateWithoutSubjectsInput, TutorAvailabilityUncheckedUpdateWithoutSubjectsInput>
-  }
-
-  export type TutorAvailabilityUpdateManyWithWhereWithoutSubjectsInput = {
-    where: TutorAvailabilityScalarWhereInput
-    data: XOR<TutorAvailabilityUpdateManyMutationInput, TutorAvailabilityUncheckedUpdateManyWithoutSubjectsInput>
   }
 
   export type ProfilesCreateWithoutTutorAvailabilityInput = {
@@ -45041,33 +45029,6 @@ export namespace Prisma {
   export type ProfilesCreateOrConnectWithoutTutorAvailabilityInput = {
     where: ProfilesWhereUniqueInput
     create: XOR<ProfilesCreateWithoutTutorAvailabilityInput, ProfilesUncheckedCreateWithoutTutorAvailabilityInput>
-  }
-
-  export type SubjectsCreateWithoutAvailabilitiesInput = {
-    id?: string
-    name: string
-    code?: string | null
-    grade?: number | null
-    category?: string | null
-    created_at?: Date | string | null
-    updated_at?: Date | string | null
-    ProfilesOnSubjects?: ProfilesOnSubjectsCreateNestedManyWithoutSubjectsInput
-  }
-
-  export type SubjectsUncheckedCreateWithoutAvailabilitiesInput = {
-    id?: string
-    name: string
-    code?: string | null
-    grade?: number | null
-    category?: string | null
-    created_at?: Date | string | null
-    updated_at?: Date | string | null
-    ProfilesOnSubjects?: ProfilesOnSubjectsUncheckedCreateNestedManyWithoutSubjectsInput
-  }
-
-  export type SubjectsCreateOrConnectWithoutAvailabilitiesInput = {
-    where: SubjectsWhereUniqueInput
-    create: XOR<SubjectsCreateWithoutAvailabilitiesInput, SubjectsUncheckedCreateWithoutAvailabilitiesInput>
   }
 
   export type ProfilesUpsertWithoutTutorAvailabilityInput = {
@@ -45131,39 +45092,6 @@ export namespace Prisma {
     subjects?: ProfilesOnSubjectsUncheckedUpdateManyWithoutProfilesNestedInput
     Sessions_Sessions_student_idToProfiles?: SessionsUncheckedUpdateManyWithoutProfiles_Sessions_student_idToProfilesNestedInput
     Sessions_Sessions_tutor_idToProfiles?: SessionsUncheckedUpdateManyWithoutProfiles_Sessions_tutor_idToProfilesNestedInput
-  }
-
-  export type SubjectsUpsertWithoutAvailabilitiesInput = {
-    update: XOR<SubjectsUpdateWithoutAvailabilitiesInput, SubjectsUncheckedUpdateWithoutAvailabilitiesInput>
-    create: XOR<SubjectsCreateWithoutAvailabilitiesInput, SubjectsUncheckedCreateWithoutAvailabilitiesInput>
-    where?: SubjectsWhereInput
-  }
-
-  export type SubjectsUpdateToOneWithWhereWithoutAvailabilitiesInput = {
-    where?: SubjectsWhereInput
-    data: XOR<SubjectsUpdateWithoutAvailabilitiesInput, SubjectsUncheckedUpdateWithoutAvailabilitiesInput>
-  }
-
-  export type SubjectsUpdateWithoutAvailabilitiesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    code?: NullableStringFieldUpdateOperationsInput | string | null
-    grade?: NullableIntFieldUpdateOperationsInput | number | null
-    category?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    ProfilesOnSubjects?: ProfilesOnSubjectsUpdateManyWithoutSubjectsNestedInput
-  }
-
-  export type SubjectsUncheckedUpdateWithoutAvailabilitiesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    code?: NullableStringFieldUpdateOperationsInput | string | null
-    grade?: NullableIntFieldUpdateOperationsInput | number | null
-    category?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    ProfilesOnSubjects?: ProfilesOnSubjectsUncheckedUpdateManyWithoutSubjectsNestedInput
   }
 
   export type saml_relay_statesCreateManyFlow_stateInput = {
@@ -45995,6 +45923,8 @@ export namespace Prisma {
     subject_id: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
+    price?: number | null
+    duration?: number | null
   }
 
   export type SessionsCreateManyProfiles_Sessions_student_idToProfilesInput = {
@@ -46006,6 +45936,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
   }
 
   export type SessionsCreateManyProfiles_Sessions_tutor_idToProfilesInput = {
@@ -46017,6 +45949,8 @@ export namespace Prisma {
     ended_at?: Date | string | null
     topic?: string | null
     notes?: string | null
+    start_time?: Date | string | null
+    duration?: number | null
   }
 
   export type TutorAvailabilityCreateManyTutorInput = {
@@ -46028,11 +45962,11 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: Date | string
     updated_at?: Date | string
-    price?: number | null
     subject_id?: string | null
     start_date?: Date | string | null
     end_date?: Date | string | null
     subject?: string | null
+    price?: number | null
     duration?: number | null
   }
 
@@ -46124,6 +46058,8 @@ export namespace Prisma {
   export type ProfilesOnSubjectsUpdateWithoutProfilesInput = {
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
     Subjects?: SubjectsUpdateOneRequiredWithoutProfilesOnSubjectsNestedInput
   }
 
@@ -46131,12 +46067,16 @@ export namespace Prisma {
     subject_id?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type ProfilesOnSubjectsUncheckedUpdateManyWithoutProfilesInput = {
     subject_id?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type SessionsUpdateWithoutProfiles_Sessions_student_idToProfilesInput = {
@@ -46147,6 +46087,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
     Profiles_Sessions_tutor_idToProfiles?: ProfilesUpdateOneRequiredWithoutSessions_Sessions_tutor_idToProfilesNestedInput
   }
 
@@ -46159,6 +46101,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type SessionsUncheckedUpdateManyWithoutProfiles_Sessions_student_idToProfilesInput = {
@@ -46170,6 +46114,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type SessionsUpdateWithoutProfiles_Sessions_tutor_idToProfilesInput = {
@@ -46180,6 +46126,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
     Profiles_Sessions_student_idToProfiles?: ProfilesUpdateOneRequiredWithoutSessions_Sessions_student_idToProfilesNestedInput
   }
 
@@ -46192,6 +46140,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type SessionsUncheckedUpdateManyWithoutProfiles_Sessions_tutor_idToProfilesInput = {
@@ -46203,6 +46153,8 @@ export namespace Prisma {
     ended_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     topic?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type TutorAvailabilityUpdateWithoutTutorInput = {
@@ -46214,12 +46166,12 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    subject_id?: NullableStringFieldUpdateOperationsInput | string | null
     start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     duration?: NullableFloatFieldUpdateOperationsInput | number | null
-    subjects?: SubjectsUpdateOneWithoutAvailabilitiesNestedInput
   }
 
   export type TutorAvailabilityUncheckedUpdateWithoutTutorInput = {
@@ -46231,11 +46183,11 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
     subject_id?: NullableStringFieldUpdateOperationsInput | string | null
     start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
@@ -46248,11 +46200,11 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
     subject_id?: NullableStringFieldUpdateOperationsInput | string | null
     start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subject?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
     duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
@@ -46260,28 +46212,15 @@ export namespace Prisma {
     profile_id: string
     created_at?: Date | string | null
     updated_at?: Date | string | null
-  }
-
-  export type TutorAvailabilityCreateManySubjectsInput = {
-    id?: string
-    tutor_id: string
-    day_of_week?: number | null
-    start_time?: Date | string | null
-    end_time?: Date | string | null
-    timezone?: string | null
-    is_active?: boolean
-    created_at?: Date | string
-    updated_at?: Date | string
     price?: number | null
-    start_date?: Date | string | null
-    end_date?: Date | string | null
-    subject?: string | null
     duration?: number | null
   }
 
   export type ProfilesOnSubjectsUpdateWithoutSubjectsInput = {
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
     Profiles?: ProfilesUpdateOneRequiredWithoutSubjectsNestedInput
   }
 
@@ -46289,62 +46228,15 @@ export namespace Prisma {
     profile_id?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 
   export type ProfilesOnSubjectsUncheckedUpdateManyWithoutSubjectsInput = {
     profile_id?: StringFieldUpdateOperationsInput | string
     created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type TutorAvailabilityUpdateWithoutSubjectsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    day_of_week?: NullableIntFieldUpdateOperationsInput | number | null
-    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    end_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    timezone?: NullableStringFieldUpdateOperationsInput | string | null
-    is_active?: BoolFieldUpdateOperationsInput | boolean
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: NullableFloatFieldUpdateOperationsInput | number | null
-    start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    subject?: NullableStringFieldUpdateOperationsInput | string | null
-    duration?: NullableFloatFieldUpdateOperationsInput | number | null
-    tutor?: ProfilesUpdateOneRequiredWithoutTutorAvailabilityNestedInput
-  }
-
-  export type TutorAvailabilityUncheckedUpdateWithoutSubjectsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    tutor_id?: StringFieldUpdateOperationsInput | string
-    day_of_week?: NullableIntFieldUpdateOperationsInput | number | null
-    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    end_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    timezone?: NullableStringFieldUpdateOperationsInput | string | null
-    is_active?: BoolFieldUpdateOperationsInput | boolean
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    subject?: NullableStringFieldUpdateOperationsInput | string | null
-    duration?: NullableFloatFieldUpdateOperationsInput | number | null
-  }
-
-  export type TutorAvailabilityUncheckedUpdateManyWithoutSubjectsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    tutor_id?: StringFieldUpdateOperationsInput | string
-    day_of_week?: NullableIntFieldUpdateOperationsInput | number | null
-    start_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    end_time?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    timezone?: NullableStringFieldUpdateOperationsInput | string | null
-    is_active?: BoolFieldUpdateOperationsInput | boolean
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    price?: NullableFloatFieldUpdateOperationsInput | number | null
-    start_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    end_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    subject?: NullableStringFieldUpdateOperationsInput | string | null
     duration?: NullableFloatFieldUpdateOperationsInput | number | null
   }
 

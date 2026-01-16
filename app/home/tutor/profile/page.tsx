@@ -162,9 +162,17 @@ export default function TutorProfile() {
   };
   const handleSubjectsChange = async () => {
     if (!profile?.email) return;
-    if(selectedSubjectsWithPrice.length === 0) {
+    if (selectedSubjectsWithPrice.length === 0) {
       setError(true);
-      setErrorMsg("Please select at least one subject");
+      setErrorMsg("Please select all subjects and time slots with prices");
+      return;
+    }
+    const hasInvalidPriceOrDuration = selectedSubjectsWithPrice.some(
+      (subject) => !subject?.duration || Number(subject?.price) <= 0
+    );
+    if (hasInvalidPriceOrDuration) {
+      setError(true);
+      setErrorMsg("Please add price and select a duration");
       return;
     }
     Swal.fire({

@@ -35,28 +35,24 @@ const startDate = new Date(`${newEvent.startDate}T${newEvent.start_time}:00`);
 const endDate = new Date(`${newEvent.endDate}T${newEvent.end_time}:00`);
 
         if (newEvent.subject_id.trim()) {
-      // First, try to find existing record
-      const existing = await prisma.tutorAvailability.findFirst({
+      const existing = await prisma.profilesOnSubjects.findFirst({
         where: {
-          tutor_id: resolvedTutorId,
-          id: newEvent.subject_id.trim()
+          profile_id: resolvedTutorId,
+          subject_id: newEvent.subject_id.trim()
         }
       });
-
-      if (existing) {
-        // Update existing
-        await prisma.tutorAvailability.update({
-          where: {
-            id: existing.id
-          },
+        await prisma.tutorAvailability.create({
           data: {
-             start_time: toTimeDate(newEvent.start_time),
-        end_time: toTimeDate(newEvent.end_time),
-        start_date: startDate,
-        end_date: endDate,
+            tutor_id: resolvedTutorId,
+            subject_id: newEvent.subject_id.trim(),
+            price: existing.price,
+            duration: existing.duration,
+            start_time: toTimeDate(newEvent.start_time),
+            end_time: toTimeDate(newEvent.end_time),
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
           }
         });
-      }
     }
 
     return NextResponse.json({ success: true });

@@ -87,7 +87,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
             setSubjects(profileData);
               const selected = profileData.find(
-              (s:any) => s.id === event.id
+              (s:any) => s?.subjects?.id === event.id
             );  
             setSelectedSubject(selected || null);
            
@@ -103,7 +103,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   }, [isOpen, isEditMode]);
   useEffect(() => {
     if (event && isEditMode) {
-      // Extract subject_id from event if available
+     console.log('even2222t', event);
       const subjectId =
         event.originalData?.id || event.id || "";
       const subjectName =
@@ -259,11 +259,11 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {subjects.map((obj: any) => {
-                        const isSelected = updateForm.subject_id === obj.id;
+                        const isSelected = updateForm.subject_id === obj?.subjects?.id;
                         return (
                           <button
                             type="button"
-                            key={obj.id}
+                            key={obj?.subjects?.id}
                             className={`inline-flex items-center gap-1 border rounded-lg text-xs px-3 py-1.5 shadow-sm transition-all duration-150 cursor-pointer ${
                               isSelected
                                 ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-blue-700 ring-2 ring-blue-200"
@@ -271,19 +271,19 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                             }`}
                           >
                             <span className="font-semibold">
-                              {obj.subjects.name}
+                              {obj?.subjects?.name}
                             </span>
                             {obj.subjects.code && (
                               <span className="text-[10px] opacity-80">
-                                {obj.subjects.code}
+                                {obj?.subjects?.code}
                               </span>
                             )}
-                            {obj.subjects.grade && (
+                            {obj?.subjects?.grade && (
                               <span className="text-[10px] opacity-70">
-                                · Grade {obj.subjects.grade}
+                                · Grade {obj?.subjects?.grade}
                               </span>
                             )}
-                            {(obj.price || obj.duration) && (
+                            {(obj?.price || obj?.duration) && (
                               <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-90">
                                 {typeof obj.duration !== "undefined" && (
                                   <>

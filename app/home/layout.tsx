@@ -45,7 +45,10 @@ export default function HomeLayout({
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        setFullTutorProfile(data);
+        setFullTutorProfile({
+          ...data,
+          availableSlots: data.availableSlots ?? tutor.availableSlots,
+        });
       } else {
         setFullTutorProfile(null);
       }
@@ -79,6 +82,8 @@ export default function HomeLayout({
         studentId: userId,
         topic: bookingTopic.trim() || undefined,
         notes: bookingNotes.trim() || undefined,
+        start_time: new Date().toISOString(),
+        duration: 0.5,
       });
 
       if (result.success) {
@@ -215,6 +220,7 @@ export default function HomeLayout({
           ) : (
             <TutorProfileBubble
               tutor={fullTutorProfile || selectedTutor}
+              userId={userId}
               isOpen={profileModalOpen}
               onClose={() => setProfileModalOpen(false)}
               onBookSession={handleBookSession}

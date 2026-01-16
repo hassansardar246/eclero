@@ -114,7 +114,6 @@ export default function Selectable({
       if (event.start_date && event.end_date) {
         const start = moment.utc(event.start_date).local();
         const end = moment.utc(event.end_date).local();
-
         return {
           id: event.id,
           title: event.subject || "Available Slot",
@@ -150,7 +149,7 @@ export default function Selectable({
 
   const handleCreateEvent = useCallback(async (formData: EventFormData) => {
     const newEvent = {
-      id: Date.now() + "",
+      id: formData.id,
       title: formData.subject,
       subject_id: formData.subject_id,
       subject: formData.subject,
