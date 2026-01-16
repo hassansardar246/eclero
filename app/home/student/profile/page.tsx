@@ -192,8 +192,8 @@ export default function StudentProfile() {
               </span>
             ) : (
               <div className="flex gap-2">
-                <span onClick={()=> saving ? '': handleSave} className="flex-1 text-center bg-blue-500 rounded-full hover:bg-blue-600 cursor-pointer py-2 text-white">Save</span>
-                <span onClick={()=> saving ? '': handleCancel} className="flex-1 text-center rounded-full bg-slate-200 cursor-pointer py-2">Cancel</span>
+                <span onClick={handleSave} className="flex-1 text-center bg-blue-500 rounded-full hover:bg-blue-600 cursor-pointer py-2 text-white">Save</span>
+                <span onClick={handleCancel} className="flex-1 text-center rounded-full bg-slate-200 cursor-pointer py-2">Cancel</span>
               </div>
             )}
           </div>
