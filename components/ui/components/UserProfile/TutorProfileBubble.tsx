@@ -91,6 +91,7 @@ const toMinutes = (value?: string | Date | null) => {
 };
 
     for (const slot of availableSlots) {
+      console.log("slotsssssssss", slot);  
       const start = toMinutes(slot.start_time);
       const end = toMinutes(slot.end_time);
       if (start === null || end === null || end <= start) continue;
@@ -101,7 +102,7 @@ const toMinutes = (value?: string | Date | null) => {
 
     return Array.from(slots).sort((a, b) => a - b);
   }, [selectedDuration, tutor.availableSlots]);
-
+console.log("timeSlots", timeSlots);
   const handleBookSession = async () => {
     if (!tutor || !userId || !selectedTime) {
       alert("Please select a time slot");
@@ -141,7 +142,7 @@ const toMinutes = (value?: string | Date | null) => {
       alert('An error occurred while booking the session.');
     }
   };
-
+console.log("tutor", tutor);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div

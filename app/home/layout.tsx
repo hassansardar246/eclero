@@ -41,7 +41,15 @@ export default function HomeLayout({
     setProfileLoading(true);
     setFullTutorProfile(null);
     try {
-      const url = `/api/profiles/get-full?id=${encodeURIComponent(tutor.id)}`;
+      const {
+        data: { user },
+        error: sessionError,
+      } = await supabase.auth.getUser();
+      if (sessionError || !user) {
+        router.push("/auth/login");
+        return;
+      }
+      const url = `/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -219,7 +227,7 @@ export default function HomeLayout({
             </div>
           ) : (
             <TutorProfileBubble
-              tutor={fullTutorProfile || selectedTutor}
+              tutor={selectedTutor || fullTutorProfile}
               userId={userId}
               isOpen={profileModalOpen}
               onClose={() => setProfileModalOpen(false)}
