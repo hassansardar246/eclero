@@ -223,7 +223,7 @@ function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
                   <span className="text-gray-500 sm:text-sm">$</span>
                 </div>
                 <input
-                  type="text"
+                  type="number"
                   value={sessionPrice}
                   aria-placeholder="0.00"
                   onChange={(e: any) =>

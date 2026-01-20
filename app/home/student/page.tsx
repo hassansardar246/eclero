@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+import SignUpWizard from "@/components/student/SignUpWizard";
+import Modal from "@/components/Modal/Modal";
+import { AnimatePresence } from "framer-motion";
 
 type Stats = {
     totalSessions: number;
@@ -20,12 +24,60 @@ export default function StudentHome() {
         totalSpent: 0,
         averageRating: 0,
     });
+    const [profile, setProfile] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    // TODO: Fetch actual stats from backend
-    // useEffect(() => {
-    //     // Fetch stats
-    // }, []);
+    useEffect(() => {
+        const fetchProfile = async () => {
+          try {
+            const {
+              data: { user },
+              error: sessionError,
+            } = await supabase.auth.getUser();
+            if (sessionError || !user) {
+              router.push("/auth/login");
+              return;
+            }
+            const profileRes = await fetch(`/api/profiles/get-full?email=${encodeURIComponent(user.email!)}`);
+            if (profileRes.ok) {
+              const profileData = await profileRes.json();
+              setProfile(profileData);
+            }
+            setLoading(false);
+          } catch (error) {
+            setLoading(false);
+          }
+        };
+        fetchProfile();
+      }, [router]);
+      console.log("profile", profile);
+      if(loading) {
+        return <div>Loading...</div>;
+      }
+      if(!profile) {
+        return <div>No profile found</div>;
+      }
+      if(profile.role !== "student") {
+        router.push("/auth/login");
+      }
+      if(!profile.profile_setup) {
+        return (
+            <>
+         <AnimatePresence>
+              <Modal
+                isOpen={true}
+                onClose={() => {}}
+                transition="fade"
+                overclass="justify-center overflow-y-auto w-full items-center p-2 lg:p-4"
+                innerclass="max-h-screen min-h-[600px] w-full max-w-6xl mx-auto"
+              >
+                <SignUpWizard />
+              </Modal>
+          </AnimatePresence>
+            </>
+          );
+      }
 
     return (
         <div className="min-h-screen bg-gray-50">

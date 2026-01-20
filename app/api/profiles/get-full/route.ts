@@ -44,12 +44,13 @@ export async function GET(request: Request) {
         }
       }
     });
+    const subjects = profile.subjects.map(pivot => pivot.Subjects);
 
     if (!profile) {
       return new Response(JSON.stringify({ error: 'Profile not found' }), { status: 404 });
     }
 
-    return new Response(JSON.stringify(profile), { status: 200 });
+    return new Response(JSON.stringify({ ...profile, subjects }), { status: 200 });
   } catch (error: any) {
     console.error('[PROFILE_GET_FULL] Error:', error);
     return new Response(JSON.stringify({

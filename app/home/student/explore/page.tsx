@@ -43,11 +43,13 @@ const GhostTile = () => (
 // Section component
 const TutorSection = ({
   title,
+  description,
   tutors,
   loading,
   onBook,
 }: {
   title: string;
+  description: string;
   tutors: Tutor[];
   loading: boolean;
   onBook: (tutor: Tutor) => void;
@@ -62,7 +64,7 @@ const TutorSection = ({
         <div>
           <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
           <p className="text-gray-600 mt-1">
-            Available tutors for your subjects
+            {description}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -225,6 +227,7 @@ export default function ExploreTutors() {
         }
 
         const text = await res.text();
+        console.log("text", text);
         if (!text) {
           console.error("Empty response from tutors API");
           setTutors([]);
@@ -294,6 +297,7 @@ export default function ExploreTutors() {
         );
         if (res.ok) {
           const profile = await res.json();
+          console.log("profile", profile);
 
           // Normalize subjects: handle [{subject: {...}}] or [{id: ...}]
           let normalizedSubjects: any[] = [];
@@ -732,6 +736,7 @@ export default function ExploreTutors() {
                 <div key={`subject-row-${subjectId || "unknown"}`}>
                   <TutorSection
                     title={`Tutors who teach ${subject.name} [ ${subject.code} ]`}
+                    description={`Tutors who teach ${subject.name} [ ${subject.code} ]`}
                     tutors={tutorsForSubject}
                     loading={loading}
                     onBook={openTutorProfileModal}
@@ -762,8 +767,9 @@ export default function ExploreTutors() {
       )}
 
       <TutorSection
-        title="At Your Institution"
-        tutors={filteredTutors}
+        title="All Tutors"
+        description="All tutors available on the platform"
+        tutors={tutors}
         loading={loading}
         onBook={openTutorProfileModal}
       />
