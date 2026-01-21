@@ -209,29 +209,6 @@ export const EventModal: React.FC<EventModalProps> = ({
                           · Grade {obj?.Subjects.grade}
                         </span>
                       )}
-                      {(obj?.price || obj?.duration) && (
-                        <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-90">
-                          {typeof obj?.duration !== "undefined" && (
-                            <>
-                              <Clock className="w-3 h-3" />
-                              <span>
-                                {obj?.duration === 1
-                                  ? "1h"
-                                  : obj?.duration === 0.5
-                                  ? "30m"
-                                  : "1h 30m"}
-                              </span>
-                            </>
-                          )}
-                          {typeof obj?.price !== "undefined" && (
-                            <>
-                              <span className="opacity-60">•</span>
-                              <DollarSign className="w-3 h-3" />
-                              <span>${obj?.price}</span>
-                            </>
-                          )}
-                        </span>
-                      )}
                     </button>
                   );
                 })}

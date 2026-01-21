@@ -431,7 +431,9 @@ exports.Prisma.SessionsScalarFieldEnum = {
   topic: 'topic',
   notes: 'notes',
   start_time: 'start_time',
-  duration: 'duration'
+  duration: 'duration',
+  amount: 'amount',
+  date: 'date'
 };
 
 exports.Prisma.SubjectsScalarFieldEnum = {

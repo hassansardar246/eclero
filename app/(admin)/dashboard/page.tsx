@@ -126,7 +126,7 @@ const uniqueRoles = Array.from(new Set(users.map((user: any) => user.role)));
 
         {/* Loading State */}
         {loading && (
-          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="mb-6 p-4 bg-gradient-to-b from-[#F8F9FD] to-gray-400 border border-blue-200 dark:border-blue-800 rounded-lg">
             <div className="flex items-center">
               <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -137,6 +137,7 @@ const uniqueRoles = Array.from(new Set(users.map((user: any) => user.role)));
               </span>
             </div>
           </div>
+
         )}
 
         {/* Filters Section */}

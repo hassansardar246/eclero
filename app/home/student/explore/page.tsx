@@ -88,7 +88,7 @@ const TutorSection = ({
                   {/* Left Section - Profile & Quick Info */}
                   <div className="flex items-start gap-4 md:w-1/3">
                     <div className="relative">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#1089d3] to-[#12B1D1] flex items-center justify-center text-white font-bold text-xl">
                         {tutor.name?.charAt(0) || "T"}
                       </div>
                       {(tutor as any).derivedActiveNow === true && (
@@ -148,7 +148,7 @@ const TutorSection = ({
                       {tutor.subjects?.slice(0, 3).map((subject, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded"
+                          className="px-2 py-1 bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white text-xs font-medium rounded"
                         >
                           {subject.name}
                         </span>
@@ -175,7 +175,7 @@ const TutorSection = ({
                     <div className="flex gap-3 mt-4">
                       <button
                         onClick={() => onBook(tutor)}
-                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
+                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
                       >
                         Book Session
                       </button>
@@ -436,7 +436,7 @@ export default function ExploreTutors() {
           onClick={() => setOnlyActiveNow((v) => !v)}
           className={`px-6 py-3 rounded-full border text-sm font-medium transition-all duration-200 ${
             onlyActiveNow
-              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white border-transparent"
+              ? "bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white border-transparent"
               : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
           }`}
         >
@@ -482,7 +482,7 @@ export default function ExploreTutors() {
                       }
                       className={`relative px-3 py-1 rounded-xl border font-medium transition-all duration-300 transform hover:scale-[1.02] ${
                         expanded === cat.name
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-lg shadow-blue-500/20"
+                          ? "bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white border-transparent shadow-lg shadow-blue-500/20"
                           : "bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50 shadow-sm"
                       }`}
                     >

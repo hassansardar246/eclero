@@ -53,10 +53,14 @@ export default function StudentHome() {
       }, [router]);
       console.log("profile", profile);
       if(loading) {
-        return <div>Loading...</div>;
+        return <div className="flex h-screen items-center justify-center bg-gradient-to-b from-[#F8F9FD] to-gray-400">
+        <div className="text-lg text-white">Loading...</div>
+      </div>;
       }
       if(!profile) {
-        return <div>No profile found</div>;
+        return <div className="flex h-screen items-center justify-center bg-gradient-to-b from-[#F8F9FD] to-gray-400">
+        <div className="text-lg text-white">No profile found</div>
+      </div>;
       }
       if(profile.role !== "student") {
         router.push("/auth/login");
@@ -92,7 +96,7 @@ export default function StudentHome() {
                 <div className="mt-4 flex md:mt-0 md:ml-4">
                     <Link
                         href="/home/student/explore"
-                        className="inline-flex items-center px-6 py-3 border border-transparent rounded-full shadow-lg text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 hover:scale-105"
+                        className="inline-flex items-center px-6 py-3 border border-transparent rounded-full shadow-lg text-sm font-medium text-white bg-gradient-to-r from-[#1089d3] to-[#12B1D1] hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 hover:scale-105"
                     >
                         Find Tutor
                     </Link>

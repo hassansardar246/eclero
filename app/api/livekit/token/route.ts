@@ -42,7 +42,8 @@ export async function POST(req: NextRequest) {
       roomJoin: true, 
       room,
       canPublish: true,
-      canSubscribe: true 
+      canSubscribe: true,
+      canPublishData: true
     });
 
     const token = await at.toJwt();

@@ -5,6 +5,8 @@ export interface BookSessionParams {
   duration: number;
   topic?: string;
   notes?: string;
+  date: string;
+  amount: any;
 }
 
 export interface SessionResponse {
@@ -27,6 +29,8 @@ export const bookSession = async (params: BookSessionParams): Promise<SessionRes
         duration: params.duration,
         topic: params.topic,
         notes: params.notes,
+        date: params.date,
+        amount: params.amount,
       }),
     });
 

@@ -126,6 +126,8 @@ console.log("timeSlots", timeSlots);
         duration: selectedDuration * 1,      // Add this field
         topic: bookingTopic.trim() || undefined,
         notes: bookingNotes.trim() || undefined,
+        date: new Date().toISOString(),
+        amount: selectedDuration,
       });
   
       if (result.success) {

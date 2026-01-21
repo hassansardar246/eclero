@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { tutorId, studentId, topic, notes, start_time, duration } = await request.json();
+    const { tutorId, studentId, topic, notes, start_time, duration, date, amount } = await request.json();
     
     if (!tutorId || !studentId) {
       return NextResponse.json({ error: 'Missing tutorId or studentId' }, { status: 400 });
@@ -28,6 +28,8 @@ export async function POST(request: NextRequest) {
         duration: duration,
         topic: topic || null,
         notes: notes || null,
+        date: date,
+        amount: amount,
         status: 'pending',
       })
       .select()

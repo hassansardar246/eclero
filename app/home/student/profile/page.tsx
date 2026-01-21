@@ -131,14 +131,14 @@ export default function StudentProfile() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-slate-500 items-center justify-center">
+      <div className="flex h-screen bg-gradient-to-b from-[#F8F9FD] to-gray-400 items-center justify-center">
         <div className="text-white text-xl font-bold">Loading profile...</div>
       </div>
     );
   }
   if (!profile) {
     return (
-      <div className="flex h-screen bg-slate-500 items-center justify-center">
+      <div className="flex h-screen bg-gradient-to-b from-[#F8F9FD] to-gray-400 items-center justify-center">
         <div className="text-white text-xl font-bold">Profile not found.</div>
       </div>
     );
@@ -192,7 +192,7 @@ export default function StudentProfile() {
               </span>
             ) : (
               <div className="flex gap-2">
-                <span onClick={handleSave} className="flex-1 text-center bg-blue-500 rounded-full hover:bg-blue-600 cursor-pointer py-2 text-white">Save</span>
+                <span onClick={handleSave} className="flex-1 text-center bg-gradient-to-r from-[#1089d3] to-[#12B1D1] rounded-full hover:bg-blue-600 cursor-pointer py-2 text-white">Save</span>
                 <span onClick={handleCancel} className="flex-1 text-center rounded-full bg-slate-200 cursor-pointer py-2">Cancel</span>
               </div>
             )}

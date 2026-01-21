@@ -10,7 +10,7 @@ import {
   useDataChannel,
   useRoomContext,
 } from '@livekit/components-react';
-import { Track } from 'livekit-client';
+import { Track, type DataPublishOptions } from 'livekit-client';
 import '@livekit/components-styles';
 import dynamic from 'next/dynamic';
 // Using 'any' for imperative API type to avoid version export mismatches
@@ -96,11 +96,21 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
   const [sharedFile, setSharedFile] = useState<{ url: string; name: string; type: string } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const excalidrawRef = React.useRef<any | null>(null);
+  const pendingSceneRef = React.useRef<any[] | null>(null);
+  const requestedSceneRef = React.useRef(false);
+  const [isExcalidrawReady, setIsExcalidrawReady] = useState(false);
   
   // Screen sharing state
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [screenTrackRef, setScreenTrackRef] = useState<TrackReference | null>(null);
   const [allScreenShares, setAllScreenShares] = useState<Array<TrackReference & { timestamp: number; participantIdentity: string }>>([]);
+  const [dataStats, setDataStats] = useState<{
+    sent: number;
+    received: number;
+    lastType: string;
+    lastFrom: string;
+    lastError: string;
+  }>({ sent: 0, received: 0, lastType: '', lastFrom: '', lastError: '' });
 
   // Compatibility status
   const compatibilityStatus = BrowserCompatibility.getCompatibilityStatus();
@@ -108,31 +118,84 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
   // Get room context for event listeners
   const room = useRoomContext();
 
-  // @ts-ignore
-  const { send: sendData, isSending }: { send: (data: Uint8Array) => Promise<void>; isSending: boolean } = useDataChannel({
-    topic: 'eclero-collaboration',
-    onMessage: (msg: any) => {
+  const applyExcalidrawElements = useCallback((elements: any[] | null | undefined) => {
+    if (!elements || elements.length === 0) return;
+    if (excalidrawRef.current) {
+      excalidrawRef.current.updateScene({ elements });
+    } else {
+      pendingSceneRef.current = elements;
+    }
+  }, [excalidrawRef]); // Add ref dependency
+
+  const getCleanElements = useCallback((elements: any[] | null | undefined) => {
+    if (!elements) return [];
+    return elements.filter((el: any) => !el.isDeleted);
+  }, []);
+
+  const { send: sendData, isSending }: { send: (data: Uint8Array, options?: DataPublishOptions) => Promise<void>; isSending: boolean } = useDataChannel(
+    'eclero-collaboration',
+    (msg: any) => {
       console.log('MainContent: Raw message received:', msg);
       try {
         const message = JSON.parse(new TextDecoder().decode(msg.payload));
         console.log('MainContent: Parsed message received:', message);
+          setDataStats((prev) => ({
+            ...prev,
+            received: prev.received + 1,
+            lastType: message?.type || 'unknown',
+            lastFrom: msg?.from?.identity || 'unknown',
+          }));
           if (message.type === 'file_share') {
             setSharedFile(message.payload);
             setActiveView('file');
           } else if (message.type === 'excalidraw_update') {
             try {
-              if (excalidrawRef.current && message.payload?.elements) {
-                excalidrawRef.current.updateScene({ elements: message.payload.elements });
-              }
+              applyExcalidrawElements(message.payload?.elements);
             } catch (error) {
               console.error('Error applying excalidraw update:', error);
+            }
+          } else if (message.type === 'excalidraw_request') {
+            try {
+              const elements = excalidrawRef.current?.getSceneElements?.();
+              const clean = getCleanElements(elements);
+              if (clean.length > 0) {
+                const response = {
+                  type: 'excalidraw_state',
+                  payload: { elements: clean },
+                };
+                sendDataSafe(new TextEncoder().encode(JSON.stringify(response)));
+              }
+            } catch (error) {
+              console.error('Error responding to excalidraw state request:', error);
+            }
+          } else if (message.type === 'excalidraw_state') {
+            try {
+              applyExcalidrawElements(message.payload?.elements);
+            } catch (error) {
+              console.error('Error applying excalidraw state:', error);
             }
           }
       } catch (e) {
         console.error('MainContent: Error parsing message:', e);
       }
     },
-  });
+  );
+
+  const sendDataSafe = useCallback(
+    async (payload: Uint8Array, options: DataPublishOptions = { reliable: true }) => {
+      try {
+        await sendData(payload, options);
+        setDataStats((prev) => ({ ...prev, sent: prev.sent + 1, lastError: '' }));
+      } catch (error) {
+        console.error('Data channel send error:', error);
+        setDataStats((prev) => ({
+          ...prev,
+          lastError: error instanceof Error ? error.message : 'Unknown send error',
+        }));
+      }
+    },
+    [sendData],
+  );
 
   // Screen sharing event listeners
   useEffect(() => {
@@ -183,9 +246,8 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
         setIsScreenSharing(true);
         // Prioritize the most recent screen share
         const mostRecentShare = screenShareTracks.reduce((latest, current) => {
-          const existingShare = allScreenShares.find(s => s.publication.trackSid === current.publication.trackSid);
-          const currentTimestamp = existingShare?.timestamp || currentTime;
-          const latestTimestamp = allScreenShares.find(s => s.publication.trackSid === latest.publication.trackSid)?.timestamp || currentTime;
+          const currentTimestamp = current.timestamp; // Use timestamp from the current object
+          const latestTimestamp = latest.timestamp;   // Use timestamp from latest object
           return currentTimestamp > latestTimestamp ? current : latest;
         });
         setScreenTrackRef(mostRecentShare);
@@ -251,6 +313,52 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
     };
   }, [room]);
 
+  // Request the current whiteboard state once connected (helps late joiners)
+  useEffect(() => {
+    if (!room) return;
+
+    const requestScene = async () => {
+      if (requestedSceneRef.current) return;
+      requestedSceneRef.current = true;
+      
+      // Wait a random delay to avoid request collisions
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+      
+      try {
+        const message = { 
+          type: 'excalidraw_request',
+          requestId: Date.now() + Math.random().toString(36).substr(2, 9)
+        };
+        await sendDataSafe(new TextEncoder().encode(JSON.stringify(message)));
+      } catch (error) {
+        console.error('Error requesting excalidraw state:', error);
+        requestedSceneRef.current = false; // Allow retry on error
+      }
+    };
+
+    const handleConnectionState = (state: string) => {
+      if (state === 'connected') {
+        requestScene();
+      }
+    };
+
+    room.on('connectionStateChanged', handleConnectionState);
+    if (room.state === 'connected') {
+      requestScene();
+    }
+
+    return () => {
+      room.off('connectionStateChanged', handleConnectionState);
+    };
+  }, [room, sendDataSafe]);
+
+  useEffect(() => {
+    if (isExcalidrawReady && pendingSceneRef.current) {
+      applyExcalidrawElements(pendingSceneRef.current);
+      pendingSceneRef.current = null;
+    }
+  }, [isExcalidrawReady, applyExcalidrawElements]);
+
   // Set activeView to 'screen' with highest priority when screenTrackRef exists
   useEffect(() => {
     if (screenTrackRef) {
@@ -264,7 +372,28 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
 
     try {
       // Sanitize filename: replace non-alphanumeric, non-hyphen, non-underscore with hyphen
-      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9-_.]/g, '-');
+      const sanitizedFileName = (fileName: string): string => {
+        // Remove path traversal attempts
+        const basename = fileName.replace(/\.\.\//g, '').replace(/\.\.\\/g, '');
+        
+        // Remove non-ASCII characters and problematic characters
+        const sanitized = basename.replace(/[^\w\u00C0-\u00FF\-_. ]/g, '-');
+        
+        // Trim length (max 255 chars for most filesystems)
+        const trimmed = sanitized.substring(0, 255);
+        
+        // Remove Windows reserved names
+        const windowsReserved = ['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 
+                                'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 
+                                'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'];
+        
+        const nameWithoutExt = trimmed.split('.').slice(0, -1).join('.');
+        if (windowsReserved.includes(nameWithoutExt.toUpperCase())) {
+          return `file-${Date.now()}-${trimmed}`;
+        }
+        
+        return trimmed;
+      };
       const filePath = `session-files/${Date.now()}-${sanitizedFileName}`;
       const { error: uploadError } = await supabase.storage
         .from('eclero-storage')
@@ -280,7 +409,7 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
         type: 'file_share',
         payload: { url: publicUrl, name: file.name, type: file.type },
       };
-      await sendData(new TextEncoder().encode(JSON.stringify(message)));
+      await sendDataSafe(new TextEncoder().encode(JSON.stringify(message)));
       
       setSharedFile(message.payload);
       setActiveView('file');
@@ -315,10 +444,25 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
         className="absolute rounded-3xl overflow-hidden bg-white shadow-2xl z-0"
         style={{ top: '0.5in', right: '0.5in', bottom: '0.5in', left: '0.5in' }}
       >
-        {activeView === 'whiteboard' && <ExcalidrawWhiteboard sendData={sendData} excalidrawRef={excalidrawRef} />}
+        {activeView === 'whiteboard' && (
+          <ExcalidrawWhiteboard
+            sendData={sendDataSafe}
+            excalidrawRef={excalidrawRef}
+            onReady={() => setIsExcalidrawReady(true)}
+          />
+        )}
         {activeView === 'file' && sharedFile && <FileViewer file={sharedFile} />}
         {activeView === 'screen' && screenTrackRef && <ScreenView trackRef={screenTrackRef} />}
       </div>
+
+      {/* Data channel debug */}
+      {/* <div className="absolute top-4 left-4 rounded-xl bg-black/40 text-white text-xs px-3 py-2 backdrop-blur shadow-lg">
+        <div>Data sent: {dataStats.sent}</div>
+        <div>Data received: {dataStats.received}</div>
+        {dataStats.lastType && <div>Last type: {dataStats.lastType}</div>}
+        {dataStats.lastFrom && <div>Last from: {dataStats.lastFrom}</div>}
+        {dataStats.lastError && <div className="text-red-300">Send error: {dataStats.lastError}</div>}
+      </div> */}
 
       {/* Top-right view toggles */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
@@ -410,7 +554,20 @@ const Excalidraw = dynamic(
       return mod.Excalidraw;
     } catch (e) {
       console.error('Excalidraw dynamic import failed:', e);
-      throw e;
+      // Return a fallback component
+      return () => (
+        <div className="w-full h-full flex items-center justify-center bg-white">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Whiteboard failed to load</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
     }
   },
   { 
@@ -458,7 +615,15 @@ class ExcalidrawErrorBoundary extends React.Component<
   }
 }
 
-function ExcalidrawWhiteboard({ sendData, excalidrawRef }: { sendData: (data: Uint8Array) => Promise<void>, excalidrawRef: React.MutableRefObject<any | null> }) {
+function ExcalidrawWhiteboard({
+  sendData,
+  excalidrawRef,
+  onReady,
+}: {
+  sendData: (data: Uint8Array) => Promise<void>;
+  excalidrawRef: React.MutableRefObject<any | null>;
+  onReady?: () => void;
+}) {
   const lastSentVersion = React.useRef(0);
   const debounceRef = React.useRef<number | null>(null);
 
@@ -489,7 +654,10 @@ function ExcalidrawWhiteboard({ sendData, excalidrawRef }: { sendData: (data: Ui
     <ExcalidrawErrorBoundary>
       <div className="w-full h-full bg-white">
         <Excalidraw
-          excalidrawAPI={(api: any) => { excalidrawRef.current = api; }}
+          excalidrawAPI={(api: any) => {
+            excalidrawRef.current = api;
+            onReady?.();
+          }}
           onChange={(elements: readonly any[], appState: any, _files: any) => onChange(elements as any[], appState)}
           theme="light"
           UIOptions={{ dockedSidebarBreakpoint: 0 }}
@@ -535,7 +703,12 @@ function FloatingVideos({ allScreenShares, screenTrackRef, onSelectScreenShare }
     window.removeEventListener('mouseup', onMouseUp);
   };
 
-  React.useEffect(() => () => onMouseUp(), []);
+  React.useEffect(() => {
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
 
   const isParticipantSharingScreen = (participantIdentity: string) =>
     allScreenShares.some(share => share.participantIdentity === participantIdentity);

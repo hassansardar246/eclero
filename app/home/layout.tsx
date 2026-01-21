@@ -80,37 +80,6 @@ export default function HomeLayout({
     setBookingNotes("");
   };
 
-  const confirmBooking = async () => {
-    if (!bookingTutor || !userId) return;
-
-    setBookingLoading(true);
-    try {
-      const result = await bookSession({
-        tutorId: bookingTutor.id,
-        studentId: userId,
-        topic: bookingTopic.trim() || undefined,
-        notes: bookingNotes.trim() || undefined,
-        start_time: new Date().toISOString(),
-        duration: 0.5,
-      });
-
-      if (result.success) {
-        alert(`Session successfully booked with ${bookingTutor.name}! They will receive your request.`);
-        setBookingModalOpen(false);
-        setBookingTutor(null);
-        setBookingTopic("");
-        setBookingNotes("");
-      } else {
-        alert(`Failed to book session: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Booking error:', error);
-      alert('An error occurred while booking the session.');
-    } finally {
-      setBookingLoading(false);
-    }
-  };
-
   const cancelBooking = () => {
     setBookingModalOpen(false);
     setBookingTutor(null);
@@ -158,18 +127,14 @@ export default function HomeLayout({
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center" style={{
-        background: 'linear-gradient(to bottom, #2b3340, #23272f, #181a1b)'
-      }}>
+      <div className="flex h-screen items-center justify-center bg-gradient-to-b from-[#F8F9FD] to-gray-400">
         <div className="text-lg text-white">Loading...</div>
       </div>
     );
   }
   if (!userRole || !userName) {
     return (
-      <div className="flex h-screen items-center justify-center" style={{
-        background: 'linear-gradient(to bottom, #2b3340, #23272f, #181a1b)'
-      }}>
+        <div className="flex h-screen items-center justify-center bg-gradient-to-b from-[#F8F9FD] to-gray-400">
         <div className="text-lg text-white">Redirecting to login...</div>
       </div>
     );
@@ -234,58 +199,6 @@ export default function HomeLayout({
               onBookSession={handleBookSession}
             />
           )
-        )}
-
-        {/* Booking Modal */}
-        {bookingModalOpen && bookingTutor && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 w-full max-w-md border border-white/20" style={{ boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
-              <h3 className="text-xl font-bold mb-4 text-white">Book Session with {bookingTutor.name}</h3>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Topic (optional)
-                </label>
-                <input
-                  type="text"
-                  value={bookingTopic}
-                  onChange={(e) => setBookingTopic(e.target.value)}
-                  placeholder="What would you like to study?"
-                  className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Notes (optional)
-                </label>
-                <textarea
-                  value={bookingNotes}
-                  onChange={(e) => setBookingNotes(e.target.value)}
-                  placeholder="Any specific requirements or questions?"
-                  rows={3}
-                  className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 resize-none"
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={cancelBooking}
-                  disabled={bookingLoading}
-                  className="flex-1 px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-white hover:bg-white/20 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmBooking}
-                  disabled={bookingLoading}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-400 to-purple-500 text-white rounded-lg hover:from-blue-500 hover:to-purple-600 transition-all disabled:opacity-50"
-                >
-                  {bookingLoading ? 'Booking...' : 'Book Session'}
-                </button>
-              </div>
-            </div>
-          </div>
         )}
       </>
     </TutorProfileModalContext.Provider>

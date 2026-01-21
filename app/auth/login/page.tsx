@@ -115,7 +115,7 @@ function LoginContent() {
   
             <div className="mt-2 ml-2">
               <Link 
-                href="/auth/forgot-password" 
+                href="/auth/reset" 
                 className="text-[11px] text-[#0099ff] hover:text-[#1089d3] transition"
               >
                 Forgot Password ?
