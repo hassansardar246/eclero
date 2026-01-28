@@ -82,13 +82,13 @@ function LoginContent() {
         <div className="text-center">
   {/* Icon Header */}
   <div className="flex justify-center mb-4">
-    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#1089d3] to-[#12B1D1] flex items-center justify-center shadow-[rgba(133,189,215,0.878)_0px_15px_20px_-10px]">
+    <div className="w-16 h-16 rounded-full bg-[#1559C6] flex items-center justify-center shadow-[rgba(133,189,215,0.878)_0px_15px_20px_-10px]">
       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     </div>
   </div>
-  <h2 className="text-3xl font-black text-[#1089d3] mb-1">Sign In</h2>
+  <h2 className="text-3xl font-black text-[#1559C6] mb-1">Sign In</h2>
   <p className="text-gray-600 text-sm mb-4">
    Please enter your email and password to sign in.
   </p>
@@ -116,7 +116,7 @@ function LoginContent() {
             <div className="mt-2 ml-2">
               <Link 
                 href="/auth/reset" 
-                className="text-[11px] text-[#0099ff] hover:text-[#1089d3] transition"
+                className="text-[11px] text-[#1559C6] hover:text-[#1559C6] transition"
               >
                 Forgot Password ?
               </Link>
@@ -131,7 +131,7 @@ function LoginContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full font-bold text-white py-4 mt-5 rounded-[20px] bg-gradient-to-r from-[#1089d3] to-[#12B1D1] shadow-[rgba(133,189,215,0.878)_0px_20px_10px_-15px] border-none transition-all duration-200 hover:scale-[1.03] hover:shadow-[rgba(133,189,215,0.878)_0px_23px_10px_-20px] active:scale-95 active:shadow-[rgba(133,189,215,0.878)_0px_15px_10px_-10px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full font-bold text-white py-4 mt-5 rounded-[20px] bg-[#1559C6] shadow-[rgba(133,189,215,0.878)_0px_20px_10px_-15px] border-none transition-all duration-200 hover:scale-[1.03] hover:shadow-[rgba(133,189,215,0.878)_0px_23px_10px_-20px] active:scale-95 active:shadow-[rgba(133,189,215,0.878)_0px_15px_10px_-10px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
@@ -145,7 +145,7 @@ function LoginContent() {
   <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
     <Link
       href={`/auth/register?role=student`}
-      className="text-[#0099ff] hover:text-[#1089d3] transition text-sm underline"
+      className="text-[#1559C6] hover:text-[#1559C6] transition text-sm underline"
     >
       Student
     </Link>
@@ -153,7 +153,7 @@ function LoginContent() {
     
     <Link
       href={`/auth/register?role=tutor`}
-      className="text-[#0099ff] hover:text-[#1089d3] transition text-sm underline"
+      className="text-[#1559C6] hover:text-[#1559C6] transition text-sm underline"
     >
       Tutor
     </Link>

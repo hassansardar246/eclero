@@ -44,7 +44,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Use a transaction for data consistency
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx:any) => {
       // Get existing subject connections
       const existingConnections = await tx.profilesOnSubjects.findMany({
         where: { profile_id: profile.id }
@@ -72,8 +72,9 @@ export async function PUT(request: NextRequest) {
       // Create/update operations for each subject
       const upsertOperations = validSubjects.map(subject => {
         const subjectId = subject.id.trim();
-        const price = Number(subject.price) || 0;
-        const duration = Number(subject.duration) || 0;
+        const price_1 = Number(subject.price_1) || 0;
+        const price_2 = Number(subject.price_2) || 0;
+        const price_3 = Number(subject.price_3) || 0;
 
         return tx.profilesOnSubjects.upsert({
           where: {
@@ -83,14 +84,16 @@ export async function PUT(request: NextRequest) {
             }
           },
           update: {
-            price,
-            duration
+            price_1,
+            price_2,
+            price_3,
           },
           create: {
             profile_id: profile.id,
             subject_id: subjectId,
-            price,
-            duration
+            price_1,
+            price_2,
+            price_3,
           }
         });
       });
@@ -99,7 +102,7 @@ export async function PUT(request: NextRequest) {
       await Promise.all(upsertOperations);
 
       // Return updated profile with subjects
-      return tx.profiles.findUnique({
+      return await prisma.profiles.findUnique({
         where: { id: profile.id },
         include: {
           subjects: {

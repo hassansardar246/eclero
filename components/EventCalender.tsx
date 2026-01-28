@@ -14,6 +14,7 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { EventDetailModal } from "./EventDetailModal";
 import { EventModal, EventFormData } from "./EventModal";
+import { PlusIcon } from "lucide-react";
 
 // Define TypeScript interfaces
 interface CalendarEvent {
@@ -33,6 +34,7 @@ interface SelectableProps {
   email: string;
   id: string;
   data?: CalendarEvent[];
+  subjects?: any[];
 }
 
 interface SlotInfo {
@@ -108,6 +110,7 @@ export default function Selectable({
   email,
   id,
   data,
+  subjects,
 }: SelectableProps) {
   const transformEvents = (eventsData: any[]): any[] => {
     return eventsData.map((event) => {
@@ -130,6 +133,7 @@ export default function Selectable({
   };
 
   const [myEvents, setEvents] = useState<any[]>(transformEvents(data || []));
+  const [subjectsData, setSubjectsData] = useState<any[]>(subjects || []);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{
@@ -152,6 +156,9 @@ export default function Selectable({
       id: formData.id,
       title: formData.subject,
       subject_id: formData.subject_id,
+      duration_1: formData.duration_1,
+      duration_2: formData.duration_2,
+      duration_3: formData.duration_3,
       subject: formData.subject,
       start_time: formData.startTime,
       end_time: formData.endTime,
@@ -161,8 +168,7 @@ export default function Selectable({
       start: new Date(formData.startDate + "T" + formData.startTime),
       end: new Date(formData.endDate + "T" + formData.endTime),
     };
-
-    setEvents((prev) => [...prev, newEvent]);
+   
 
     try {
       // setSaving(true);
@@ -182,6 +188,17 @@ export default function Selectable({
       // setTimeout(() => setMessage(''), 3500);
     } finally {
       // setSaving(false);
+    }
+    try {
+      const res = await fetch(`/api/tutor-availability/get?email=${encodeURIComponent(email)}`);
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log('data updated', data);
+        setEvents(transformEvents(data));
+      }
+    } catch (e) {
+    } finally {
     }
     setSelectedSlot(null);
     setModalOpen(false);
@@ -276,9 +293,9 @@ export default function Selectable({
 
             <button
               onClick={handleAddLectureClick}
-              className="px-5 py-2.5 bg-[#cf3fad] text-white rounded-full hover:bg-[#cf3fad]/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center gap-2"
+              className="px-5 py-2.5 bg-[#1559C6] text-white rounded-full hover:bg-[#1559C6]/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center gap-2"
             >
-              <span>➕</span>
+              <span><PlusIcon className="w-4 h-4" /></span>
               Create availability
             </button>
           </div>
@@ -323,6 +340,7 @@ export default function Selectable({
         onSubmit={handleCreateEvent}
         defaultStart={selectedSlot?.start || new Date()}
         defaultEnd={selectedSlot?.end || new Date(Date.now() + 60 * 60 * 1000)}
+        subjects={subjects}
       />
 
       {/* Event Detail Modal */}

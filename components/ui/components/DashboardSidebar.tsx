@@ -48,7 +48,7 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
     const roleSpecificItems: { [key: string]: NavItem[] } = {
       student: [
         {
-          label: "My Courses",
+          label: "Profile",
           href: "/home/student/profile",
           icon: (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +174,7 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
       <div className="flex items-center gap-3 overflow-hidden">
         {/* Animated avatar with gradient ring */}
         <div className="relative flex-shrink-0">
-          <div className="relative w-10 h-10 bg-gradient-to-r from-[#1089d3] to-[#12B1D1] rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+          <div className="relative w-10 h-10 bg-[#1559C6] rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
             {userName.charAt(0).toUpperCase()}
           </div>
         </div>
@@ -182,14 +182,14 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
         {!isCollapsed && (
           <div className="overflow-hidden">
             <p className="text-sm font-semibold text-[#0F2854] truncate">{userName}</p>
-            <p className="text-sm text-white py-1 text-center bg-gradient-to-r from-[#1089d3] to-[#12B1D1] rounded-full font-medium">{userRole}</p>
+            <p className="text-sm text-white py-1 text-center bg-[#1559C6] rounded-full font-medium">{userRole}</p>
           </div>
         )}
       </div>
       
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="relative w-8 h-8 rounded-lg bg-white/50 hover:bg-[#0F2854] border border-white/10 flex items-center justify-center text-[#0F2854] hover:text-white transition-all duration-300 group flex-shrink-0"
+        className="relative w-8 h-8 rounded-full bg-white/50 hover:bg-[#0F2854] border border-white/10 flex items-center justify-center text-[#0F2854] hover:text-white transition-all duration-300 group flex-shrink-0"
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {/* <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-400/0 via-purple-500/0 to-pink-500/0 group-hover:from-blue-400/10 group-hover:via-purple-500/10 group-hover:bg-[#0F2854] transition-all duration-500"></div> */}
@@ -222,9 +222,9 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
         <div key={item.href} className="relative group">  
           <Link
             href={item.href}
-            className={`relative flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 overflow-hidden ${
+            className={`relative flex items-center px-4 py-3 text-sm font-medium rounded-full transition-all duration-300 overflow-hidden ${
               isActive
-                ? "bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white shadow-lg shadow-blue-500/10"
+                ? "bg-[#1559C6] text-white shadow-lg shadow-blue-500/10"
                 : "text-[#0F2854] hover:text-white/70"
             } ${isCollapsed ? "justify-center px-3" : ""}`}
             title={isCollapsed ? item.label : undefined}
@@ -298,7 +298,7 @@ export default function HomeSidebar({ userRole, userName }: HomeSidebarProps) {
     
     <button
       onClick={handleSignOut}
-      className={`relative flex items-center w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 overflow-hidden group ${
+      className={`relative flex items-center w-full px-4 py-3 text-sm font-medium rounded-full transition-all duration-300 overflow-hidden group ${
         isCollapsed ? "justify-center px-3" : ""
       }`}
       title={isCollapsed ? "Sign out" : undefined}

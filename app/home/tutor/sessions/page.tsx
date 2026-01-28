@@ -21,7 +21,7 @@ interface SessionRequest {
 export default function InboxPage() {
   const router = useRouter();
   const [requests, setRequests] = useState<SessionRequest[]>([]);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'declined' | 'in_progress' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'completed'>('all');
   
   // LiveKit session state
   const [isSessionOpen, setIsSessionOpen] = useState(false);
@@ -35,7 +35,7 @@ export default function InboxPage() {
     name: string;
   } | null>(null);
   const [userId, setUserId] = useState<string>("");
-
+  const [loading, setLoading] = useState(false);
   // Get current user info for LiveKit
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -62,6 +62,7 @@ export default function InboxPage() {
   // Fetch sessions function
   const fetchSessions = async () => {
     if (!userId) return; // Wait for userId to be available
+    setLoading(true);
     
     try {
       const res = await fetch(`/api/sessions/tutor?tutorId=${encodeURIComponent(userId)}`);
@@ -85,7 +86,10 @@ export default function InboxPage() {
         }
       }
     } catch (error) {
+      setLoading(false);
       console.error('Error fetching sessions:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -254,8 +258,8 @@ export default function InboxPage() {
   });
 
   const pendingCount = requests.filter(req => req.status === 'pending').length;
-  const acceptedCount = requests.filter(req => req.status === 'accepted').length;
-  const declinedCount = requests.filter(req => req.status === 'declined').length;
+  const inProgressCount = requests.filter(req => req.status === 'in_progress').length;
+  const completedCount = requests.filter(req => req.status === 'completed').length;
 console.log("requests",requests);
   return (
 <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -278,11 +282,11 @@ console.log("requests",requests);
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-200">
             <span className="text-sm text-gray-500">Total Requests:</span>
-            <span className="font-semibold text-gray-900">{pendingCount + acceptedCount + declinedCount}</span>
+            <span className="font-semibold text-gray-900">{pendingCount + inProgressCount + completedCount}</span>
           </div>
           <button
             onClick={fetchSessions}
-            className="px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl transition-all duration-200 flex items-center gap-2 font-medium shadow-md hover:shadow-lg active:scale-95"
+            className="px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full transition-all duration-200 flex items-center gap-2 font-medium shadow-md hover:shadow-lg active:scale-95"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -311,11 +315,11 @@ console.log("requests",requests);
         <div className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm font-medium">Accepted</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{acceptedCount}</p>
+              <p className="text-gray-500 text-sm font-medium">In Progress</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{inProgressCount}</p>
             </div>
             <div className="p-3 bg-green-50 rounded-full">
-              <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
@@ -325,12 +329,12 @@ console.log("requests",requests);
         <div className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm font-medium">Declined</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{declinedCount}</p>
+              <p className="text-gray-500 text-sm font-medium">Completed</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{completedCount}</p>
             </div>
-            <div className="p-3 bg-red-50 rounded-full">
-              <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <div className="p-3 bg-green-100 rounded-full">
+            <svg className="w-6 h-6 text-green-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
           </div>
@@ -343,7 +347,7 @@ console.log("requests",requests);
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Filter by Status</h2>
       <div className="bg-white rounded-2xl p-2 border border-gray-200 shadow-sm">
         <div className="flex flex-wrap gap-2">
-          {(['all', 'pending', 'accepted', 'declined'] as const).map((filterOption) => (
+          {(['all', 'pending', 'in_progress', 'completed'] as const).map((filterOption) => (
             <button
               key={filterOption}
               onClick={() => setFilter(filterOption)}
@@ -361,7 +365,7 @@ console.log("requests",requests);
                     : 'bg-gray-100 text-gray-700'
                 }`}>
                   {filterOption === 'pending' ? pendingCount : 
-                   filterOption === 'accepted' ? acceptedCount : declinedCount}
+                   filterOption === 'in_progress' ? inProgressCount : completedCount}
                 </span>
               )}
             </button>
@@ -381,12 +385,12 @@ console.log("requests",requests);
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No {filter === 'all' ? '' : filter + ' '}session requests
+              {loading ? 'Loading...' : 'No ' + (filter === 'all' ? '' : filter + ' ') + 'session requests'}
             </h3>
             <p className="text-gray-600 mb-6 max-w-sm mx-auto">
               {filter === 'pending' ? 'All pending requests have been responded to.' : 
-               filter === 'accepted' ? 'No accepted requests at this time.' :
-               filter === 'declined' ? 'No requests have been declined.' :
+               filter === 'in_progress' ? 'No in progress requests at this time.' :
+               filter === 'completed' ? 'No completed requests at this time.' :
                'You have no session requests at the moment.'}
             </p>
             {filter !== 'all' && (
@@ -415,7 +419,7 @@ console.log("requests",requests);
                     
                     <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${
                       request.status === 'pending' ? 'bg-yellow-400' :
-                      request.status === 'accepted' ? 'bg-green-400' : 'bg-red-400'
+                      request.status === 'in_progress' ? 'bg-green-400' : 'bg-red-400'
                     }`}></div>
                   </div>
                   
@@ -438,9 +442,11 @@ console.log("requests",requests);
                         <div className={`px-3 py-1.5 rounded-full text-sm font-medium ${
                           request.status === 'pending' 
                             ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' 
-                            : request.status === 'accepted'
+                            : request.status === 'in_progress'
                             ? 'bg-green-50 text-green-700 border border-green-100'
-                            : 'bg-red-50 text-red-700 border border-red-100'
+                            : request.status === 'completed'
+                            ? 'bg-red-50 text-red-700 border border-red-100'
+                            : 'bg-gray-50 text-gray-700 border border-gray-100'
                         }`}>
                           {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                         </div>
@@ -460,7 +466,7 @@ console.log("requests",requests);
                     
                     {/* Action Buttons */}
                     <div className="flex flex-wrap gap-3 mt-5">
-                      {request.status === 'pending' && (
+                      {/* {request.status === 'pending' && (
                         <>
                           <button
                             onClick={() => handleAcceptRequest(request.id)}
@@ -487,9 +493,8 @@ console.log("requests",requests);
                             Message
                           </button>
                         </>
-                      )}
+                      )} */}
                       
-                      {(request.status === 'accepted' || request.status === 'in_progress') && (
                         <div className="flex flex-wrap gap-3">
                           <button 
                             onClick={() => handleStartSession(request)}
@@ -502,21 +507,8 @@ console.log("requests",requests);
                             </svg>
                             Start Session
                           </button>
-                          <button className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 rounded-xl transition-all duration-200 font-medium border border-gray-300 shadow-sm hover:shadow-md active:scale-95 flex items-center gap-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                            </svg>
-                            Message Student
-                          </button>
-                          <button className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 rounded-xl transition-all duration-200 font-medium border border-gray-300 shadow-sm hover:shadow-md active:scale-95 flex items-center gap-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Reschedule
-                          </button>
                         </div>
-                      )}
-                      
+{/*                       
                       {request.status === 'declined' && (
                         <div className="flex gap-3">
                           <button
@@ -532,7 +524,7 @@ console.log("requests",requests);
                             View Details
                           </button>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </div>

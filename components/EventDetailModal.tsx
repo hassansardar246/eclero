@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import {
   X,
@@ -25,6 +25,9 @@ interface UpdateFormData {
   subject_id: string;
   subject: string;
   price: string;
+  duration_1: number;
+  duration_2: number;
+  duration_3: number;
   startTime: string;
   endTime: string;
   date: string;
@@ -46,13 +49,30 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   onUpdate,
 }) => {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [subjects, setSubjects] = useState<any[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<any | null>(null);
+  const [selectedDurations, setSelectedDurations] = useState<
+    Array<{ duration: number; price: number }>
+  >([]);
+  const [profileSubjectDetails, setProfileSubjectDetails] = useState<{
+    duration_1: number;
+    duration_2: number;
+    duration_3: number;
+    price_1: number;
+    price_2: number;
+    price_3: number;
+  } | null>(null);
+  const [activeDurationSubjectId, setActiveDurationSubjectId] = useState<
+    string | null
+  >(null);
+  const durationDropdownRef = useRef<HTMLDivElement>(null);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [updateForm, setUpdateForm] = useState<UpdateFormData>({
     subject_id: "",
     subject: "",
     price: "",
+    duration_1: 0,
+    duration_2: 0,
+    duration_3: 0,
     startTime: "",
     endTime: "",
     date: "",
@@ -77,19 +97,22 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           }
 
           const profileRes = await fetch(
-            `/api/tutor-availability/get-full?email=${encodeURIComponent(
-              user.email
+            `/api/tutor-availability/event?id=${encodeURIComponent(
+              event.id
             )}`
           );
 
           if (profileRes.ok) {
             const profileData = await profileRes.json();
-
-            setSubjects(profileData);
-              const selected = profileData.find(
-              (s:any) => s?.subjects?.id === event.id
-            );  
-            setSelectedSubject(selected || null);
+            console.log("profileData", profileData);
+            setProfileSubjectDetails(profileData.profileSubject || null);
+            setUpdateForm((prev) => ({
+              ...prev,
+              duration_1: profileData.duration_1 || 0,
+              duration_2: profileData.duration_2 || 0,
+              duration_3: profileData.duration_3 || 0,
+            }));
+            setSelectedSubject(profileData.subjects || null);
            
           }
         } catch (error) {
@@ -101,6 +124,62 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       fetchSubjects();
     }
   }, [isOpen, isEditMode]);
+  const formatDuration = (duration: number) => {
+    if (duration === 1) return "1h";
+    if (duration === 0.5) return "30m";
+    if (duration === 1.5) return "1h 30m";
+    return `${duration}h`;
+  };
+  console.log("selectedDurations", selectedDurations);
+
+  useEffect(() => {
+    if (!profileSubjectDetails) return;
+    const durations: Array<{ duration: number; price: number }> = [];
+    if (updateForm.duration_1) {
+      durations.push({
+        duration: profileSubjectDetails.duration_1,
+        price: profileSubjectDetails.price_1,
+      });
+    }
+    if (updateForm.duration_2) {
+      durations.push({
+        duration: profileSubjectDetails.duration_2,
+        price: profileSubjectDetails.price_2,
+      });
+    }
+    if (updateForm.duration_3) {
+      durations.push({
+        duration: profileSubjectDetails.duration_3,
+        price: profileSubjectDetails.price_3,
+      });
+    }
+    setSelectedDurations(durations);
+  }, [
+    profileSubjectDetails,
+    updateForm.duration_1,
+    updateForm.duration_2,
+    updateForm.duration_3,
+  ]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        durationDropdownRef.current &&
+        !durationDropdownRef.current.contains(event.target as Node)
+      ) {
+        const hasAnyDuration =
+          !!updateForm.duration_1 ||
+          !!updateForm.duration_2 ||
+          !!updateForm.duration_3;
+        if (hasAnyDuration) {
+          setActiveDurationSubjectId(null);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [updateForm.duration_1, updateForm.duration_2, updateForm.duration_3]);
   useEffect(() => {
     if (event && isEditMode) {
      console.log('even2222t', event);
@@ -109,7 +188,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       const subjectName =
         event.title || event.originalData?.subject || event.subject || "";
 
-      setUpdateForm({
+      setUpdateForm((prev) => ({
+        ...prev,
         subject_id: subjectId,
         subject: subjectName,
         price: event.price?.toString() || "",
@@ -117,7 +197,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         endTime: moment(event.end).format("HH:mm"),
         date: moment(event.start).format("YYYY-MM-DD"),
         endDate: moment(event.end).format("YYYY-MM-DD"),
-      });
+      }));
     }
   }, [event, isEditMode]);
 
@@ -147,9 +227,10 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
     const updatedEvent = {
-      // Send both Date objects and date/time strings for flexibility
+      duration_1: updateForm.duration_1,
+      duration_2: updateForm.duration_2,
+      duration_3: updateForm.duration_3,
       start: startDateTime,
       end: endDateTime,
       date: updateForm.date, // "YYYY-MM-DD"
@@ -207,11 +288,19 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
     }));
   };
 
+  const handleDurationChange = (
+    durationKey: "duration_1" | "duration_2" | "duration_3"
+  ) => {
+    setUpdateForm((prev) => {
+      const next = { ...prev, [durationKey]: prev[durationKey] ? 0 : 1 };
+      return next;
+    });
+  };
+
   const startTime = moment(event.start).format("h:mm A");
   const endTime = moment(event.end).format("h:mm A");
   const startDateStr = moment(event.start).format("MMMM Do, YYYY");
   const endDateStr = moment(event.end).format("MMMM Do, YYYY");
-  const duration = moment(event.end).diff(moment(event.start), "hours", true);
   const isMultiDay = moment(event.end).date() !== moment(event.start).date();
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 lg:p-4 overflow-y-auto">
@@ -258,65 +347,94 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     <p className="text-sm text-gray-500">Loading subjects...</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
-                      {subjects.map((obj: any) => {
-                        const isSelected = updateForm.subject_id === obj?.subjects?.id;
-                        return (
                           <button
                             type="button"
-                            key={obj?.subjects?.id}
+                            key={selectedSubject?.id}
+                            onClick={() =>
+                              setActiveDurationSubjectId(
+                                selectedSubject?.id || null
+                              )
+                            }
                             className={`inline-flex items-center gap-1 border rounded-lg text-xs px-3 py-1.5 shadow-sm transition-all duration-150 cursor-pointer ${
-                              isSelected
+                              updateForm.subject_id === selectedSubject?.id
                                 ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-blue-700 ring-2 ring-blue-200"
                                 : "bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50"
                             }`}
                           >
                             <span className="font-semibold">
-                              {obj?.subjects?.name}
+                              {selectedSubject?.name}
                             </span>
-                            {obj.subjects.code && (
+                            {selectedSubject?.code && (
                               <span className="text-[10px] opacity-80">
-                                {obj?.subjects?.code}
+                                {selectedSubject?.code}
                               </span>
                             )}
-                            {obj?.subjects?.grade && (
+                            {selectedSubject?.grade && (
                               <span className="text-[10px] opacity-70">
-                                · Grade {obj?.subjects?.grade}
+                                · Grade {selectedSubject?.grade}
                               </span>
                             )}
-                            {(obj?.price || obj?.duration) && (
+                            {selectedDurations.length > 0 && (
                               <span className="ml-1 inline-flex items-center gap-1 text-[10px] opacity-90">
-                                {typeof obj.duration !== "undefined" && (
-                                  <>
+                                {selectedDurations.map((item, index) => (
+                                  <React.Fragment
+                                    key={`${item.duration}-${item.price}-${index}`}
+                                  >
+                                    {index > 0 && (
+                                      <span className="opacity-60">/</span>
+                                    )}
                                     <Clock className="w-3 h-3" />
-                                    <span>
-                                      {obj.duration === 1
-                                        ? "1h"
-                                        : obj.duration === 0.5
-                                        ? "30m"
-                                        : "1h 30m"}
-                                    </span>
-                                  </>
-                                )}
-                                {typeof obj.price !== "undefined" && (
-                                  <>
+                                    <span>{formatDuration(item.duration)}</span>
                                     <span className="opacity-60">•</span>
                                     <DollarSign className="w-3 h-3" />
-                                    <span>${obj.price}</span>
-                                  </>
-                                )}
+                                    <span>${item.price}</span>
+                                  </React.Fragment>
+                                ))}
                               </span>
                             )}
                           </button>
-                        );
-                      })}
                     </div>
                   )}
-                  {subjects.length === 0 && !loadingSubjects && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      No subjects available. Please add subjects to your
-                      profile.
-                    </p>
-                  )}
+                  {activeDurationSubjectId === selectedSubject?.id &&
+                    selectedSubject?.id && (
+                      <div className="relative mt-3" ref={durationDropdownRef}>
+                        <div className="absolute z-10 mt-2 w-44 rounded-md border border-gray-200 bg-white p-3 shadow-lg">
+                          <label className="flex items-center gap-2 text-xs text-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={!!updateForm.duration_1}
+                              onChange={() =>
+                                handleDurationChange("duration_1")
+                              }
+                              className="h-3.5 w-3.5"
+                            />
+                            30 Min
+                          </label>
+                          <label className="mt-2 flex items-center gap-2 text-xs text-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={!!updateForm.duration_2}
+                              onChange={() =>
+                                handleDurationChange("duration_2")
+                              }
+                              className="h-3.5 w-3.5"
+                            />
+                            1 Hour
+                          </label>
+                          <label className="mt-2 flex items-center gap-2 text-xs text-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={!!updateForm.duration_3}
+                              onChange={() =>
+                                handleDurationChange("duration_3")
+                              }
+                              className="h-3.5 w-3.5"
+                            />
+                            1.5 Hour
+                          </label>
+                        </div>
+                      </div>
+                    )}
                 </div>
 
                 {/* Date Range */}
@@ -427,9 +545,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                       {startTime} - {endTime}
                     </p>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">
-                        {duration.toFixed(1)} hours
-                      </span>
                       {isMultiDay && (
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                           Multi-day
@@ -453,24 +568,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                       event.originalData?.subject ||
                       "Not specified"}
                   </p>
-                </div>
-
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <div className="flex items-center gap-3 mb-2">
-                    <DollarSign className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-semibold text-gray-700">Price</h3>
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-2xl font-bold text-gray-800">
-                      ${event.price || "0"}
-                    </p>
-                    <span className="text-gray-500">per session</span>
-                  </div>
-                  {event.originalData?.hourlyRate && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      Hourly: ${event.originalData.hourlyRate}
-                    </p>
-                  )}
                 </div>
               </div>
             </>

@@ -20,8 +20,12 @@ export async function GET(request: NextRequest) {
       select: {
         subject_id: true,
         profile_id: true,
-        price: true,
-        duration: true,
+        price_1: true,
+        price_2: true,
+        price_3: true,
+        duration_1: true,
+        duration_2: true,
+        duration_3: true,
         created_at: true,
         updated_at: true,
         Subjects: {

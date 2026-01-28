@@ -41,6 +41,8 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
+    console.log("sessions", sessions);
+
     return NextResponse.json({ 
       success: true, 
       sessions: sessions || []

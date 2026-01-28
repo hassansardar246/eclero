@@ -32,6 +32,20 @@ export async function GET(req: Request) {
     end_date: { not: null },
     start_date: { not: null }
   },
+  include: {
+    profileSubject: {
+      select: {
+        profile_id: true,
+        subject_id: true,
+        duration_1: true,
+        duration_2: true,
+        duration_3: true,
+        price_1: true,
+        price_2: true,
+        price_3: true,
+      }
+    }
+  },
       orderBy: [{ day_of_week: 'asc' }, { start_time: 'asc' }],
     });
 

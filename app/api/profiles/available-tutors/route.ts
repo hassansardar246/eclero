@@ -1,9 +1,25 @@
 import { prisma } from "@/lib/prisma";
 
-function isSlotActiveToday(slot: { start_date: Date; end_date: Date }, today: Date) {
-  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-  
+function isSlotActiveToday(
+  slot: { start_date: Date | null; end_date: Date | null },
+  today: Date
+) {
+  if (!slot.start_date || !slot.end_date) return false;
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+  const todayEnd = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+    23,
+    59,
+    59,
+    999
+  );
+
   return slot.start_date <= todayEnd && slot.end_date >= todayStart;
 }
 
@@ -46,13 +62,16 @@ export async function GET(req: Request) {
     });
     
     // Group slots by tutor id for quick lookup later
-    const slotsByTutorId = new Map<string, Array<{
-      subject_id: string;
-      start_time: Date | null;
-      end_time: Date | null;
-      start_date: Date;
-      end_date: Date;
-    }>>();
+    const slotsByTutorId = new Map<
+      string,
+      Array<{
+        subject_id: string | null;
+        start_time: Date | null;
+        end_time: Date | null;
+        start_date: Date | null;
+        end_date: Date | null;
+      }>
+    >();
     
     for (const slot of slots) {
       if (!slotsByTutorId.has(slot.tutor_id)) {
@@ -68,28 +87,28 @@ export async function GET(req: Request) {
     }
     
     // Process tutors with availability check
-    const tutorsWithDerived = tutors
-    .map(t => {
+    const tutorsWithDerived = tutors.map((t) => {
       const subjects = t.subjects.map((ps: any) => ps.Subjects);
       const tutorSlots = slotsByTutorId.get(t.id) || [];
-      
+
       const today = new Date();
-      
+
       // Filter slots to only include those active today
-      const todaysSlots = tutorSlots.filter(slot => isSlotActiveToday(slot, today));
+      const todaysSlots = tutorSlots.filter((slot) =>
+        isSlotActiveToday(slot, today)
+      );
       const hasSlotToday = todaysSlots.length > 0;
-      
+
       // Only use slot-based availability
       const derivedActiveNow = hasSlotToday;
-      
-      return { 
-        ...t, 
-        subjects: subjects, 
+
+      return {
+        ...t,
+        subjects,
         derivedActiveNow,
         availableSlots: todaysSlots // Return only today's slots instead of all slots
       };
-    })
-    .filter(t => t.availableSlots.length > 0); // Filter out tutors with empty availableSlots
+    });
     
     const finalList = filterAvailable 
       ? tutorsWithDerived.filter(t => t.derivedActiveNow) 

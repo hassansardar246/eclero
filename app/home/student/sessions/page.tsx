@@ -12,7 +12,7 @@ interface Session {
   subject: string;
   date: string;
   start_time: string;
-  status: 'active' | 'upcoming' | 'completed' | 'requested';
+  status: 'active' | 'completed' | 'pending';
   duration: number;
   price: number;
   meetingLink?: string;
@@ -24,7 +24,7 @@ interface Session {
 export default function StudentSessions() {
   const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [filter, setFilter] = useState<'all' | 'active' | 'upcoming' | 'completed' | 'requested'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
   // LiveKit session state
   const [isSessionOpen, setIsSessionOpen] = useState(false);
@@ -86,10 +86,8 @@ export default function StudentSessions() {
               subject: session.topic || 'Session',
               date: sessionDate.toISOString().split('T')[0], // YYYY-MM-DD format
               start_time: sessionDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-              status: session.status === 'pending' ? 'requested' :
-                session.status === 'accepted' ? 'upcoming' :
-                  session.status === 'in_progress' ? 'active' :
-                    session.status === 'completed' ? 'completed' : 'upcoming',
+              status: session.status === 'in_progress' ? 'active' :
+                    session.status === 'completed' ? 'completed' : 'pending',
               duration: session.duration || 60, // Use actual duration or default
               price: session.tutor?.hourlyRate || 0, // Use actual tutor rate or 0
               meetingLink: session.room_name ? `session-${session.id}` : undefined,
@@ -153,7 +151,7 @@ export default function StudentSessions() {
           </div>
           <button
             onClick={fetchSessions}
-            className="px-4 py-2 bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white rounded-lg transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-[#1559C6] text-white rounded-full transition-colors flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -164,18 +162,18 @@ export default function StudentSessions() {
 
         {/* Filters */}
         <div className="mb-6 flex flex-wrap gap-2">
-          {(['all', 'active', 'upcoming', 'completed', 'requested'] as const).map((filterOption) => (
+          {(['all', 'active', 'completed', 'pending'] as const).map((filterOption) => (
             <button
               key={filterOption}
-              onClick={() => setFilter(filterOption)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === filterOption
-                  ? 'bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              onClick={() => setFilter(filterOption as any)}
+              className={`px-4 py-2 rounded-full font-medium transition-all ${filter === filterOption
+                  ? 'bg-[#1559C6] text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full'
                 }`}
             >
               {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
               {filterOption !== 'all' && (
-                <span className="ml-2 bg-gray-300 px-2 py-1 rounded-full text-xs text-gray-700">
+                <span className="ml-2 bg-gray-300 px-2 py-1 rounded-full text-xs text-white">
                   {sessions.filter(s => s.status === filterOption).length}
                 </span>
               )}
@@ -204,7 +202,7 @@ export default function StudentSessions() {
                     />
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">{session.tutorName}</h3>
-                      <p className="text-gradient-to-r from-[#1089d3] to-[#12B1D1]">{session.subject}</p>
+                      <p className="text-[#1559C6]">{session.subject}</p>
                       {session.status === 'active' ? (
                         <p className="text-green-600 text-sm font-medium">
                           🔴 Live Session • {session.duration} min
@@ -220,7 +218,7 @@ export default function StudentSessions() {
                         <div className="text-gray-900 font-semibold">${session.price}</div>
                       )}
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${session.status === 'active' ? 'bg-green-100 text-green-800' :
-                          session.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                          session.status === 'pending' ? 'bg-blue-100 text-blue-800' :
                             session.status === 'completed' ? 'bg-gray-100 text-gray-800' :
                               'bg-yellow-100 text-yellow-800'
                         }`}>
@@ -242,14 +240,11 @@ export default function StudentSessions() {
                         </button>
                       </div>
                     )}
-                    {session.status === 'upcoming' && (
+                    {session.status === 'pending' && (
                       <div className="text-center">
-                        <div className="text-gradient-to-r from-[#1089d3] to-[#12B1D1] text-sm mb-2">Session accepted</div>
+                        <div className="text-[#1559C6] text-sm mb-2">Session accepted</div>
                         <div className="text-gray-500 text-xs">Waiting for tutor to start</div>
                       </div>
-                    )}
-                    {session.status === 'requested' && (
-                      <span className="text-yellow-600 text-sm">Waiting for tutor response</span>
                     )}
                   </div>
                 </div>

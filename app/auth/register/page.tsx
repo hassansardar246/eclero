@@ -101,8 +101,11 @@ function RegisterContent() {
                 setLoading(false);
                 return;
             }
-        router.push("/home");
-
+            if(normalizedRole === "student") {
+                router.push(`/home/${normalizedRole}/explore`);
+            } else {
+                router.push(`/home`);
+            }
         } catch (err: any) {
             console.error('[REGISTER] Registration failed:', err);
             setError(err.message || "An error occurred during registration. Please try again.");
@@ -116,13 +119,13 @@ function RegisterContent() {
         <div className="max-w-2xl w-full bg-gradient-to-b from-white via-[#f4f7fb] to-white rounded-[40px] p-6 border-4 border-white shadow-[rgba(133,189,215,0.878)_0px_30px_30px_-20px]">
           <div className="text-center">
     <div className="flex justify-center mb-4">
-      <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[#1089d3] to-[#12B1D1] flex items-center justify-center shadow-[rgba(133,189,215,0.878)_0px_20px_25px_-15px]">
+      <div className="w-20 h-20 rounded-full bg-[#1559C6] flex items-center justify-center shadow-[rgba(133,189,215,0.878)_0px_20px_25px_-15px]">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
         </svg>
       </div>
     </div>
-            <h2 className="text-3xl font-black text-[#1089d3] mb-1">Register</h2>
+            <h2 className="text-3xl font-black text-[#1559C6] mb-1">Register</h2>
 
             <div className="text-gray-600 text-sm mb-4">
               Registering as {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -176,7 +179,7 @@ function RegisterContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full font-bold text-white py-4 mt-5 rounded-[20px] bg-gradient-to-r from-[#1089d3] to-[#12B1D1] shadow-[rgba(133,189,215,0.878)_0px_20px_10px_-15px] border-none transition-all duration-200 hover:scale-[1.03] hover:shadow-[rgba(133,189,215,0.878)_0px_23px_10px_-20px] active:scale-95 active:shadow-[rgba(133,189,215,0.878)_0px_15px_10px_-10px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full font-bold text-white py-4 mt-5 rounded-[20px] bg-[#1559C6] shadow-[rgba(133,189,215,0.878)_0px_20px_10px_-15px] border-none transition-all duration-200 hover:scale-[1.03] hover:shadow-[rgba(133,189,215,0.878)_0px_23px_10px_-20px] active:scale-95 active:shadow-[rgba(133,189,215,0.878)_0px_15px_10px_-10px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {loading ? "Creating account..." : "Create Account"}
             </button>
@@ -186,7 +189,7 @@ function RegisterContent() {
               Already have an account?{" "}
               <Link 
                 href={`/auth/login?role=${role}`} 
-                className="font-medium text-[#0099ff] hover:text-[#1089d3] transition"
+                className="font-medium text-[#1559C6] hover:text-[#1559C6] transition"
               >
                 Log in
               </Link>

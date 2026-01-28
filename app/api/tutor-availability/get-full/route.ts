@@ -31,6 +31,18 @@ const availability = await prisma.tutorAvailability.findMany({
         code: true,
         grade: true
       }
+    },
+    profileSubject: {
+      select: {
+        profile_id: true,
+        duration_1: true,
+        duration_2: true,
+        duration_3: true,
+        price_1: true,
+        price_2: true,
+        price_3: true,
+        subject_id: true,
+      }
     }
   },
   orderBy: [{ day_of_week: 'asc' }, { start_time: 'asc' }],

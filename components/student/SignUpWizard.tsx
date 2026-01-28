@@ -170,7 +170,7 @@ const SignUpWizard = () => {
         }),
       }); 
       if (response.ok) {
-        window.location.reload();
+        router.push("/home/student/explore");
       } else {
       }
     } catch (e) {}

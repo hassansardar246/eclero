@@ -17,15 +17,25 @@ type CategoryGroup = {
   subjects: Subjects[];
 };
 
+type AvailableSlot = {
+  subject_id?: string | null;
+  start_time?: string | Date | null;
+  end_time?: string | Date | null;
+  start_date?: string | Date | null;
+  end_date?: string | Date | null;
+};
+
 type Tutor = {
   id: string;
   name: string;
   avatar?: string;
   bio?: string;
-  rating?: number;
-  isAvailableNow?: boolean;
-  education?: any;
-  subjects: Subjects[]; // Add this line
+  rating?: number | null;
+  isAvailableNow?: boolean | null;
+  derivedActiveNow?: boolean;
+  education?: string | null;
+  subjects: Subjects[];
+  availableSlots?: AvailableSlot[];
 };
 
 // Ghost tile component for empty sections
@@ -79,111 +89,123 @@ const TutorSection = ({
           ghostTiles
         ) : (
           <>
-            {tutors.map((tutor) => (
-              <div
-                key={tutor.id || "unknown"}
-                className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200"
-              >
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Left Section - Profile & Quick Info */}
-                  <div className="flex items-start gap-4 md:w-1/3">
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#1089d3] to-[#12B1D1] flex items-center justify-center text-white font-bold text-xl">
-                        {tutor.name?.charAt(0) || "T"}
+            {tutors.map((tutor) => {
+              const slotsToday = Array.isArray(tutor.availableSlots)
+                ? tutor.availableSlots.length
+                : 0;
+              const educationHtml = tutor.education
+                ? DOMPurify.sanitize(tutor.education.replace(/^"|"$/g, ""))
+                : "";
+
+              return (
+                <div
+                  key={tutor.id || "unknown"}
+                  className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {/* Left Section - Profile & Quick Info */}
+                    <div className="flex items-start gap-4 md:w-1/3">
+                      <div className="relative">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#1089d3] to-[#12B1D1] flex items-center justify-center text-white font-bold text-xl">
+                          {tutor.name?.charAt(0) || "T"}
+                        </div>
+                        {tutor.derivedActiveNow === true && (
+                          <div className="absolute -top-1 -right-1">
+                            <div className="w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      {(tutor as any).derivedActiveNow === true && (
-                        <div className="absolute -top-1 -right-1">
-                          <div className="w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                            <div className="w-2 h-2 bg-white rounded-full"></div>
+
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-bold text-gray-900">
+                            {tutor.name}
+                          </h3>
+                        </div>
+                        {educationHtml && (
+                          <div
+                            className="text-gray-600 text-sm mt-1"
+                            dangerouslySetInnerHTML={{ __html: educationHtml }}
+                          />
+                        )}
+                        {typeof tutor.rating === "number" && (
+                          <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                            <span className="text-amber-500">★</span>
+                            <span>{tutor.rating.toFixed(1)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Middle Section - Details */}
+                    <div className="md:w-1/3 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                          />
+                        </svg>
+                        <span className="text-sm text-gray-600">
+                          {slotsToday > 0
+                            ? `${slotsToday} time slot${
+                                slotsToday === 1 ? "" : "s"
+                              } today`
+                            : "No slots today"}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {tutor.subjects?.slice(0, 3).map((subject, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-1 bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white text-xs font-medium rounded"
+                          >
+                            {subject.name}
+                          </span>
+                        ))}
+                        {tutor.subjects && tutor.subjects.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                            +{tutor.subjects.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Section - Action & Stats */}
+                    <div className="md:w-1/3 flex flex-col justify-between">
+                      {tutor.bio && (
+                        <div className="space-y-3">
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-sm text-gray-600 line-clamp-2">
+                              {tutor.bio}
+                            </p>
                           </div>
                         </div>
                       )}
-                    </div>
 
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-bold text-gray-900">
-                          {tutor.name}
-                        </h3>
-                      </div>
-                      <div
-                        className="text-gray-600 text-sm mt-1"
-                        dangerouslySetInnerHTML={{
-                          __html: DOMPurify.sanitize(
-                            tutor?.education?.replace(/^"|"$/g, "") as string
-                          ),
-                        }}
-                      />
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-gray-400">•</span>
-                        <span className="text-sm text-gray-600">
-                          {0} sessions
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Middle Section - Details */}
-                  <div className="md:w-1/3 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                        />
-                      </svg>
-                      <span className="text-sm text-gray-600">
-                        From {"Online"}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {tutor.subjects?.slice(0, 3).map((subject, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-1 bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white text-xs font-medium rounded"
+                      <div className="flex gap-3 mt-4">
+                        <button
+                          onClick={() => onBook(tutor)}
+                          className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
                         >
-                          {subject.name}
-                        </span>
-                      ))}
-                      {tutor.subjects && tutor.subjects.length > 3 && (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded">
-                          +{tutor.subjects.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right Section - Action & Stats */}
-                  <div className="md:w-1/3 flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {tutor.bio ||
-                            "Expert in my field with extensive experience delivering quality tutoring sessions to students"}
-                        </p>
+                          Book Session
+                        </button>
                       </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-4">
-                      <button
-                        onClick={() => onBook(tutor)}
-                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#1089d3] to-[#12B1D1] text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
-                      >
-                        Book Session
-                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </>
         )}
       </div>
@@ -203,7 +225,6 @@ export default function ExploreTutors() {
   const [gradeFilter, setGradeFilter] = useState<string>("");
   const [subjectsLoading, setSubjectsLoading] = useState(false);
   const [subjectsError, setSubjectsError] = useState<string | null>(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [onlyActiveNow, setOnlyActiveNow] = useState(false);
 
   const { openTutorProfileModal } = useContext(TutorProfileModalContext)!;
@@ -226,18 +247,13 @@ export default function ExploreTutors() {
           return;
         }
 
-        const text = await res.text();
-        console.log("text", text);
-        if (!text) {
-          console.error("Empty response from tutors API");
-          setTutors([]);
-          setLoading(false);
-          return;
-        }
-
-        const data = JSON.parse(text);
-        console.log("data222222", data);
-        setTutors(data.tutors || []);
+        const data = await res.json();
+        const tutorList = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.tutors)
+          ? data.tutors
+          : [];
+        setTutors(tutorList);
       } catch (error) {
         console.error("Error fetching tutors:", error);
         setTutors([]);
@@ -250,6 +266,7 @@ export default function ExploreTutors() {
 
   useEffect(() => {
     setSubjectsLoading(true);
+    setSubjectsError(null);
     fetch("/api/subjects")
       .then((res) => res.json())
       .then((data) => {
@@ -297,23 +314,20 @@ export default function ExploreTutors() {
         );
         if (res.ok) {
           const profile = await res.json();
-          console.log("profile", profile);
-
           // Normalize subjects: handle [{subject: {...}}] or [{id: ...}]
-          let normalizedSubjects: any[] = [];
-          if (profile.subjects && Array.isArray(profile.subjects)) {
-            normalizedSubjects = profile.subjects
-              .map((s: any) => {
-                if (s && typeof s.id === "string") return s;
-                if (s && s.subject && typeof s.subject.id === "string")
-                  return s.subject;
-                return undefined;
-              })
-              .filter(
-                (s: any): s is { id: string } =>
-                  !!s && typeof s.id === "string" && s.id.length > 0
-              );
-          }
+          const normalizedSubjects = Array.isArray(profile?.subjects)
+            ? profile.subjects
+                .map((s: any) => {
+                  if (s && typeof s.id === "string") return s;
+                  if (s && s.subject && typeof s.subject.id === "string")
+                    return s.subject;
+                  return undefined;
+                })
+                .filter(
+                  (s: any): s is { id: string } =>
+                    !!s && typeof s.id === "string" && s.id.length > 0
+                )
+            : [];
 
           setStudentSubjectIds(normalizedSubjects.map((s) => s.id));
         } else {
@@ -359,32 +373,28 @@ export default function ExploreTutors() {
     }
   });
 
-  // Filter by selected subjects (if any subjects are selected)
-  const filteredTutors =
-    studentSubjectIds.length > 0
-      ? tutors.filter((t) => {
-          // This is a placeholder - you'll need to implement actual subject filtering
-          // based on how tutors' subjects are stored in your data
-          return true; // For now, show all tutors
-        })
-      : tutors;
-
-  // Organize tutors into sections
-  const readyNowTutors = filteredTutors.filter(
-    (t) => t.isAvailableNow === true
-  );
-  const highlyRatedTutors = filteredTutors.filter(
-    (t) => (t.rating || 0) >= 4.5
-  );
-  // const atYourSchoolTutors = filteredTutors.filter((t) => t.education); // You'll need to add user's school logic
-
-  // Filter tutors by subject
+  // Filter tutors by subject, but only if they have an available slot today for that subject
   const getSubjectTutors = (subjectId: string) => {
     return tutors.filter((tutor) => {
-      if (!tutor.subjects || !Array.isArray(tutor.subjects)) return false;
-      return tutor.subjects.some((s: Subjects) => s.id === subjectId);
+      if (!Array.isArray(tutor.availableSlots)) return false;
+      return tutor.availableSlots.some(
+        (slot) => slot.subject_id && slot.subject_id === subjectId
+      );
     });
   };
+
+  // "All tutors" should show every tutor who teaches
+  // at least one of the student's selected subjects (no date restriction).
+  const allTutorsForSelectedSubjects =
+    validStudentSubjectIds.length > 0
+      ? tutors.filter((tutor) => {
+          if (!Array.isArray(tutor.subjects)) return false;
+          const selectedIdSet = new Set(validStudentSubjectIds);
+          return tutor.subjects.some(
+            (s: Subjects) => s.id && selectedIdSet.has(s.id)
+          );
+        })
+      : [];
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
@@ -402,7 +412,6 @@ export default function ExploreTutors() {
               <select
                 value={gradeFilter || ""}
                 onChange={(e) => {
-                  console.log("e.target.value", e.target.value);
                   setGradeFilter((e.target.value as any) || "");
                 }}
                 className="appearance-none bg-white border border-gray-300 rounded-xl pl-4 pr-10 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm cursor-pointer w-48"
@@ -663,6 +672,9 @@ export default function ExploreTutors() {
           )}
         </div>
       </div>
+      {subjectsError && (
+        <div className="mb-6 text-sm text-red-600">{subjectsError}</div>
+      )}
 
       {/* Collapsible Filter Section */}
       {selectedSubjects.length > 0 && (
@@ -766,13 +778,22 @@ export default function ExploreTutors() {
         </div>
       )}
 
-      <TutorSection
-        title="All Tutors"
-        description="All tutors available on the platform"
-        tutors={tutors}
-        loading={loading}
-        onBook={openTutorProfileModal}
-      />
+      {validStudentSubjectIds.length > 0 && (
+        <>
+          <TutorSection
+            title="All Tutors"
+            description="All tutors who teach at least one of your selected subjects"
+            tutors={allTutorsForSelectedSubjects}
+            loading={loading}
+            onBook={openTutorProfileModal}
+          />
+          {!loading && allTutorsForSelectedSubjects.length === 0 && (
+            <div className="mt-4 text-center text-gray-500">
+              No tutors have availability today for your selected subjects.
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -16,6 +16,9 @@ export interface EventFormData {
   subject?: string; // subject name
   subject_id?: string;
   timezone?: string;
+  duration_1?: number;
+  duration_2?: number;
+  duration_3?: number;
 }
 
 interface EventModalProps {
@@ -24,6 +27,7 @@ interface EventModalProps {
   onSubmit: (data: EventFormData) => void;
   defaultStart: Date;
   defaultEnd: Date;
+  subjects?: any[];
 }
 
 interface Subject {
@@ -39,6 +43,7 @@ export const EventModal: React.FC<EventModalProps> = ({
   onSubmit,
   defaultStart,
   defaultEnd,
+  subjects,
 }) => {
   const [formData, setFormData] = useState<EventFormData>({
     id: "",
@@ -47,51 +52,18 @@ export const EventModal: React.FC<EventModalProps> = ({
     endTime: moment(defaultEnd).format("HH:mm"),
     startDate: moment(defaultStart).format("YYYY-MM-DD"),
     endDate: moment(defaultEnd).format("YYYY-MM-DD"),
+    duration_1: 0,
+    duration_2: 0,
+    duration_3: 0,
   });
 
-  const [subjects, setSubjects] = useState<[]>([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [activeDurationSubjectId, setActiveDurationSubjectId] = useState<
+    string | null
+  >(null);
   const calendarRef = useRef<HTMLDivElement>(null);
-
-  // Fetch subjects when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      const fetchSubjects = async () => {
-        setLoadingSubjects(true);
-        try {
-          const {
-            data: { user },
-            error: sessionError,
-          } = await supabase.auth.getUser();
-
-          if (sessionError || !user?.email) {
-            console.error("Error getting user:", sessionError);
-            setLoadingSubjects(false);
-            return;
-          }
-
-          const profileRes = await fetch(
-            `/api/subjects/tutor-subjects?email=${encodeURIComponent(
-              user.email
-            )}`
-          );
-
-          if (profileRes.ok) {
-            const profileData = await profileRes.json();
-
-            setSubjects(profileData);
-            console.log('profileData', profileData);
-          }
-        } catch (error) {
-        } finally {
-          setLoadingSubjects(false);
-        }
-      };
-
-      fetchSubjects();
-    }
-  }, [isOpen]);
+  const durationDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close calendar when clicking outside
   useEffect(() => {
@@ -107,6 +79,24 @@ export const EventModal: React.FC<EventModalProps> = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        durationDropdownRef.current &&
+        !durationDropdownRef.current.contains(event.target as Node)
+      ) {
+        const hasAnyDuration =
+          !!formData.duration_1 || !!formData.duration_2 || !!formData.duration_3;
+        if (hasAnyDuration) {
+          setActiveDurationSubjectId(null);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [formData.duration_1, formData.duration_2, formData.duration_3]);
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -151,6 +141,14 @@ export const EventModal: React.FC<EventModalProps> = ({
       [name]: value,
     }));
   };
+  const handleDurationChange = (
+    durationKey: "duration_1" | "duration_2" | "duration_3"
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [durationKey]: prev[durationKey] ? 0 : 1,
+    }));
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -183,13 +181,14 @@ export const EventModal: React.FC<EventModalProps> = ({
                     <button
                       type="button"
                       key={obj?.subject_id}
-                      onClick={() =>
+                      onClick={() => {
                         setFormData((prev) => ({
                           ...prev,
                           subject_id: obj?.subject_id,
                           subject: obj.Subjects.name,
-                        }))
-                      }
+                        }));
+                        setActiveDurationSubjectId(obj?.subject_id || null);
+                      }}
                       className={`inline-flex items-center gap-1 border rounded-lg text-xs px-3 py-1.5 shadow-sm transition-all duration-150 cursor-pointer ${
                         isSelected
                           ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-blue-700 ring-2 ring-blue-200"
@@ -214,6 +213,40 @@ export const EventModal: React.FC<EventModalProps> = ({
                 })}
               </div>
             )}
+            {activeDurationSubjectId === formData.subject_id &&
+              formData.subject_id && (
+                <div className="relative mt-3" ref={durationDropdownRef}>
+                  <div className="absolute z-10 mt-2 w-44 rounded-md border border-gray-200 bg-white p-3 shadow-lg">
+                    <label className="flex items-center gap-2 text-xs text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={!!formData.duration_1}
+                        onChange={() => handleDurationChange("duration_1")}
+                        className="h-3.5 w-3.5"
+                      />
+                      30 Min
+                    </label>
+                    <label className="mt-2 flex items-center gap-2 text-xs text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={!!formData.duration_2}
+                        onChange={() => handleDurationChange("duration_2")}
+                        className="h-3.5 w-3.5"
+                      />
+                      1 Hour
+                    </label>
+                    <label className="mt-2 flex items-center gap-2 text-xs text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={!!formData.duration_3}
+                        onChange={() => handleDurationChange("duration_3")}
+                        className="h-3.5 w-3.5"
+                      />
+                      1.5 Hour
+                    </label>
+                  </div>
+                </div>
+              )}
             {subjects.length === 0 && !loadingSubjects && (
               <p className="text-sm text-gray-500 mt-1">
                 No subjects available. Please add subjects to your profile.

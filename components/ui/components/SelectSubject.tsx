@@ -180,7 +180,18 @@ export default function SelectSubject({
     
     return grouped;
   };
-  const toggleSubject = (subject: { id: string; name: string; code: string; grade?: number }) => {
+  useEffect(() => {
+    if (onSubjectsChange) {
+      onSubjectsChange(selectedSubjects);
+    }
+  }, [onSubjectsChange, selectedSubjects]);
+
+  const toggleSubject = (subject: {
+    id: string;
+    name: string;
+    code: string;
+    grade?: number;
+  }) => {
     let newSubjects = null;
     setSelectedSubjects(prev => {
       const isAlreadySelected = prev.some(s => s.id === subject.id);
@@ -189,9 +200,6 @@ export default function SelectSubject({
         newSubjects = prev.filter(s => s.id !== subject.id);
       } else {
         newSubjects = [...prev, subject];
-      }
-                if (onSubjectsChange) {
-        onSubjectsChange(newSubjects || []);
       }
       return newSubjects;
     });
@@ -204,9 +212,6 @@ export default function SelectSubject({
        newSubjects = prev.filter(s => s.id !== subjectId);
       return newSubjects;
     });
-      if (onSubjectsChange) {
-        onSubjectsChange(newSubjects || []);
-      }
   };
 
   const removeAllSubjectsFromCategory = (categoryName: string) => {
@@ -217,10 +222,6 @@ export default function SelectSubject({
       
       const categorySubjectIds = category.subjects.map(s => s.id);
       const newSubjects = prev.filter(s => !categorySubjectIds.includes(s.id));
-      
-      if (onSubjectsChange) {
-        onSubjectsChange(newSubjects);
-      }
       
       return newSubjects;
     });

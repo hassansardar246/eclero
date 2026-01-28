@@ -58,6 +58,9 @@ export async function PUT(request: NextRequest) {
     startTimeStr = updatedData.startTime;
     endTimeStr = updatedData.endTime;
     const updateData: any = {
+      duration_1: updatedData.duration_1,
+      duration_2: updatedData.duration_2,
+      duration_3: updatedData.duration_3,
       start_time: convertTimeStringToDate(startTimeStr),
       end_time: convertTimeStringToDate(endTimeStr),
       start_date: startDate,

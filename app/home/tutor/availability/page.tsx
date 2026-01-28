@@ -47,7 +47,7 @@ export default function TutorAvailability() {
   const [email, setEmail] = useState<string>('');
   const [id, setId] = useState<string>('');
   // (UI was simplified; week offset removed
-
+  const [subjects, setSubjects] = useState<[]>([]);
   useEffect(() => {
     const init = async () => {
       try {
@@ -59,9 +59,22 @@ export default function TutorAvailability() {
         setEmail(user.email);
         setId(user.id);
         const res = await fetch(`/api/tutor-availability/get?email=${encodeURIComponent(user.email)}`);
+        
         if (res.ok) {
           const data = await res.json();
+          console.log('data updated', data);
           setData(data);
+        }
+        const profileRes = await fetch(
+          `/api/subjects/tutor-subjects?email=${encodeURIComponent(
+            user.email
+          )}`
+        );
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+
+          setSubjects(profileData);
         }
       } catch (e) {
       } finally {
@@ -83,7 +96,7 @@ moment.tz.setDefault("Asia/Karachi"); // or your timezone
 const localizer = momentLocalizer(moment);
   return (
     <>
-      <Selectable localizer={localizer} email={email} id={id} data={data} />
+      <Selectable localizer={localizer} email={email} id={id} data={data} subjects={subjects} />
     </>
 
   );

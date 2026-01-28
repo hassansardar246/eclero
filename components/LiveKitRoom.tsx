@@ -11,6 +11,7 @@ import {
   useRoomContext,
 } from '@livekit/components-react';
 import { Track, type DataPublishOptions } from 'livekit-client';
+import { getSceneVersion } from '@excalidraw/excalidraw';
 import '@livekit/components-styles';
 import dynamic from 'next/dynamic';
 // Using 'any' for imperative API type to avoid version export mismatches
@@ -96,7 +97,7 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
   const [sharedFile, setSharedFile] = useState<{ url: string; name: string; type: string } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const excalidrawRef = React.useRef<any | null>(null);
-  const pendingSceneRef = React.useRef<any[] | null>(null);
+  const pendingSceneRef = React.useRef<{ elements: any[]; files?: any } | null>(null);
   const requestedSceneRef = React.useRef(false);
   const [isExcalidrawReady, setIsExcalidrawReady] = useState(false);
   
@@ -118,14 +119,17 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
   // Get room context for event listeners
   const room = useRoomContext();
 
-  const applyExcalidrawElements = useCallback((elements: any[] | null | undefined) => {
-    if (!elements || elements.length === 0) return;
-    if (excalidrawRef.current) {
-      excalidrawRef.current.updateScene({ elements });
-    } else {
-      pendingSceneRef.current = elements;
-    }
-  }, [excalidrawRef]); // Add ref dependency
+  const applyExcalidrawScene = useCallback(
+    (scene: { elements: any[]; files?: any } | null | undefined) => {
+      if (!scene || !scene.elements) return;
+      if (excalidrawRef.current?.updateScene) {
+        excalidrawRef.current.updateScene(scene);
+      } else {
+        pendingSceneRef.current = scene;
+      }
+    },
+    [excalidrawRef],
+  );
 
   const getCleanElements = useCallback((elements: any[] | null | undefined) => {
     if (!elements) return [];
@@ -150,27 +154,35 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
             setActiveView('file');
           } else if (message.type === 'excalidraw_update') {
             try {
-              applyExcalidrawElements(message.payload?.elements);
+              const { elements = [], files } = message.payload || {};
+              applyExcalidrawScene({ elements, files });
             } catch (error) {
               console.error('Error applying excalidraw update:', error);
             }
           } else if (message.type === 'excalidraw_request') {
             try {
-              const elements = excalidrawRef.current?.getSceneElements?.();
+              const api = excalidrawRef.current;
+              const elements = api?.getSceneElements?.() || [];
+              const files = api?.getFiles?.() || {};
               const clean = getCleanElements(elements);
-              if (clean.length > 0) {
-                const response = {
-                  type: 'excalidraw_state',
-                  payload: { elements: clean },
-                };
-                sendDataSafe(new TextEncoder().encode(JSON.stringify(response)));
-              }
+
+              const payload = {
+                elements: clean,
+                files,
+              };
+
+              const response = {
+                type: 'excalidraw_state',
+                payload,
+              };
+              sendDataSafe(new TextEncoder().encode(JSON.stringify(response)));
             } catch (error) {
               console.error('Error responding to excalidraw state request:', error);
             }
           } else if (message.type === 'excalidraw_state') {
             try {
-              applyExcalidrawElements(message.payload?.elements);
+              const { elements = [], files } = message.payload || {};
+              applyExcalidrawScene({ elements, files });
             } catch (error) {
               console.error('Error applying excalidraw state:', error);
             }
@@ -354,10 +366,10 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
 
   useEffect(() => {
     if (isExcalidrawReady && pendingSceneRef.current) {
-      applyExcalidrawElements(pendingSceneRef.current);
+      applyExcalidrawScene(pendingSceneRef.current);
       pendingSceneRef.current = null;
     }
-  }, [isExcalidrawReady, applyExcalidrawElements]);
+  }, [isExcalidrawReady, applyExcalidrawScene]);
 
   // Set activeView to 'screen' with highest priority when screenTrackRef exists
   useEffect(() => {
@@ -372,7 +384,7 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
 
     try {
       // Sanitize filename: replace non-alphanumeric, non-hyphen, non-underscore with hyphen
-      const sanitizedFileName = (fileName: string): string => {
+      const sanitizeFileName = (fileName: string): string => {
         // Remove path traversal attempts
         const basename = fileName.replace(/\.\.\//g, '').replace(/\.\.\\/g, '');
         
@@ -394,7 +406,8 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
         
         return trimmed;
       };
-      const filePath = `session-files/${Date.now()}-${sanitizedFileName}`;
+      const safeName = sanitizeFileName(file.name);
+      const filePath = `session-files/${Date.now()}-${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from('eclero-storage')
         .upload(filePath, file);
@@ -451,7 +464,12 @@ function MainContent({ onDisconnect }: { onDisconnect?: () => void }) {
             onReady={() => setIsExcalidrawReady(true)}
           />
         )}
-        {activeView === 'file' && sharedFile && <FileViewer file={sharedFile} />}
+        {activeView === 'file' && sharedFile && (
+          <FileViewer
+            file={sharedFile}
+            onClose={() => setActiveView('whiteboard')}
+          />
+        )}
         {activeView === 'screen' && screenTrackRef && <ScreenView trackRef={screenTrackRef} />}
       </div>
 
@@ -629,26 +647,54 @@ function ExcalidrawWhiteboard({
 
   // CSS is already loaded via /public/excalidraw.css in layout.tsx
 
-  const onChange = React.useCallback((elements: any[], appState: any) => {
-    // Debounce + only send if changed
-    if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(async () => {
-      try {
-        // Filter out deleted elements to keep payload small
-        const clean = (elements || []).filter((el: any) => !el.isDeleted);
-        const version = clean.reduce((acc: number, el: any) => Math.max(acc, el.version || 0), 0);
-        if (version <= lastSentVersion.current) return;
-        lastSentVersion.current = version;
-        const message = {
-          type: 'excalidraw_update',
-          payload: { elements: clean },
-        };
-        await sendData(new TextEncoder().encode(JSON.stringify(message)));
-      } catch (e) {
-        console.error('Error broadcasting excalidraw update:', e);
-      }
-    }, 120);
-  }, [sendData]);
+  const sanitizeFilesForSending = React.useCallback((files: any) => {
+    const safeFiles: Record<string, any> = {};
+    if (!files) return safeFiles;
+    Object.entries(files as Record<string, any>).forEach(([id, file]) => {
+      if (!file) return;
+      safeFiles[id] = {
+        id,
+        dataURL: file.dataURL,
+        mimeType: file.mimeType,
+        created: file.created,
+        lastRetrieved: file.lastRetrieved,
+      };
+    });
+    return safeFiles;
+  }, []);
+
+  const onChange = React.useCallback(
+    (elements: any[], _appState: any, _filesFromCallback: any) => {
+      // Debounce + only send if changed
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+      debounceRef.current = window.setTimeout(async () => {
+        try {
+          const clean = (elements || []).filter((el: any) => !el.isDeleted);
+          const version = getSceneVersion(clean as any);
+          if (version <= lastSentVersion.current) return;
+          lastSentVersion.current = version;
+
+          // Always pull and sanitize the latest files map from the Excalidraw API
+          // so that we only send JSON-serializable data (id, dataURL, mimeType, ...).
+          const api = excalidrawRef.current;
+          const rawFiles = api?.getFiles?.() || {};
+          const files = sanitizeFilesForSending(rawFiles);
+
+          const message = {
+            type: 'excalidraw_update',
+            payload: {
+              elements: clean,
+              files,
+            },
+          };
+          await sendData(new TextEncoder().encode(JSON.stringify(message)));
+        } catch (e) {
+          console.error('Error broadcasting excalidraw update:', e);
+        }
+      }, 120);
+    },
+    [sendData, sanitizeFilesForSending],
+  );
 
   return (
     <ExcalidrawErrorBoundary>
@@ -658,7 +704,9 @@ function ExcalidrawWhiteboard({
             excalidrawRef.current = api;
             onReady?.();
           }}
-          onChange={(elements: readonly any[], appState: any, _files: any) => onChange(elements as any[], appState)}
+          onChange={(elements: readonly any[], appState: any, files: any) =>
+            onChange(elements as any[], appState, files)
+          }
           theme="light"
           UIOptions={{ dockedSidebarBreakpoint: 0 }}
         />
@@ -817,17 +865,55 @@ function ScreenView({ trackRef }: { trackRef: TrackReference }) {
   );
 }
 
-function FileViewer({ file }: { file: { url: string; name: string; type: string } }) {
+function FileViewer({
+  file,
+  onClose,
+}: {
+  file: { url: string; name: string; type: string };
+  onClose?: () => void;
+}) {
   const isImage = file.type.startsWith('image/');
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gray-700">
+    <div className="w-full h-full relative flex items-center justify-center bg-gray-700">
+      {onClose && (
+        <button
+          onClick={onClose}
+          aria-label="Close file view"
+          title="Close file view"
+          className="absolute top-4 right-4 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white shadow-lg"
+        >
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      )}
       {isImage ? (
-        <img src={file.url} alt={file.name} className="max-w-full max-h-full object-contain" />
+        <img
+          src={file.url}
+          alt={file.name}
+          className="max-w-full max-h-full object-contain"
+        />
       ) : (
-        <div className="text-center">
+        <div className="text-center text-white">
           <h3 className="text-2xl font-bold">{file.name}</h3>
-          <p className="text-gray-400">File type not supported for preview</p>
-          <a href={file.url} download={file.name} className="text-blue-400 hover:underline mt-4 inline-block">Download File</a>
+          <p className="text-gray-300 mt-2">
+            File type not supported for preview
+          </p>
+          <a
+            href={file.url}
+            download={file.name}
+            className="text-blue-300 hover:underline mt-4 inline-block"
+          >
+            Download File
+          </a>
         </div>
       )}
     </div>

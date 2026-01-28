@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     const profile = await prisma.profiles.findUnique({
       where: { email },
       select: { 
+        id: true,
         role: true,
         name: true,
         email: true,

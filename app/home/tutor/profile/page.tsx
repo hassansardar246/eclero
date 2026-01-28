@@ -168,11 +168,19 @@ export default function TutorProfile() {
       return;
     }
     const hasInvalidPriceOrDuration = selectedSubjectsWithPrice.some(
-      (subject) => !subject?.duration || Number(subject?.price) <= 0
+      (subject) =>
+        !subject?.duration_1 ||
+        Number(subject?.price_1) <= 0 ||
+        !subject?.duration_2 ||
+        Number(subject?.price_2) <= 0 ||
+        !subject?.duration_3 ||
+        Number(subject?.price_3) <= 0
     );
     if (hasInvalidPriceOrDuration) {
       setError(true);
-      setErrorMsg("Please add price and select a duration");
+      setErrorMsg(
+        "Please add prices and select durations for all session lengths"
+      );
       return;
     }
     Swal.fire({
@@ -186,7 +194,7 @@ export default function TutorProfile() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch("/api/profiles/update-course", {
+          await fetch("/api/subjects/update-subjects-and-prices", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

@@ -416,8 +416,12 @@ exports.Prisma.ProfilesOnSubjectsScalarFieldEnum = {
   subject_id: 'subject_id',
   created_at: 'created_at',
   updated_at: 'updated_at',
-  price: 'price',
-  duration: 'duration'
+  price_1: 'price_1',
+  price_2: 'price_2',
+  price_3: 'price_3',
+  duration_3: 'duration_3',
+  duration_2: 'duration_2',
+  duration_1: 'duration_1'
 };
 
 exports.Prisma.SessionsScalarFieldEnum = {
@@ -460,8 +464,9 @@ exports.Prisma.TutorAvailabilityScalarFieldEnum = {
   start_date: 'start_date',
   end_date: 'end_date',
   subject: 'subject',
-  price: 'price',
-  duration: 'duration'
+  duration_3: 'duration_3',
+  duration_1: 'duration_1',
+  duration_2: 'duration_2'
 };
 
 exports.Prisma.SortOrder = {

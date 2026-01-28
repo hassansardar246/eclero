@@ -45,9 +45,10 @@ const endDate = new Date(`${newEvent.endDate}T${newEvent.end_time}:00`);
           data: {
             tutor_id: resolvedTutorId,
             subject_id: newEvent.subject_id.trim(),
-            price: existing.price,
             subject: newEvent.title,
-            duration: existing.duration,
+            duration_1: newEvent.duration_1,
+            duration_2: newEvent.duration_2,
+            duration_3: newEvent.duration_3,
             start_time: toTimeDate(newEvent.start_time),
             end_time: toTimeDate(newEvent.end_time),
             start_date: startDate.toISOString(),

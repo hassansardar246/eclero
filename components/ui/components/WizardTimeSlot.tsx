@@ -6,8 +6,12 @@ interface Subject {
   id: number;
   name: string;
   code: string;
-  duration: string;
-  price: any;
+  duration_1: string;
+  duration_2: string;
+  duration_3: string;
+  price_1: string;
+  price_2: string;
+  price_3: string;
 }
 
 
@@ -31,25 +35,24 @@ function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
 
         if (profileRes.ok) {
           const profileData = await profileRes.json();
+          console.log(profileData);
           setEmail(profileData.email);
           let normalizedSubjects: any[] = [];
           if (profileData.subjects && Array.isArray(profileData.subjects)) {
             normalizedSubjects = profileData.subjects
               .map((s: any) => {
-                // Check if s.subject exists and is an object
-                if (s && s.Subjects && typeof s.Subjects === "object") {
                   // Return the subject object with added duration and price fields
                   return {
-                    ...s.Subjects,
-                    duration: "0.5",
-                    price: 0,
+                    ...s,
+                    duration_1: "0.5",
+                    price_1: '',
+                    duration_2: "1",
+                    price_2: '',
+                    duration_3: "1.5",
+                    price_3: '',
+
                   };
-                }
-                return undefined;
-              })
-              .filter(
-                (Subjects: any): Subjects is any => Subjects !== undefined
-              );
+                });
           }
           setSelectedSubjects(normalizedSubjects);
         }
@@ -65,30 +68,56 @@ function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
   const Icon = Clock;
 
   const durationOptions = [
-    { value: "0.5", label: "30 min", color: "bg-blue-100 text-blue-800" },
-    { value: "1", label: "1 hour", color: "bg-indigo-100 text-indigo-800" },
-    { value: "1.5", label: "1.5 hour", color: "bg-purple-100 text-purple-800" },
+    { value: "0.5", label: "30 min", name: "duration_1", color: "bg-blue-100 text-blue-800" },
+    { value: "1", label: "1 hour", name: "duration_2", color: "bg-indigo-100 text-indigo-800" },
+    { value: "1.5", label: "1.5 hour", name: "duration_3", color: "bg-purple-100 text-purple-800" },
   ];
   console.log(selectedSubjects);
 
-  const selectedSubject = selectedSubjects.find((s, index) => index === selectedSubjectId) || selectedSubjects[0];
+  const selectedSubject =
+    selectedSubjects.find((s, index) => index === selectedSubjectId) ||
+    selectedSubjects[0];
 
-  const updateSubjectDuration = (id: number, duration: string) => {
-    let updated = selectedSubjects.map((subject, index) =>
-        index === id ? { ...subject, duration } : subject
-      );
+  const getDurationKey = (duration: string) => {
+    if (duration === "0.5") return "duration_1";
+    if (duration === "1") return "duration_2";
+    return "duration_3";
+  };
+
+  const getPriceKey = (duration: string) => {
+    if (duration === "0.5") return "price_1";
+    if (duration === "1") return "price_2";
+    return "price_3";
+  };
+
+  const updateSubjectDuration = (
+    id: number,
+    duration_name: string,
+    duration: string
+  ) => {
+    const updated = selectedSubjects.map((subject, index) =>
+      index === id
+        ? { ...subject, [duration_name]: duration, duration }
+        : subject
+    );
     setSelectedSubjects(updated);
     setSelectedSubjectsWithPrice(updated);
     setSelectedDuration(duration);
+
+    const nextSelected = updated[id];
+    if (nextSelected) {
+      const priceKey = getPriceKey(duration);
+      setSessionPrice(nextSelected[priceKey] ?? "");
+    }
   };
 
-  const updateSubjectPrice = (id: number, price: string) => {
-    let updated =  selectedSubjects.map((subject, index) =>
-        index === id ? { ...subject, price } : subject
-      )
+  const updateSubjectPrice = (id: number, price_name: string, price: string) => {
+    const updated = selectedSubjects.map((subject, index) =>
+      index === id ? { ...subject, [price_name]: price } : subject
+    );
     setSelectedSubjects(updated);
     setSessionPrice(price);
-      setSelectedSubjectsWithPrice(updated);
+    setSelectedSubjectsWithPrice(updated);
   };
 
   return (
@@ -104,8 +133,14 @@ function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
               key={index}
               onClick={() => {
                 setSelectedSubjectId(index);
-                setSelectedDuration(subject.duration);
-                setSessionPrice(subject.price);
+                const durationKey = getDurationKey(
+                  subject.duration_1 || subject.duration_2 || subject.duration_3 || "0.5"
+                );
+                const durationValue = subject[durationKey] || "0.5";
+                const priceKey = getPriceKey(durationValue);
+
+                setSelectedDuration(durationValue);
+                setSessionPrice(subject[priceKey] || "");
               }}
               className={`inline-flex items-center gap-2 border px-4 py-2.5 rounded-xl text-sm shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group ${
                 selectedSubjectId === index
@@ -140,14 +175,29 @@ function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
                 <div className="flex items-center gap-1">
                   <Clock size={10} className="text-blue-500" />
                   <span>
-                    {subject.duration == "0.5" && "30 min"}
-                    {subject.duration == "1" && "1 hour"}
-                    {subject.duration == "1.5" && "1.5 hour"}
-                    {subject.duration == "" && "N/A"}
+                    {subject.duration_1 == "0.5" && "30 min"}
                   </span>
                   <span className="text-gray-300 mx-1">•</span>
                   <DollarSign size={10} className="text-green-500" />
-                  <span>${subject.price || "0"}</span>
+                  <span>${subject.price_1 || "0"}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock size={10} className="text-blue-500" />
+                  <span>
+                    {subject.duration_2 == "1" && "1 hour"}
+                  </span>
+                  <span className="text-gray-300 mx-1">•</span>
+                  <DollarSign size={10} className="text-green-500" />
+                  <span>${subject.price_2 || "0"}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock size={10} className="text-blue-500" />
+                  <span>
+                    {subject.duration_3 == "1.5" && "1.5 hour"}
+                  </span>
+                  <span className="text-gray-300 mx-1">•</span>
+                  <DollarSign size={10} className="text-green-500" />
+                  <span>${subject.price_3 || "0"}</span>
                 </div>
               </div>
             </div>
@@ -193,7 +243,11 @@ function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
                       value={option.value}
                       checked={selectedDuration === option.value}
                       onChange={(e) =>
-                        updateSubjectDuration(selectedSubjectId, e.target.value)
+                        updateSubjectDuration(
+                          selectedSubjectId,
+                          option.name,
+                          e.target.value
+                        )
                       }
                       className="sr-only"
                     />
@@ -226,9 +280,10 @@ function WizardTimeSlot({ setSelectedSubjectsWithPrice }: any) {
                   type="number"
                   value={sessionPrice}
                   aria-placeholder="0.00"
-                  onChange={(e: any) =>
-                    updateSubjectPrice(selectedSubjectId, e.target.value)
-                  }
+                  onChange={(e: any) => {
+                    const priceKey = getPriceKey(selectedDuration);
+                    updateSubjectPrice(selectedSubjectId, priceKey, e.target.value);
+                  }}
                   placeholder="0.00"
                   className="block w-full pl-7 pr-12 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
                 />

@@ -244,7 +244,9 @@ const SetupWizard = () => {
   };
   // Returns true if ALL subjects have valid price and duration
   let is_all_selected = selectedSubjectsWithPrice.every(
-    (s: any) => s.duration && s.duration !== "0.0" && Number(s.price) > 0
+    (s: any) => s.duration_1 && s.duration_1 !== "0.0" && Number(s.price_1) > 0
+    && s.duration_2 && s.duration_2 !== "0.0" && Number(s.price_2) > 0
+    && s.duration_3 && s.duration_3 !== "0.0" && Number(s.price_3) > 0
 );
   const HandleNextButton = async () => {
     if (activeStep === 1) {
