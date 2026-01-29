@@ -101,11 +101,7 @@ function RegisterContent() {
                 setLoading(false);
                 return;
             }
-            if(normalizedRole === "student") {
-                router.push(`/home/${normalizedRole}/explore`);
-            } else {
                 router.push(`/home`);
-            }
         } catch (err: any) {
             console.error('[REGISTER] Registration failed:', err);
             setError(err.message || "An error occurred during registration. Please try again.");
